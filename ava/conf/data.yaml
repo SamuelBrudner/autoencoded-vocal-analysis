@@ -1,0 +1,21 @@
+# AVA Metadata Database Configuration
+# Primary YAML configuration file defining database connection parameters,
+# filesystem scan patterns, checksum validation settings, and data root directories
+# for the AVA metadata indexing system.
+
+# Database configuration
+database:
+  enabled: true
+  url: "sqlite:///./ava.db"   # optional: "postgresql+psycopg://user:pw@host/db"
+  echo: false
+
+# Data root directories
+data_roots:
+  audio_dir: "data/audio"
+  features_dir: "data/features"
+
+# Ingestion configuration
+ingest:
+  scan_glob_audio: "**/*.wav"
+  scan_glob_h5: "**/*.h5"
+  checksum: "sha256"
