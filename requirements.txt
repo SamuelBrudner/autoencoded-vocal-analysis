@@ -2,9 +2,16 @@ torch>=1.1
 numpy
 matplotlib
 joblib
-umap
+umap-learn
 numba
-sklearn
+scikit-learn
 scipy
 bokeh
 h5py
+affinewarp
+# New database dependencies
+sqlalchemy>=2.0.0
+pydantic>=2.0.0
+loguru>=0.7.0
+pytest>=7.0.0
+rich
