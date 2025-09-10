@@ -14,34 +14,36 @@ from datetime import datetime
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import time
-from typing import List
+from typing import Generator, Any
 
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
+from sqlalchemy.engine import Engine
 
 from ava.db.repository import SyllableRepository, EmbeddingRepository, AnnotationRepository, QueryDSL
 from ava.db.schema import Base, Recording, Syllable, Embedding, Annotation
 from ava.db.session import get_session, create_engine_from_url
 
 
-@pytest.fixture
-def setup_test_database():
+@pytest.fixture(scope="function")
+def setup_test_database() -> Generator[Engine, Any, None]:
     """
     Create ephemeral test database with schema and return engine for test isolation.
     
     Creates temporary SQLite database with all tables initialized and foreign key
     enforcement enabled for comprehensive constraint validation during testing.
     """
-    temp_dir = TemporaryDirectory()
-    db_path = Path(temp_dir.name) / "test_ava.db"
-    database_url = f"sqlite:///{db_path}"
-    engine = create_engine_from_url(database_url, echo=False)
-    return engine
+    with TemporaryDirectory() as temp_dir:
+        db_path = Path(temp_dir) / "test_ava.db"
+        database_url = f"sqlite:///{db_path}"
+        engine = create_engine_from_url(database_url, echo=False)
+        Base.metadata.create_all(engine)
+        yield engine
 
 
 @pytest.fixture  
-def create_test_data_fixtures(setup_test_database):
+def create_test_data_fixtures(setup_test_database: Engine) -> Generator[Engine, Any, None]:
     """
     Generate deterministic test data fixtures with known values for reproducible query validation.
     
@@ -82,11 +84,12 @@ def create_test_data_fixtures(setup_test_database):
         annotation2 = Annotation(syllable_id=syllable2.id, annotation_type="label",
                                 key="call_type", value="call_B") 
         session.add_all([annotation1, annotation2])
+        session.commit()
     
-    return engine
+    yield engine
 
 
-def test_duration_filtering_returns_consistent_results(create_test_data_fixtures):
+def test_duration_filtering_returns_consistent_results(create_test_data_fixtures: Engine) -> None:
     """
     Validate SyllableRepository.filter_by_duration returns deterministic results for threshold queries.
     
@@ -109,7 +112,7 @@ def test_duration_filtering_returns_consistent_results(create_test_data_fixtures
         assert abs(results1[0].end_time - results1[0].start_time - 0.2) < 0.001
 
 
-def test_label_based_queries_exact_matching(create_test_data_fixtures):
+def test_label_based_queries_exact_matching(create_test_data_fixtures: Engine) -> None:
     """
     Validate QueryDSL label filtering produces exact matches for annotation values.
     
@@ -132,7 +135,7 @@ def test_label_based_queries_exact_matching(create_test_data_fixtures):
         assert results1[0].end_time == 0.1
 
 
-def test_model_tag_filtering_functions_properly(create_test_data_fixtures):
+def test_model_tag_filtering_functions_properly(create_test_data_fixtures: Engine) -> None:
     """
     Validate EmbeddingRepository.filter_by_model_tag returns correct model version filtering.
     
@@ -154,7 +157,7 @@ def test_model_tag_filtering_functions_properly(create_test_data_fixtures):
         assert results1[0].dimensions == 64
 
 
-def test_combined_filters_produce_expected_intersections(create_test_data_fixtures):
+def test_combined_filters_produce_expected_intersections(create_test_data_fixtures: Engine) -> None:
     """
     Validate QueryDSL chaining produces correct intersections of multiple filter criteria.
     
@@ -177,7 +180,7 @@ def test_combined_filters_produce_expected_intersections(create_test_data_fixtur
         assert abs(results1[0].end_time - results1[0].start_time - 0.1) < 0.001
 
 
-def test_results_reproducible_across_multiple_runs(create_test_data_fixtures):
+def test_results_reproducible_across_multiple_runs(create_test_data_fixtures: Engine) -> None:
     """
     Validate all query methods return identical results across multiple executions.
     
@@ -200,7 +203,7 @@ def test_results_reproducible_across_multiple_runs(create_test_data_fixtures):
     assert len(first_set) == 3  # All three test syllables
 
 
-def test_query_performance_within_100ms_threshold(create_test_data_fixtures):
+def test_query_performance_within_100ms_threshold(create_test_data_fixtures: Engine) -> None:
     """
     Validate repository query methods complete within 100ms performance threshold.
     
