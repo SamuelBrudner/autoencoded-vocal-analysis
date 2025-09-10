@@ -16,9 +16,10 @@ from pathlib import Path
 from glob import glob
 from hashlib import sha256
 from typing import Dict, List, Optional, Any
+from sqlalchemy import Engine
 from datetime import datetime
 
-import h5py
+import h5py  # type: ignore
 import numpy as np
 from loguru import logger
 from pydantic import BaseModel
@@ -64,7 +65,7 @@ class FilesystemIndexer:
     All methods maintain the 15 LOC constraint and fail-loud error handling.
     """
     
-    def __init__(self, config: AVAConfig, engine) -> None:
+    def __init__(self, config: AVAConfig, engine: Engine) -> None:
         """Initialize indexer with configuration and database engine."""
         self.config = config
         self.engine = engine
@@ -233,7 +234,7 @@ class FilesystemIndexer:
             raise RuntimeError(error_msg)
 
     @classmethod
-    def from_config_dict(cls, config_dict: Dict[str, Any], engine) -> "FilesystemIndexer":
+    def from_config_dict(cls, config_dict: Dict[str, Any], engine: Engine) -> "FilesystemIndexer":
         """Create indexer from configuration dictionary with Pydantic validation."""
         try:
             validated_config = AVAConfig.model_validate(config_dict)
