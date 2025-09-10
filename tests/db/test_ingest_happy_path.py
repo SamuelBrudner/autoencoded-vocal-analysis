@@ -20,7 +20,7 @@ from typing import Dict, List, Any
 import h5py  # type: ignore
 import numpy as np
 import pytest
-import yaml
+
 
 from ava.data.indexer import FilesystemIndexer
 from ava.db.repository import RecordingRepository
@@ -114,11 +114,11 @@ def validate_ingestion_results(engine: Any, expected_files: List[Path], expected
 
 class TestIngestHappyPath:
     """
-    Test class for validating successful ingestion workflows.
+    Test class for validating successful ingestion workflows using Test-Driven Development (TDD).
     
     Implements comprehensive happy-path testing including filesystem scanning,
     metadata extraction, checksum validation, and database population.
-    All tests use deterministic fixtures with reproducible execution.
+    All tests use deterministic fixtures with reproducible execution following TDD principles.
     """
     
     def test_synthetic_hdf5_creation(self) -> None:
@@ -169,7 +169,7 @@ class TestIngestHappyPath:
             config_dict = {
                 'database': {'enabled': True, 'url': f'sqlite:///{temp_dir}/test.db', 'echo': False},
                 'data_roots': {'audio_dir': str(temp_dir), 'features_dir': str(temp_dir)},
-                'ingest': {'scan_glob_audio': '**/*.wav', 'scan_glob_h5': '**/*.h5*', 'checksum': 'sha256'}
+                'ingest': {'scan_glob_audio': '*.wav', 'scan_glob_h5': '*.hdf5', 'checksum': 'sha256'}
             }
             
             indexer = FilesystemIndexer.from_config_dict(config_dict, engine)
@@ -190,7 +190,7 @@ class TestIngestHappyPath:
             config_dict = {
                 'database': {'enabled': True, 'url': f'sqlite:///{temp_dir}/test.db', 'echo': False},
                 'data_roots': {'audio_dir': str(temp_dir), 'features_dir': str(temp_dir)},
-                'ingest': {'scan_glob_audio': '**/*.wav', 'scan_glob_h5': '**/*.h5*', 'checksum': 'sha256'}
+                'ingest': {'scan_glob_audio': '*.wav', 'scan_glob_h5': '*.hdf5', 'checksum': 'sha256'}
             }
             
             indexer = FilesystemIndexer.from_config_dict(config_dict, engine)
@@ -214,7 +214,7 @@ class TestIngestHappyPath:
             config_dict = {
                 'database': {'enabled': True, 'url': f'sqlite:///{temp_dir}/test.db', 'echo': False},
                 'data_roots': {'audio_dir': str(temp_dir), 'features_dir': str(temp_dir)},
-                'ingest': {'scan_glob_audio': '**/*.wav', 'scan_glob_h5': '**/*.h5*', 'checksum': 'sha256'}
+                'ingest': {'scan_glob_audio': '*.wav', 'scan_glob_h5': '*.hdf5', 'checksum': 'sha256'}
             }
             
             indexer = FilesystemIndexer.from_config_dict(config_dict, engine)
@@ -239,7 +239,7 @@ class TestIngestHappyPath:
             config_dict = {
                 'database': {'enabled': True, 'url': f'sqlite:///{temp_dir}/test.db', 'echo': False},
                 'data_roots': {'audio_dir': str(temp_dir), 'features_dir': str(temp_dir)},
-                'ingest': {'scan_glob_audio': '**/*.wav', 'scan_glob_h5': '**/*.h5*', 'checksum': 'sha256'}
+                'ingest': {'scan_glob_audio': '*.wav', 'scan_glob_h5': '*.hdf5', 'checksum': 'sha256'}
             }
             
             indexer = FilesystemIndexer.from_config_dict(config_dict, engine)
@@ -267,7 +267,7 @@ class TestIngestHappyPath:
             config_dict = {
                 'database': {'enabled': True, 'url': f'sqlite:///{temp_dir}/test.db', 'echo': False},
                 'data_roots': {'audio_dir': str(temp_dir), 'features_dir': str(temp_dir)},
-                'ingest': {'scan_glob_audio': '**/*.wav', 'scan_glob_h5': '**/*.h5*', 'checksum': 'sha256'}
+                'ingest': {'scan_glob_audio': '*.wav', 'scan_glob_h5': '*.hdf5', 'checksum': 'sha256'}
             }
             
             indexer = FilesystemIndexer.from_config_dict(config_dict, engine)
@@ -304,7 +304,7 @@ class TestIngestHappyPath:
             config_dict = {
                 'database': {'enabled': True, 'url': f'sqlite:///{temp_dir}/test.db', 'echo': False},
                 'data_roots': {'audio_dir': str(temp_dir), 'features_dir': str(temp_dir)},
-                'ingest': {'scan_glob_audio': '**/*.wav', 'scan_glob_h5': '**/*.h5*', 'checksum': 'sha256'}
+                'ingest': {'scan_glob_audio': '*.wav', 'scan_glob_h5': '*.hdf5', 'checksum': 'sha256'}
             }
             
             indexer = FilesystemIndexer.from_config_dict(config_dict, engine)
