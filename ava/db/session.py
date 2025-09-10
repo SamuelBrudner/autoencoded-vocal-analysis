@@ -13,13 +13,13 @@ for database connection and transaction failures.
 from contextlib import contextmanager
 from typing import Generator
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text, Engine
 from sqlalchemy.orm import sessionmaker, Session
 
 from ava.db.schema import Base
 
 
-def create_engine_from_url(database_url: str, echo: bool = False) -> object:
+def create_engine_from_url(database_url: str, echo: bool = False) -> Engine:
     """
     Create SQLAlchemy engine from database URL with optimized connection pooling.
     
@@ -41,7 +41,7 @@ def create_engine_from_url(database_url: str, echo: bool = False) -> object:
         engine = create_engine(database_url, echo=echo, connect_args={"check_same_thread": False})
         # Enable foreign key enforcement for SQLite
         with engine.connect() as conn:
-            conn.execute("PRAGMA foreign_keys=ON")
+            conn.execute(text("PRAGMA foreign_keys=ON"))
             conn.commit()
     elif database_url.startswith("postgresql"):
         engine = create_engine(database_url, echo=echo, pool_size=5, max_overflow=10)
@@ -54,7 +54,7 @@ def create_engine_from_url(database_url: str, echo: bool = False) -> object:
 
 
 @contextmanager
-def get_session(engine: object) -> Generator[Session, None, None]:
+def get_session(engine: Engine) -> Generator[Session, None, None]:
     """
     Context manager providing database session with automatic transaction handling.
     
