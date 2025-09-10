@@ -11,14 +11,15 @@ immediately, ensuring corrupted metadata cannot enter analysis workflows.
 """
 
 from datetime import datetime
-from typing import Any
+from typing import Any, Dict, Optional
 
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, JSON
-from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy import Integer, String, Float, DateTime, ForeignKey, JSON
+from sqlalchemy.orm import DeclarativeBase, relationship, Mapped, mapped_column
 
 
-# SQLAlchemy declarative base for all model definitions
-Base = declarative_base()
+class Base(DeclarativeBase):
+    """SQLAlchemy declarative base for all model definitions."""
+    pass
 
 
 class Recording(Base):
@@ -31,11 +32,11 @@ class Recording(Base):
     """
     __tablename__ = 'recording'
     
-    id: int = Column(Integer, primary_key=True, autoincrement=True)
-    file_path: str = Column(String, unique=True, nullable=False)
-    checksum_sha256: str = Column(String(64), nullable=False)
-    created_at: datetime = Column(DateTime, default=datetime.now, nullable=False)
-    metadata: dict[str, Any] = Column(JSON, nullable=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    file_path: Mapped[str] = mapped_column(String, unique=True, nullable=False)
+    checksum_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, nullable=False)
+    extra_metadata: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON, nullable=True)
     
     # Relationship with CASCADE delete behavior
     syllables = relationship("Syllable", back_populates="recording", cascade="all, delete-orphan")
@@ -50,12 +51,12 @@ class Syllable(Base):
     """
     __tablename__ = 'syllable'
     
-    id: int = Column(Integer, primary_key=True, autoincrement=True)
-    recording_id: int = Column(Integer, ForeignKey('recording.id', ondelete='CASCADE'), nullable=False)
-    spectrogram_path: str = Column(String, nullable=False)
-    start_time: float = Column(Float, nullable=False)
-    end_time: float = Column(Float, nullable=False)
-    bounds_metadata: dict[str, Any] = Column(JSON, nullable=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    recording_id: Mapped[int] = mapped_column(Integer, ForeignKey('recording.id', ondelete='CASCADE'), nullable=False)
+    spectrogram_path: Mapped[str] = mapped_column(String, nullable=False)
+    start_time: Mapped[float] = mapped_column(Float, nullable=False)
+    end_time: Mapped[float] = mapped_column(Float, nullable=False)
+    bounds_metadata: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON, nullable=True)
     
     # Relationships with CASCADE delete behavior
     recording = relationship("Recording", back_populates="syllables")
@@ -72,12 +73,12 @@ class Embedding(Base):
     """
     __tablename__ = 'embedding'
     
-    id: int = Column(Integer, primary_key=True, autoincrement=True)
-    syllable_id: int = Column(Integer, ForeignKey('syllable.id', ondelete='CASCADE'), nullable=False)
-    model_version: str = Column(String, nullable=False)
-    embedding_path: str = Column(String, nullable=False)
-    dimensions: int = Column(Integer, nullable=False)
-    model_metadata: dict[str, Any] = Column(JSON, nullable=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    syllable_id: Mapped[int] = mapped_column(Integer, ForeignKey('syllable.id', ondelete='CASCADE'), nullable=False)
+    model_version: Mapped[str] = mapped_column(String, nullable=False)
+    embedding_path: Mapped[str] = mapped_column(String, nullable=False)
+    dimensions: Mapped[int] = mapped_column(Integer, nullable=False)
+    extra_model_metadata: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON, nullable=True)
     
     # Relationship with parent syllable
     syllable = relationship("Syllable", back_populates="embeddings")
@@ -92,12 +93,12 @@ class Annotation(Base):
     """
     __tablename__ = 'annotation'
     
-    id: int = Column(Integer, primary_key=True, autoincrement=True)
-    syllable_id: int = Column(Integer, ForeignKey('syllable.id', ondelete='CASCADE'), nullable=False)
-    annotation_type: str = Column(String, nullable=False)
-    key: str = Column(String, nullable=False)
-    value: str = Column(String, nullable=False)
-    created_at: datetime = Column(DateTime, default=datetime.now, nullable=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    syllable_id: Mapped[int] = mapped_column(Integer, ForeignKey('syllable.id', ondelete='CASCADE'), nullable=False)
+    annotation_type: Mapped[str] = mapped_column(String, nullable=False)
+    key: Mapped[str] = mapped_column(String, nullable=False)
+    value: Mapped[str] = mapped_column(String, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, nullable=False)
     
     # Relationship with parent syllable
     syllable = relationship("Syllable", back_populates="annotations")
