@@ -10,7 +10,7 @@ ensuring corrupted metadata cannot enter analysis workflows.
 """
 
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any, Set
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -77,7 +77,7 @@ class SyllableRepository:
         """Initialize repository with database session."""
         self.session = session
     
-    def bulk_create(self, syllables_data: List[Dict[str, any]]) -> List[Syllable]:
+    def bulk_create(self, syllables_data: List[Dict[str, Any]]) -> List[Syllable]:
         """Create multiple syllables in single transaction for performance."""
         syllables = []
         for data in syllables_data:
@@ -125,7 +125,7 @@ class EmbeddingRepository:
         self.session = session
     
     def create(self, syllable_id: int, model_version: str, embedding_path: str, 
-              dimensions: int, model_metadata: Optional[Dict[str, any]] = None) -> Embedding:
+              dimensions: int, model_metadata: Optional[Dict[str, Any]] = None) -> Embedding:
         """Create embedding with model version tracking."""
         embedding = Embedding(
             syllable_id=syllable_id,
@@ -207,7 +207,7 @@ class QueryDSL:
         """Initialize query builder with database session."""
         self.session = session
         self._query = select(Syllable)
-        self._joins = set()
+        self._joins: Set[str] = set()
     
     def filter_by_duration(self, min_duration: float, max_duration: Optional[float] = None) -> "QueryDSL":
         """Add duration range filter to query chain."""
