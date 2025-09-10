@@ -206,7 +206,7 @@ class FilesystemIndexer:
             discovered_files = self.scan_files(base_directory)
             if not discovered_files:
                 logger.warning("No HDF5 files discovered for indexing")
-                return {'status': 'completed', 'indexed_files': 0, 'errors': []}
+                return {'status': 'completed', 'indexed_files': 0, 'total_syllables': 0, 'errors': []}
             
             # Step 2: Validate integrity
             self.validate_integrity(discovered_files)
