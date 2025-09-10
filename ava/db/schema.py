@@ -13,7 +13,7 @@ immediately, ensuring corrupted metadata cannot enter analysis workflows.
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, JSON, create_engine
+from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, JSON
 from sqlalchemy.orm import declarative_base, relationship
 
 
