@@ -56,7 +56,7 @@ def load_config(config_path: Path) -> Dict[str, Any]:
     
     try:
         config_text = config_path.read_text()
-        config_data = yaml.safe_load(config_text)
+        config_data: Dict[str, Any] = yaml.safe_load(config_text)
         logger.info("Configuration loaded successfully", path=str(config_path))
         return config_data
     except Exception as e:
@@ -126,18 +126,13 @@ def ingest_metadata(args: argparse.Namespace) -> None:
         RuntimeError: On ingestion failure, checksum mismatch, or data integrity violation
     """
     from ava.data.indexer import FilesystemIndexer
-    
     try:
-        config_data = load_config(args.config_path)
-        ava_config = AVAConfig.model_validate(config_data)
+        ava_config = AVAConfig.model_validate(load_config(args.config_path))
         engine = create_engine_from_url(ava_config.database.url, ava_config.database.echo)
-        
         with Progress() as progress:
-            task = progress.add_task("[green]Ingesting metadata...", total=100)
+            progress.add_task("[green]Ingesting metadata...", total=100)
             indexer = FilesystemIndexer(ava_config, engine)
             results = indexer.run_full_indexing()
-            progress.update(task, completed=100)
-        
         logger.info("Metadata ingestion completed", **results)
         print(f"✓ Ingested {results['indexed_files']} files, {results['total_syllables']} syllables")
     except Exception as e:
@@ -159,30 +154,67 @@ def show_status(args: argparse.Namespace) -> None:
         RuntimeError: On database connection failure or integrity validation errors
     """
     from ava.db.session import get_session
-    from ava.db.repository import RecordingRepository
-    
     try:
-        config_data = load_config(args.config_path)
-        ava_config = AVAConfig.model_validate(config_data)
+        ava_config = AVAConfig.model_validate(load_config(args.config_path))
         engine = create_engine_from_url(ava_config.database.url, ava_config.database.echo)
-        
         with get_session(engine) as session:
-            recording_repo = RecordingRepository(session)
             syllable_repo = SyllableRepository(session)
-            
-            # Get first recording to test functionality
-            if hasattr(args, 'recording_id'):
+            if hasattr(args, 'recording_id') and args.recording_id:
                 syllables = syllable_repo.get_by_recording(args.recording_id)
                 print(f"✓ Found {len(syllables)} syllables for recording {args.recording_id}")
-            
-            # Test duration filtering  
             duration_filtered = syllable_repo.filter_by_duration(0.1, 2.0)
             print(f"✓ Database operational - {len(duration_filtered)} syllables in duration range")
-            
         logger.info("Status check completed successfully")
     except Exception as e:
         logger.error("Status check failed", error=str(e))
         raise RuntimeError(f"Status check failed: {e}")
+
+
+def setup_argument_parser() -> argparse.ArgumentParser:
+    """
+    Configure argument parser with subcommands and options.
+    
+    Creates main parser with config argument and subparsers for init, ingest,
+    validate, and status operations with appropriate help text.
+    
+    Returns:
+        Configured ArgumentParser instance with all subcommands
+    """
+    parser = argparse.ArgumentParser(
+        description="AVA Database Ingestion CLI", 
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    parser.add_argument("--config", dest="config_path", type=Path, required=True,
+                       help="Path to YAML configuration file")
+    subparsers = parser.add_subparsers(dest="command", help="Available commands")
+    subparsers.add_parser("init", help="Initialize database schema")
+    subparsers.add_parser("ingest", help="Execute metadata ingestion")
+    subparsers.add_parser("validate", help="Validate configuration")
+    status_parser = subparsers.add_parser("status", help="Display database status")
+    status_parser.add_argument("--recording-id", type=int, help="Recording ID for detailed status")
+    return parser
+
+
+def dispatch_command(args: argparse.Namespace) -> None:
+    """
+    Execute appropriate command based on parsed arguments.
+    
+    Dispatches to init_database, ingest_metadata, validate_config, or show_status
+    based on command argument with proper error handling and logging.
+    
+    Args:
+        args: Parsed command line arguments with command and config_path
+        
+    Raises:
+        SystemExit: With non-zero exit code on command execution failure
+    """
+    command_map = {
+        "init": init_database,
+        "ingest": ingest_metadata, 
+        "validate": validate_config,
+        "status": show_status
+    }
+    command_map[args.command](args)
 
 
 def main() -> None:
@@ -196,46 +228,14 @@ def main() -> None:
     Raises:
         SystemExit: With non-zero exit code on any operation failure
     """
-    # Configure structured JSONL logging
     logger.configure(handlers=[{"sink": sys.stderr, "format": "{message}", "serialize": True}])
-    
-    parser = argparse.ArgumentParser(
-        description="AVA Database Ingestion CLI", 
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
-    parser.add_argument("--config", dest="config_path", type=Path, required=True,
-                       help="Path to YAML configuration file")
-    
-    subparsers = parser.add_subparsers(dest="command", help="Available commands")
-    
-    # Init subcommand
-    init_parser = subparsers.add_parser("init", help="Initialize database schema")
-    
-    # Ingest subcommand  
-    ingest_parser = subparsers.add_parser("ingest", help="Execute metadata ingestion")
-    
-    # Validate subcommand
-    validate_parser = subparsers.add_parser("validate", help="Validate configuration")
-    
-    # Status subcommand
-    status_parser = subparsers.add_parser("status", help="Display database status")
-    status_parser.add_argument("--recording-id", type=int, help="Recording ID for detailed status")
-    
+    parser = setup_argument_parser()
     args = parser.parse_args()
-    
     if not args.command:
         parser.print_help()
         sys.exit(1)
-    
     try:
-        if args.command == "init":
-            init_database(args)
-        elif args.command == "ingest":
-            ingest_metadata(args)
-        elif args.command == "validate":
-            validate_config(args)
-        elif args.command == "status":
-            show_status(args)
+        dispatch_command(args)
     except Exception as e:
         logger.error("Command execution failed", command=args.command, error=str(e))
         print(f"Error: {e}")
