@@ -1,0 +1,24 @@
+# Reproducible development environment for AVA
+# Use `make setup-yaml` to create/update ./conda_env from this file.
+name: ava-dev
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  # Runtime
+  - numpy
+  - h5py
+  - sqlalchemy>=2
+  - pydantic>=2
+  - loguru
+  - rich
+  # Testing & QA
+  - pytest
+  - pre-commit
+  - black
+  - ruff
+  - isort
+  - mypy
+  - interrogate
+  # Locking
+  - conda-lock

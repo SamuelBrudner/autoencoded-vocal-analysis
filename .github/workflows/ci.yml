@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup micromamba
+        uses: mamba-org/setup-micromamba@v2
+        with:
+          environment-file: environment.yml
+          activate-environment: ava-dev
+          cache-environment: true
+          cache-downloads: true
+          micromamba-version: '1.5.8'
+
+      - name: Show environment
+        shell: bash -l {0}
+        run: |
+          python --version
+          which python
+          python -c "import sys, platform; print(platform.platform()); print(sys.executable)"
+
+      - name: Pre-commit (lint, type, docs coverage)
+        shell: bash -l {0}
+        run: pre-commit run --all-files --show-diff-on-failure
+
+      - name: Tests
+        shell: bash -l {0}
+        run: |
+          export PYTHONPATH=.
+          pytest -q
