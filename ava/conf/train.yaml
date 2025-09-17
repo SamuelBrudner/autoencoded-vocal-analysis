@@ -1,0 +1,30 @@
+trainer:
+  max_epochs: 100
+  accelerator: "auto"
+  devices: 1
+  deterministic: true
+  enable_progress_bar: true
+  lr: 0.001
+callbacks:
+  early_stopping:
+    enabled: false
+    monitor: "val_loss"
+    mode: "min"
+    patience: 10
+  checkpoint:
+    monitor: "val_loss"
+    mode: "min"
+    save_top_k: 1
+data:
+  batch_size: 128
+  num_workers: 4
+  val_fraction: 0.2
+  selection:
+    use_db: false
+    filters: {}
+  fs: 32000
+model:
+  latent_dim: 32
+  beta_kl: 1.0
+  model_precision: 10.0
+  seed: 13

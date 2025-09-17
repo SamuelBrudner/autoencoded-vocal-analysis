@@ -10,6 +10,8 @@ TO DO
 - add features to existing files.
 """
 
+import contextlib
+
 __date__ = "July 2019 - November 2020"
 
 
@@ -18,10 +20,8 @@ import h5py
 try:  # Numba >= 0.52
     from numba.core.errors import NumbaPerformanceWarning
 except ModuleNotFoundError:
-    try:  # Numba <= 0.45
+    with contextlib.suppress(NameError, ModuleNotFoundError):
         from numba.errors import NumbaPerformanceWarning
-    except (NameError, ModuleNotFoundError):
-        pass
 import os
 import warnings
 from time import mktime, strptime
@@ -163,9 +163,9 @@ PRETTY_NAMES = {
     "mean_freq_variance": "Freq. Var.",
     "AM_variance": "Amp. Mod. Var.",
 }
-PRETTY_NAMES_NO_UNITS = {}
-for k in PRETTY_NAMES:
-    PRETTY_NAMES_NO_UNITS[k] = " ".join(PRETTY_NAMES[k].split("(")[0].split(" "))
+PRETTY_NAMES_NO_UNITS = {
+    k: " ".join(PRETTY_NAMES[k].split("(")[0].split(" ")) for k in PRETTY_NAMES
+}
 
 
 class DataContainer:
@@ -320,7 +320,7 @@ class DataContainer:
         external-facing method.
         """
         if field not in ALL_FIELDS:
-            print(str(field) + " is not a valid field!")
+            print(f"{str(field)} is not a valid field!")
             raise NotImplementedError
         # If it's not here, make it and return it.
         if field not in self.fields:
@@ -404,19 +404,17 @@ class DataContainer:
         elif field in SAP_FIELDS:
             load_dirs = self.projection_dirs
         else:
-            raise Exception(
-                "Can't read field: " + field + "\n This should have been caught in self.request!"
+            raise ValueError(
+                f"Can't read field: {field}\nThis should have been caught in self.request()"
             )
         to_return = []
         for i in range(len(self.spec_dirs)):
             spec_dir, load_dir = self.spec_dirs[i], load_dirs[i]
             hdf5s = get_hdf5s_from_dir(spec_dir)
-            for _j, hdf5 in enumerate(hdf5s):
+            for hdf5 in hdf5s:
                 filename = os.path.join(load_dir, os.path.split(hdf5)[-1])
                 with h5py.File(filename, "r") as f:
-                    assert field in f, (
-                        "Can't find field '" + field + "' in" + " file '" + filename + "'!"
-                    )
+                    assert field in f, f"Can't find field '{field}' in file '{filename}'!"
                     if field == "audio_filenames":
                         data = np.array([k.decode("UTF-8") for k in f[field]])
                         to_return.append(data)
@@ -442,11 +440,10 @@ class DataContainer:
                 with warnings.catch_warnings():
                     warnings.filterwarnings("ignore", category=WavFileWarning)
                     fs, audio = wavfile.read(os.path.join(audio_dir, audio_fn))
-                fn_result = []
-                for seg in segments[audio_dir][audio_fn]:
-                    i1 = int(round(seg[0] * fs))
-                    i2 = int(round(seg[1] * fs))
-                    fn_result.append(audio[i1:i2])
+                fn_result = [
+                    audio[int(round(seg[0] * fs)) : int(round(seg[1] * fs))]
+                    for seg in segments[audio_dir][audio_fn]
+                ]
                 dir_result[audio_fn] = fn_result
             result[audio_dir] = dir_result
         return result
@@ -471,7 +468,7 @@ class DataContainer:
         for audio_dir, seg_dir in zip(self.audio_dirs, self.segment_dirs, strict=False):
             dir_result = {}
             seg_fns = [os.path.join(seg_dir, i) for i in os.listdir(seg_dir) if _is_seg_file(i)]
-            audio_fns = [os.path.split(i)[1][:-4] + ".wav" for i in seg_fns]
+            audio_fns = [f"{os.path.split(i)[1][:-4]}.wav" for i in seg_fns]
             for audio_fn, seg_fn in zip(audio_fns, seg_fns, strict=False):
                 segs = _read_columns(seg_fn, delimiter="\t", unpack=False, skiprows=0)
                 if len(segs) > 0:
@@ -495,7 +492,7 @@ class DataContainer:
         self._check_for_dirs(["projection_dirs", "spec_dirs", "model_filename"], "latent_means")
         # First, see how many syllables are in each file.
         temp = get_hdf5s_from_dir(self.spec_dirs[0])
-        assert len(temp) > 0, "Found no specs in" + self.spec_dirs[0]
+        assert len(temp) > 0, f"Found no specs in{self.spec_dirs[0]}"
         hdf5_file = temp[0]
         with h5py.File(hdf5_file, "r") as f:
             self.sylls_per_file = len(f["specs"])
@@ -514,7 +511,7 @@ class DataContainer:
                 os.makedirs(proj_dir)
             # Make a DataLoader for the syllables.
             partition = get_syllable_partition([spec_dir], 1, shuffle=False)
-            try:
+            with contextlib.suppress(AssertionError):
                 loader = get_syllable_data_loaders(partition, shuffle=(False, False))["train"]
                 # Get the latent means from the model.
                 latent_means = model.get_latent(loader)
@@ -527,8 +524,6 @@ class DataContainer:
                     data = latent_means[j * spf : (j + 1) * spf]
                     with h5py.File(filename, "a") as f:
                         f.create_dataset("latent_means", data=data)
-            except AssertionError:  # No specs in this directory
-                pass
         return np.concatenate(all_latent)
 
     def _read_filename_field(self, field):
@@ -562,19 +557,15 @@ class DataContainer:
             n_components=2, n_neighbors=20, min_dist=0.1, metric="euclidean", random_state=42
         )
         if self.verbose:
-            print("Running UMAP... (n=" + str(len(latent_means)) + ")")
+            print(f"Running UMAP... (n={len(latent_means)})")
         # https://github.com/lmcinnes/umap/issues/252
         with warnings.catch_warnings():
-            try:
+            with contextlib.suppress(NameError):
                 warnings.filterwarnings("ignore", category=NumbaPerformanceWarning)
-            except NameError:
-                pass
             embedding = transform.fit_transform(latent_means)
-        if self.verbose:
-            print("\tDone.")
-        # Write to files.
-        self._write_projection("latent_mean_umap", embedding)
-        return embedding
+        return self._extracted_from__make_latent_mean_pca_projection_16(
+            "latent_mean_umap", embedding
+        )
 
     def _make_latent_mean_pca_projection(self):
         """Project latent means to two dimensions with PCA."""
@@ -585,109 +576,110 @@ class DataContainer:
         if self.verbose:
             print("Running PCA...")
         embedding = transform.fit_transform(latent_means)
+        return self._extracted_from__make_latent_mean_pca_projection_16(
+            "latent_mean_pca", embedding
+        )
+
+    # TODO Rename this here and in `_make_latent_mean_umap_projection` and `_make_latent_mean_pca_projection`
+    def _extracted_from__make_latent_mean_pca_projection_16(self, arg0, embedding):
         if self.verbose:
             print("\tDone.")
-        # Write to files.
-        self._write_projection("latent_mean_pca", embedding)
+        self._write_projection(arg0, embedding)
         return embedding
 
     def _make_feature_field(self, field, kind):
         """
-        Read a feature from a text file and put it in an hdf5 file.
+        Read a feature from a text file and put it in an HDF5 file.
 
-        Read from self.feature_dirs and write to self.projection_dirs. This
-        could be a bit tricky because we need to match up the syllables in the
-        text file with the ones in the hdf5 file.
-
-        Parameters
-        ----------
-        field : str
-                Name of data being requested. See ``ALL_FIELDS`` for a complete
-                list.
-        kind : str, 'mupet' or 'deepsqueak'
-                Is this a MUPET or a DeepSqueak field?
-
-        Returns
-        -------
-        data : numpy.ndarray
-                Requested data.
+        Reads from `self.feature_dirs` and writes to `self.projection_dirs`, aligning
+        feature onsets to spectrogram onsets within a tolerance.
         """
         self._check_for_dirs(["spec_dirs", "feature_dirs", "projection_dirs"], field)
-        # Find which column the field is stored in.
-        if kind == "mupet":
-            file_fields = MUPET_FIELDS
-            onset_col = MUPET_ONSET_COL
-        elif kind == "deepsqueak":
-            file_fields = DEEPSQUEAK_FIELDS
-            onset_col = DEEPSQUEAK_ONSET_COL
-        elif kind == "sap":
-            file_fields = SAP_FIELDS
-            onset_col = SAP_ONSET_COL
-        else:
-            assert NotImplementedError
+
+        file_fields, onset_col = self._get_file_fields_and_onset_col(kind)
         field_col = file_fields.index(field)
+
         to_return = []
-        # Run through each directory.
         for i in range(len(self.spec_dirs)):
             spec_dir = self.spec_dirs[i]
             feature_dir = self.feature_dirs[i]
             proj_dir = self.projection_dirs[i]
             hdf5s = get_hdf5s_from_dir(spec_dir)
-            current_fn, k = None, None
             for hdf5 in hdf5s:
-                # Get the filenames and onsets from self.spec_dirs.
-                with h5py.File(hdf5, "r") as f:
-                    audio_filenames = np.array(f["audio_filenames"])
-                    spec_onsets = np.array(f["onsets"])
-                    # if kind == 'sap': # SAP writes onsets in milliseconds.
-                    # 	spec_onsets /= 1e3
-                feature_arr = np.zeros(len(spec_onsets))
-                # Loop through each syllable.
-                for j in range(len(spec_onsets)):
-                    audio_fn, spec_onset = audio_filenames[j], spec_onsets[j]
-                    audio_fn = audio_fn.decode("UTF-8")
-                    # Update the feature file, if needed.
-                    if audio_fn != current_fn:
-                        current_fn = audio_fn
-                        feature_fn = os.path.split(audio_fn)[-1][:-4]
-                        if kind == "deepsqueak":  # DeepSqueak appends '_Stats'
-                            feature_fn += "_Stats"  # when exporting features.
-                        feature_fn += ".csv"
-                        feature_fn = os.path.join(feature_dir, feature_fn)
-                        # Read the onsets and features.
-                        feature_onsets, features = _read_columns(feature_fn, [onset_col, field_col])
-                        if kind == "sap":  # SAP writes onsets in milliseconds.
-                            feature_onsets /= 1e3
-                        k = 0
-                    # Look for the corresponding onset in the feature file.
-                    while spec_onset > feature_onsets[k] + 0.01:
-                        k += 1
-                        assert k < len(feature_onsets)
-                    if abs(spec_onset - feature_onsets[k]) > 0.01:
-                        print("Mismatch between spec_dirs and feature_dirs!")
-                        print("hdf5 file:", hdf5)
-                        print("\tindex:", j)
-                        print("audio filename:", audio_fn)
-                        print("feature filename:", feature_fn)
-                        print("Didn't find spec_onset", spec_onset)
-                        print(
-                            "in feature onsets of min:",
-                            np.min(feature_onsets),
-                            "max:",
-                            np.max(feature_onsets),
-                        )
-                        print("field:", field)
-                        print("kind:", kind)
-                        quit()
-                    # And add it to the feature array.
-                    feature_arr[j] = features[k]
-                # Write the fields to self.projection_dirs.
+                feature_arr = self._compute_feature_array_for_hdf5(
+                    hdf5, feature_dir, kind, onset_col, field_col
+                )
                 write_fn = os.path.join(proj_dir, os.path.split(hdf5)[-1])
                 with h5py.File(write_fn, "a") as f:
                     f.create_dataset(field, data=feature_arr)
                 to_return.append(feature_arr)
+
         self.fields[field] = 1
         return np.concatenate(to_return)
+
+    def _get_file_fields_and_onset_col(self, kind):
+        """Return (file_fields, onset_col) for a given feature kind."""
+        if kind == "mupet":
+            return MUPET_FIELDS, MUPET_ONSET_COL
+        if kind == "deepsqueak":
+            return DEEPSQUEAK_FIELDS, DEEPSQUEAK_ONSET_COL
+        if kind == "sap":
+            return SAP_FIELDS, SAP_ONSET_COL
+        raise NotImplementedError(f"Unsupported feature kind: {kind}")
+
+    def _read_spec_filenames_onsets(self, hdf5):
+        """Read audio_filenames and onsets arrays from an HDF5 spectrogram file."""
+        with h5py.File(hdf5, "r") as f:
+            audio_filenames = np.array(f["audio_filenames"])  # bytes
+            spec_onsets = np.array(f["onsets"]).astype(float)
+        return audio_filenames, spec_onsets
+
+    def _load_feature_file(self, feature_dir, audio_fn, kind, onset_col, field_col):
+        """Load feature onsets and values for a given audio filename."""
+        feature_fn = os.path.split(audio_fn)[-1][:-4]
+        if kind == "deepsqueak":  # DeepSqueak appends '_Stats' when exporting features.
+            feature_fn += "_Stats"
+        feature_path = os.path.join(feature_dir, f"{feature_fn}.csv")
+        feature_onsets, features = _read_columns(feature_path, [onset_col, field_col])
+        if kind == "sap":  # SAP writes onsets in milliseconds.
+            feature_onsets /= 1e3
+        return feature_path, np.asarray(feature_onsets, dtype=float), np.asarray(features)
+
+    def _find_feature_index(self, spec_onset, feature_onsets, tol=0.01):
+        """Find index in feature_onsets closest to spec_onset within tolerance."""
+        if len(feature_onsets) == 0:
+            raise RuntimeError("Feature file contains no onsets.")
+        k = int(np.searchsorted(feature_onsets, spec_onset, side="left"))
+        candidates = []
+        if k < len(feature_onsets):
+            candidates.append(k)
+        if k > 0:
+            candidates.append(k - 1)
+        best = min(candidates, key=lambda idx: abs(feature_onsets[idx] - spec_onset))
+        if abs(feature_onsets[best] - spec_onset) > tol:
+            raise RuntimeError(
+                f"No matching onset within {tol}s (spec={spec_onset}, nearest={feature_onsets[best]})"
+            )
+        return best
+
+    def _compute_feature_array_for_hdf5(self, hdf5, feature_dir, kind, onset_col, field_col):
+        """Compute per-syllable feature array aligned to spec onsets for one HDF5 file."""
+        audio_filenames, spec_onsets = self._read_spec_filenames_onsets(hdf5)
+        feature_arr = np.zeros(len(spec_onsets))
+        current_fn = None
+        feature_onsets = np.array([])
+        features = np.array([])
+        feature_path = ""
+        for j, spec_onset in enumerate(spec_onsets):
+            audio_fn = audio_filenames[j].decode("UTF-8")
+            if audio_fn != current_fn:
+                current_fn = audio_fn
+                feature_path, feature_onsets, features = self._load_feature_file(
+                    feature_dir, audio_fn, kind, onset_col, field_col
+                )
+            idx = self._find_feature_index(float(spec_onset), feature_onsets)
+            feature_arr[j] = float(features[idx])
+        return feature_arr
 
     def _write_projection(self, key, data):
         """Write the given projection to self.projection_dirs."""
@@ -720,17 +712,16 @@ class DataContainer:
             fields["segment_audio"] = 1
         # If self.projection_dirs is registered, see what we have.
         # If it's in one file, assume it's in all of them.
-        if self.projection_dirs is not None:
-            if os.path.exists(self.projection_dirs[0]):
-                hdf5s = get_hdf5s_from_dir(self.projection_dirs[0])
-                if len(hdf5s) > 0:
-                    hdf5 = hdf5s[0]
-                    if os.path.exists(hdf5):
-                        with h5py.File(hdf5, "r") as f:
-                            for key in f.keys():
-                                if key in ALL_FIELDS:
-                                    fields[key] = 1
-                                    self.sylls_per_file = len(f[key])
+        if self.projection_dirs is not None and os.path.exists(self.projection_dirs[0]):
+            hdf5s = get_hdf5s_from_dir(self.projection_dirs[0])
+            if len(hdf5s) > 0:
+                hdf5 = hdf5s[0]
+                if os.path.exists(hdf5):
+                    with h5py.File(hdf5, "r") as f:
+                        for key in f.keys():
+                            if key in ALL_FIELDS:
+                                fields[key] = 1
+                                self.sylls_per_file = len(f[key])
         return fields
 
     def _check_for_dirs(self, dir_names, field):
@@ -738,19 +729,19 @@ class DataContainer:
         for dir_name in dir_names:
             if dir_name == "audio_dirs":
                 temp = self.audio_dirs
+            elif dir_name == "feature_dirs":
+                temp = self.feature_dirs
+            elif dir_name == "model_filename":
+                temp = self.model_filename
+            elif dir_name == "projection_dirs":
+                temp = self.projection_dirs
             elif dir_name == "segment_dirs":
                 temp = self.segment_dirs
             elif dir_name == "spec_dirs":
                 temp = self.spec_dirs
-            elif dir_name == "feature_dirs":
-                temp = self.feature_dirs
-            elif dir_name == "projection_dirs":
-                temp = self.projection_dirs
-            elif dir_name == "model_filename":
-                temp = self.model_filename
             else:
                 raise NotImplementedError
-            assert temp is not None, dir_name + " must be specified before " + field + " is made!"
+            assert temp is not None, f"{dir_name} must be specified before {field} is made!"
 
 
 def _read_columns(filename, columns=(0, 1), delimiter=",", skiprows=1, unpack=True):
@@ -762,9 +753,7 @@ def _read_columns(filename, columns=(0, 1), delimiter=",", skiprows=1, unpack=Tr
     data = np.loadtxt(filename, delimiter=delimiter, usecols=columns, skiprows=skiprows).reshape(
         -1, len(columns)
     )
-    if unpack:
-        return tuple(data[:, i] for i in range(data.shape[1]))
-    return data
+    return tuple(data[:, i] for i in range(data.shape[1])) if unpack else data
 
 
 def _is_seg_file(filename):
@@ -775,10 +764,6 @@ def _is_seg_file(filename):
 def _is_wav_file(filename):
     """Is this a wav file?"""
     return len(filename) > 4 and filename[-4:] == ".wav"
-
-
-if __name__ == "__main__":
-    pass
 
 
 ###
