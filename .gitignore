@@ -16,3 +16,8 @@ AVA_Autoencoded_Vocal_Analysis.egg-info
 *.sh
 *.mp4
 *.DS_Store
+
+conda_env/
+
+# Local databases
+*.db
