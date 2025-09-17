@@ -1,0 +1,72 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: check-ast
+      - id: check-yaml
+      - id: check-toml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+
+  - repo: https://github.com/psf/black
+    rev: 24.8.0
+    hooks:
+      - id: black
+        args: ["--line-length=100"]
+        language_version: python3
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.3
+    hooks:
+      - id: ruff
+        args: ["--fix", "--unsafe-fixes"]
+        types_or: [python]
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args: ["--profile=black", "--line-length=100"]
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.10.0
+    hooks:
+      - id: mypy
+        name: mypy (db modules)
+        files: ^ava/db/
+        args:
+          - --python-version=3.10
+          - --strict
+          - --ignore-missing-imports
+        additional_dependencies:
+          - sqlalchemy>=2.0
+
+  - repo: https://github.com/econchick/interrogate
+    rev: 1.7.0
+    hooks:
+      - id: interrogate
+        args:
+          - --fail-under=70
+          - --whitelist-regex=__init__
+          - --ignore-init-method
+          - --ignore-module
+          - --verbose
+        files: ^ava/
+
+ci:
+  autofix_commit_msg: "ci(pre-commit): auto fixes from pre-commit hooks"
+  autofix_prs: true
+  autoupdate_commit_msg: "ci(pre-commit): autoupdate hook versions"
+  skip: []
+  submodules: false
+
+exclude: |
+  (?x)^( \
+    conda_env/| \
+    .venv/| \
+    build/| \
+    dist/| \
+    .mypy_cache/| \
+    .ruff_cache/| \
+    docs/_build/ \
+  )

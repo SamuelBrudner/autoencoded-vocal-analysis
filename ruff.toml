@@ -1,0 +1,22 @@
+line-length = 100
+target-version = "py310"
+
+[lint]
+select = ["E", "F", "I", "W", "B", "UP"]
+ignore = ["E501"]
+fixable = ["ALL"]
+
+[lint.per-file-ignores]
+"ava/segmenting/utils.py" = ["E402", "E722"]
+"ava/segmenting/template_segmentation.py" = ["E402", "E722", "B028"]
+"ava/segmenting/refine_segments.py" = ["E402", "W191", "E722"]
+"ava/segmenting/segment.py" = ["E402", "B028", "E722", "E721"]
+"ava/preprocessing/preprocess.py" = ["E402", "E722", "E721"]
+"ava/preprocessing/utils.py" = ["B028"]
+"ava/preprocessing/warping.py" = ["B028"]
+"ava/plotting/*.py" = ["E402", "E721", "E722", "F821"]
+"ava/models/*.py" = ["E402", "E721", "E722", "B028"]
+"examples/*.py" = ["E402"]
+"tests/*.py" = ["E402"]
+"scripts/*.py" = ["E402"]
+"scripts/ava_db_ingest.py" = ["B904"]
