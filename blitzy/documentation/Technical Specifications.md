@@ -444,7 +444,7 @@ AVA occupies a unique position in the bioacoustic analysis landscape by combinin
 Traditional vocalization analysis approaches suffer from several critical limitations that AVA addresses:
 
 - **Manual Feature Engineering**: Reliance on hand-crafted acoustic features that may miss species-specific patterns
-- **Supervised Learning Dependencies**: Requirements for extensive labeled datasets that are costly and time-intensive to generate  
+- **Supervised Learning Dependencies**: Requirements for extensive labeled datasets that are costly and time-intensive to generate
 - **Limited Scalability**: Inability to handle large-scale datasets or discover complex temporal patterns
 - **Species-Specific Constraints**: Tools designed for specific species that lack generalizability
 - <span style="background-color: rgba(91, 57, 243, 0.2)">**Ad-hoc Filesystem Queries**: Previous reliance on filesystem-based data discovery using glob patterns and manual file organization, leading to inconsistent dataset selection and difficulty reproducing analysis conditions across research sessions</span>
@@ -464,7 +464,7 @@ AVA is designed for seamless integration with established bioacoustic analysis w
 AVA provides three distinct analysis modalities to accommodate different research requirements:
 
 1. **Syllable-level Analysis**: Discrete vocalization unit modeling with explicit segmentation
-2. **Shotgun VAE Analysis**: Continuous vocalization modeling using fixed-window spectrograms without segmentation requirements  
+2. **Shotgun VAE Analysis**: Continuous vocalization modeling using fixed-window spectrograms without segmentation requirements
 3. **Warped-time Shotgun VAE Analysis**: Time-warp augmented training to handle temporal variations through piecewise linear warping
 
 <span style="background-color: rgba(91, 57, 243, 0.2)">4. **Database-Driven Dataset Curation**: Query-based filtering and selection of vocalizations using metadata criteria, enabling reproducible dataset construction and provenance tracking</span>
@@ -485,39 +485,39 @@ graph TB
         K --> J
         E --> F[Plotting Module]
         L[CLI Ingest] --> I
-        
+
         subgraph "Core Modules"
             B --> B1[Amplitude Threshold Detection]
             B --> B2[Template Matching]
             B --> B3[Manual Curation]
-            
+
             C --> C1[Spectrogram Extraction]
             C --> C2[Normalization]
             C --> C3[HDF5 Batching]
-            
+
             D --> D1[VAE Implementation]
             D --> D2[Training Loops]
             D --> D3[Dataset Streaming]
-            
+
             E --> E1[DataContainer Coordination]
             E --> E2[Latent Projections]
             E --> E3[Feature Persistence]
-            
+
             F --> F1[Latent Visualizations]
             F --> F2[Interactive Plots]
             F --> F3[MMD Analysis]
         end
-        
+
         subgraph "Database Components"
             I --> I1[Filesystem Scanner]
             I --> I2[Metadata Extraction]
             I --> I3[Checksum Validation]
-            
+
             J --> J1[Recording Table]
             J --> J2[Syllable Table]
             J --> J3[Embedding Table]
             J --> J4[Annotation Table]
-            
+
             K --> K1[Recording Repository]
             K --> K2[Syllable Repository]
             K --> K3[Embedding Repository]
@@ -597,7 +597,7 @@ The system employs a Variational Autoencoder architecture optimized for spectrog
 
 **Visualization and Export:**
 - Headless visualization utilities for latent space projections
-- Interactive tooltip plots using Bokeh framework  
+- Interactive tooltip plots using Bokeh framework
 - Spectrogram grid visualizations
 - Model checkpoint persistence and loading
 
@@ -685,7 +685,7 @@ The system employs a Variational Autoencoder architecture optimized for spectrog
 #### References
 
 - `README.md` - Project overview, installation instructions, and citation information
-- `setup.py` - Package metadata, version information, and dependency specifications  
+- `setup.py` - Package metadata, version information, and dependency specifications
 - `requirements.txt` - Complete dependency list with version constraints
 - `LICENSE.md` - MIT license terms and copyright information
 - `changelog.txt` - Version history and development progression
@@ -693,7 +693,7 @@ The system employs a Variational Autoencoder architecture optimized for spectrog
 - `ava/__init__.py` - Package structure documentation and module organization
 - `ava/models/vae.py` - VAE architecture implementation and training specifications
 - `examples/mouse_sylls_mwe.py` - Mouse USV syllable-level analysis workflow
-- `examples/finch_window_mwe.py` - Zebra finch shotgun VAE analysis workflow  
+- `examples/finch_window_mwe.py` - Zebra finch shotgun VAE analysis workflow
 - `docs/source/overview.rst` - Comprehensive system overview documentation
 - `docs/source/data_management.rst` - Data organization concepts and filesystem structure
 - `ava/segmenting/` - Syllable detection and template matching implementations
@@ -1279,19 +1279,19 @@ graph TB
         F009 --> F011[F-011: Projections]
         F011 --> F012[F-012: Visualization]
     end
-    
+
     subgraph "Data Coordination"
         F010 --> F006
         F010 --> F009
         F010 --> F011
         F010 --> F012
     end
-    
+
     subgraph "Quality Control"
         F003[F-003: Manual Curation] --> F001
         F003 --> F009
     end
-    
+
     subgraph "Database Operations"
         F014[F-014: Indexer & CLI] --> F013
     end
@@ -1392,7 +1392,7 @@ The species-specific configuration matrix demonstrates how feature dependencies 
 
 - **Python Environment**: Python 3.5+ with scientific computing stack
 - **Deep Learning**: PyTorch 1.1+ for model implementation
-- **Data Processing**: NumPy, SciPy, scikit-learn for numerical operations  
+- **Data Processing**: NumPy, SciPy, scikit-learn for numerical operations
 - **Visualization**: Bokeh for interactive plots, matplotlib for static figures
 - **Storage**: HDF5 libraries (h5py) for efficient data management
 - <span style="background-color: rgba(91, 57, 243, 0.2)">**Database Management**: SQLAlchemy ≥ 2.0 for ORM and connection pooling</span>
@@ -1582,7 +1582,7 @@ The documentation cross-reference ensures that technical changes propagate appro
 #### References
 
 - `ava/models/vae.py` - VAE architecture and training implementation
-- `examples/mouse_sylls_mwe.py` - Complete workflow example for mouse USVs  
+- `examples/mouse_sylls_mwe.py` - Complete workflow example for mouse USVs
 - `requirements.txt` - Dependency specifications and version constraints
 - `README.md` - Project overview and installation instructions
 - `ava/data/data_container.py` - Data coordination and management system
@@ -1866,7 +1866,7 @@ erDiagram
         datetime created_at
         json metadata
     }
-    
+
     SYLLABLE {
         int id PK
         int recording_id FK
@@ -1875,7 +1875,7 @@ erDiagram
         float end_time
         json bounds_metadata
     }
-    
+
     EMBEDDING {
         int id PK
         int syllable_id FK
@@ -1884,7 +1884,7 @@ erDiagram
         int dimensions
         json model_metadata
     }
-    
+
     ANNOTATION {
         int id PK
         int syllable_id FK
@@ -1893,7 +1893,7 @@ erDiagram
         string value
         datetime created_at
     }
-    
+
     RECORDING ||--o{ SYLLABLE : "contains"
     SYLLABLE ||--o{ EMBEDDING : "generates"
     SYLLABLE ||--o{ ANNOTATION : "annotated_with"
@@ -2060,13 +2060,13 @@ graph TB
             P1[Python 3.5+] --> P2[NumPy Arrays]
             P1 --> P3[SciPy Signal Processing]
         end
-        
+
         subgraph "Deep Learning Layer"
             DL1[PyTorch 2.1+] --> DL2[7-Layer VAE]
             DL2 --> DL3[CUDA Acceleration]
             P2 --> DL1
         end
-        
+
         subgraph "Data Management Layer"
             DM1[HDF5 Storage] --> DM2[Batch Processing]
             DM2 --> DM3[Memory Streaming]
@@ -2075,7 +2075,7 @@ graph TB
             P2 --> DM1
             DM1 --> DM4
         end
-        
+
         subgraph "Quality Assurance Layer"
             QA1[pytest] --> QA2[TDD Workflow]
             QA3[mypy --strict] --> QA4[Type Safety]
@@ -2084,13 +2084,13 @@ graph TB
             DM4 --> QA1
             P1 --> QA3
         end
-        
+
         subgraph "Configuration Layer"
             C1[Pydantic 2.0+] --> C2[YAML Validation]
             C2 --> C3[Fail-Fast Config]
             C1 --> QA4
         end
-        
+
         subgraph "Analysis Layer"
             A1[scikit-learn] --> A2[PCA Projections]
             A3[umap-learn] --> A4[UMAP Projections]
@@ -2099,7 +2099,7 @@ graph TB
             DM3 --> A3
             P3 --> A5
         end
-        
+
         subgraph "Visualization Layer"
             V1[Matplotlib] --> V2[Static Plots]
             V3[Bokeh] --> V4[Interactive HTML]
@@ -2108,7 +2108,7 @@ graph TB
             A2 --> V1
             A4 --> V3
         end
-        
+
         subgraph "Deployment Layer"
             D1[setuptools] --> D2[pip Installation]
             D3[Sphinx] --> D4[Read the Docs]
@@ -2118,12 +2118,12 @@ graph TB
             DM5 --> D5
         end
     end
-    
+
     subgraph "External Dependencies"
         E1[FFmpeg] --> E2[Video Generation]
         E3[affinewarp] --> E4[Time Warping]
     end
-    
+
     E1 -.-> P1
     E3 -.-> A5
 
@@ -2169,7 +2169,7 @@ The enhanced system provides seamless integration between traditional file-based
 #### 3.7.1.1 Attack Surface Minimization
 
 - **No Network Components**: Standalone operation eliminates network-based vulnerabilities
-- **Filesystem-Only Access**: Security relies on standard system-level file permissions  
+- **Filesystem-Only Access**: Security relies on standard system-level file permissions
 - **No Authentication Required**: Research tool operation without user management complexity
 - **Python Environment Isolation**: Recommended virtual environment usage for dependency isolation
 
@@ -2202,7 +2202,7 @@ The enhanced system provides seamless integration between traditional file-based
 
 **Technical Specification Context:**
 - Section 1.2 SYSTEM OVERVIEW - Overall architecture and component relationships
-- Section 2.1 FEATURE CATALOG - Detailed feature requirements driving technology choices  
+- Section 2.1 FEATURE CATALOG - Detailed feature requirements driving technology choices
 - Section 2.4 IMPLEMENTATION CONSIDERATIONS - Performance requirements and technical constraints
 
 **External Research:**
@@ -2232,15 +2232,15 @@ The AVA system supports three distinct analysis workflows designed to accommodat
 flowchart TB
     subgraph "AVA Analysis Pipeline"
         A[Raw Audio Files<br/>.wav format] --> B{Analysis Mode<br/>Selection}
-        
+
         B -->|Syllable-Level| C[Segmentation<br/>Module]
         B -->|Shotgun VAE| D[Direct Window<br/>Extraction]
         B -->|Warped-Time| E[Time-Warp<br/>Augmentation]
-        
+
         C --> F[Preprocessing<br/>Module]
         D --> F
         E --> F
-        
+
         F --> G[HDF5 Batch<br/>Generation]
         G --> MI[Metadata Indexer]
         MI --> DB[Relational Metadata<br/>Database]
@@ -2252,14 +2252,14 @@ flowchart TB
         DQ -->|No| J[Latent Space<br/>Projections]
         I --> J
         J --> K[Interactive<br/>Visualizations]
-        
+
         subgraph "Quality Control"
             L[Parameter<br/>Validation]
             M[Manual<br/>Curation]
             N[Model<br/>Checkpointing]
             O[DB Consistency<br/>Validation]
         end
-        
+
         C -.-> M
         F -.-> L
         H -.-> N
@@ -2282,7 +2282,7 @@ The AVA system implements sophisticated decision logic at critical processing st
 
 **Segmentation Strategy Selection:**
 - Amplitude-threshold detection for clear syllable boundaries
-- Template-based matching for species-specific patterns  
+- Template-based matching for species-specific patterns
 - Manual curation interface for quality control and correction
 
 **Model Configuration Decisions:**
@@ -2306,23 +2306,23 @@ flowchart LR
         A2[Existing Segmentation<br/>Tools]
         A3[Statistical Analysis<br/>Software]
     end
-    
+
     subgraph "AVA Core System"
         B1[Audio Input<br/>Processing]
-        B2[Segmentation<br/>Engine] 
+        B2[Segmentation<br/>Engine]
         B3[Feature<br/>Extraction]
         B4[Model<br/>Training]
         B5[DataContainer<br/>Hub]
         B6[Visualization<br/>Engine]
     end
-    
+
     subgraph "Metadata Management"
         C1[Metadata Indexer]
         C2[Relational Database]
         C3[Query DSL]
         C4[Repository Layer]
     end
-    
+
     A1 --> B1
     A2 --> B2
     B1 --> B2
@@ -2336,7 +2336,7 @@ flowchart LR
     C4 --> B5
     B5 --> B6
     B6 --> A3
-    
+
     B5 -.->|Feedback Loop| B2
     B5 -.->|Model Updates| B4
     C2 -.->|Integrity Validation| C1
@@ -2371,13 +2371,13 @@ The system implements optimized batch processing for scalability:
 sequenceDiagram
     participant U as User
     participant S as Segmentation
-    participant P as Preprocessing  
+    participant P as Preprocessing
     participant H as HDF5 Storage
     participant MI as Metadata Indexer
     participant DB as Database
     participant D as DataContainer
     participant V as VAE Training
-    
+
     U->>S: Initialize segmentation
     S->>S: Parallel amplitude detection
     S->>P: Pass segmentation results
@@ -2392,7 +2392,7 @@ sequenceDiagram
     V->>V: ELBO optimization loop
     V->>D: Update model state
     D-->>U: Training progress
-    
+
     Note over MI,DB: Fail-loud on checksum mismatch
     Note over D,V: Query DSL available for dataset filtering
 ```
@@ -2420,18 +2420,18 @@ flowchart TD
         Q2 --> Q3[Filter by Model Version]
         Q3 --> Q4[Apply Metadata Constraints]
     end
-    
+
     subgraph "Repository Layer"
         R1[Recording Repository] --> R2[Syllable Repository]
         R2 --> R3[Embedding Repository]
         R3 --> R4[Query Result Compilation]
     end
-    
+
     subgraph "DataContainer Integration"
         D1[Deterministic File Lists] --> D2[Hash-based Ordering]
         D2 --> D3[Existing Workflow APIs]
     end
-    
+
     Q4 --> R1
     R4 --> D1
 ```
@@ -2502,7 +2502,7 @@ flowchart TD
         C -->|Valid| E[Continue Processing]
         D --> C
     end
-    
+
     subgraph "Segmentation Phase"
         E --> F[STFT Computation]
         F --> G[Amplitude Threshold<br/>Detection]
@@ -2511,21 +2511,21 @@ flowchart TD
         H -->|Acceptable| J[Generate Onset/Offset<br/>Files]
         I --> G
     end
-    
+
     subgraph "Preprocessing Phase"
         J --> K[Load Audio-Segment<br/>Pairs]
         K --> L[Extract 128x128<br/>Spectrograms]
         L --> M[Normalize and Clip<br/>Values]
         M --> N[Generate HDF5<br/>Batches]
     end
-    
+
     subgraph "Metadata Indexing Phase"
         N --> X1[Invoke Indexer]
         X1 --> X2[Checksum Validation]
         X2 --> X3[Bulk Insert via Repository]
         X3 --> X4[Commit Transaction]
     end
-    
+
     subgraph "Training Phase"
         X4 --> Q1[Filtered Dataset Query]
         Q1 --> O[Initialize VAE<br/>Architecture]
@@ -2536,31 +2536,31 @@ flowchart TD
         R -->|Converged| T[Final Model<br/>Validation]
         S --> Q
     end
-    
+
     subgraph "Analysis Phase"
         T --> U[Encode to Latent<br/>Space]
         U --> V[Compute PCA/UMAP<br/>Projections]
         V --> W[Generate Interactive<br/>Visualizations]
     end
-    
+
     subgraph "Error Handling"
         XX[Memory Overflow<br/>Detection]
         YY[Model Divergence<br/>Detection]
         ZZ[File I/O Error<br/>Recovery]
         DBE[Database Validation<br/>Failure]
     end
-    
+
     Q -.-> XX
     Q -.-> YY
     N -.-> ZZ
     X2 -.-> DBE
-    
+
     XX -.-> AA[Reduce Batch Size]
     YY -.-> BB[Adjust Learning Rate]
     ZZ -.-> CC[Retry with Backoff]
-    
+
     AA -.-> P
-    BB -.-> Q  
+    BB -.-> Q
     CC -.-> N
 ```
 
@@ -2568,7 +2568,7 @@ flowchart TD
 
 **Segmentation State Machine:**
 - **Initialization State**: Parameter validation and threshold configuration
-- **Detection State**: Amplitude-based syllable boundary identification  
+- **Detection State**: Amplitude-based syllable boundary identification
 - **Validation State**: Quality assessment and manual curation option
 - **Completion State**: Onset/offset file generation and persistence
 
@@ -2601,19 +2601,19 @@ flowchart TD
         A[Continuous Audio<br/>Input] --> B[Fixed-Time Window<br/>Extraction]
         B --> C[Sliding Window<br/>Strategy]
         C --> D{Window Overlap<br/>Configuration}
-        
+
         D --> E[STFT Spectrogram<br/>Generation]
         E --> F[128x128 Tile<br/>Standardization]
         F --> G[Direct HDF5<br/>Batching]
     end
-    
+
     subgraph "Metadata Indexing Phase"
         G --> X1[Invoke Indexer]
         X1 --> X2[Checksum Validation]
         X2 --> X3[Bulk Insert via Repository]
         X3 --> X4[Commit Transaction]
     end
-    
+
     subgraph "No-Segmentation Training"
         X4 --> Q1[Filtered Dataset Query]
         Q1 --> H[Streaming DataLoader<br/>Creation]
@@ -2623,20 +2623,20 @@ flowchart TD
         K -->|Continue| I
         K -->|Complete| L[Latent Encoding]
     end
-    
+
     subgraph "Temporal Analysis"
         L --> M[Time-Series Latent<br/>Trajectories]
         M --> N[Transition Point<br/>Detection]
         N --> O[Behavioral State<br/>Identification]
     end
-    
+
     subgraph "Quality Assurance"
         P[Window Boundary<br/>Validation]
         Q[Spectral Quality<br/>Assessment]
         R[Temporal Continuity<br/>Check]
         DBE[Database Validation<br/>Failure]
     end
-    
+
     C -.-> P
     E -.-> Q
     M -.-> R
@@ -2657,7 +2657,7 @@ flowchart TD
 - Checksum-verified data integrity throughout the continuous processing pipeline
 - Fail-loud behavior preventing corrupted continuous analysis workflows
 
-### 4.2.3 Warped-Time Analysis Pipeline  
+### 4.2.3 Warped-Time Analysis Pipeline
 
 #### 4.2.3.1 Time-Warp Augmentation Process (updated)
 
@@ -2667,7 +2667,7 @@ flowchart TD
         A[Select Reference<br/>Spectrograms] --> B[Define Warp<br/>Templates]
         B --> C[Piecewise Linear<br/>Mapping Creation]
     end
-    
+
     subgraph "Augmentation Engine"
         C --> D[Template Matching<br/>Algorithm]
         D --> E{Match Quality<br/>Assessment}
@@ -2678,28 +2678,28 @@ flowchart TD
         H --> J[Combined Dataset<br/>Creation]
         I --> J
     end
-    
+
     subgraph "Metadata Indexing Phase"
         J --> X1[Invoke Indexer]
         X1 --> X2[Checksum Validation]
         X2 --> X3[Bulk Insert via Repository]
         X3 --> X4[Commit Transaction]
     end
-    
+
     subgraph "Training Enhancement"
         X4 --> Q1[Filtered Dataset Query]
         Q1 --> K[Augmented VAE<br/>Training]
         K --> L[Temporal Invariance<br/>Learning]
         L --> M[Robust Feature<br/>Extraction]
     end
-    
+
     subgraph "Validation Framework"
         N[Warp Quality<br/>Metrics]
         O[Template Similarity<br/>Thresholds]
         P[Temporal Preservation<br/>Constraints]
         DBE[Database Validation<br/>Failure]
     end
-    
+
     D -.-> N
     E -.-> O
     F -.-> P
@@ -2733,12 +2733,12 @@ sequenceDiagram
     participant FS as Filesystem
     participant DB as Database Repository
     participant TP as Training Phase
-    
+
     PP->>MI: Trigger indexing post-HDF5 generation
     MI->>FS: Discover HDF5/NPY files via glob patterns
     FS->>MI: Return file listings with metadata
     MI->>MI: Extract file metadata and compute SHA256 checksums
-    
+
     alt Checksum Validation Success
         MI->>DB: Begin database transaction
         MI->>DB: Bulk insert recording metadata
@@ -2764,27 +2764,27 @@ flowchart LR
         QC2 --> QC3[SQL Generation]
         QC3 --> QC4[Repository Execution]
     end
-    
+
     subgraph "Dataset Selection"
         DS1[Database Query Results] --> DS2[Deterministic Hash Ordering]
         DS2 --> DS3[File Path Resolution]
         DS3 --> DS4[DataContainer Integration]
     end
-    
+
     subgraph "Training Integration"
         TI1[DataLoader Creation] --> TI2[Existing VAE Workflows]
         TI2 --> TI3[Seamless Pipeline Execution]
     end
-    
+
     QC4 --> DS1
     DS4 --> TI1
-    
+
     subgraph "Fallback Strategy"
         FB1{Database Enabled?}
         FB2[Traditional Filesystem Glob]
         FB3[Direct DataLoader Creation]
     end
-    
+
     FB1 -->|No| FB2
     FB2 --> FB3
     FB1 -->|Yes| QC1
@@ -2812,7 +2812,7 @@ flowchart TD
         FE2 --> FE3[Raise RuntimeError]
         FE3 --> FE4[Process Termination]
     end
-    
+
     subgraph "Recoverable Error Handling"
         RE1[Memory/Model/IO Error] --> RE2[Error Classification]
         RE2 --> RE3[Retry Strategy Selection]
@@ -2821,7 +2821,7 @@ flowchart TD
         RE5 -->|Yes| RE6[Resume Processing]
         RE5 -->|No| RE7[Escalate to Fatal]
     end
-    
+
     RE7 --> FE1
 ```
 
@@ -2870,51 +2870,51 @@ flowchart TD
         A --> C[Processing<br/>Errors]
         A --> D[Model Training<br/>Errors]
         A --> E[Output Generation<br/>Errors]
-        
+
         B --> B1[Invalid Audio Format]
         B --> B2[Parameter Validation Failure]
         B --> B3[File Access Permission]
         B --> B4[Checksum Mismatch]
-        
+
         C --> C1[Memory Overflow]
         C --> C2[Computation Timeout]
         C --> C3[Dependency Failure]
         C --> C4[Database Consistency Error]
-        
+
         D --> D1[Model Divergence]
         D --> D2[Gradient Explosion]
         D --> D3[Checkpoint Corruption]
-        
+
         E --> E1[Visualization Rendering]
         E --> E2[File Export Failure]
         E --> E3[DataContainer State]
     end
-    
+
     subgraph "Recovery Mechanisms"
         F[Automatic Recovery]
         G[Manual Intervention]
         H[Graceful Degradation]
-        
+
         F --> F1[Retry with Backoff]
         F --> F2[Parameter Auto-adjustment<br/>NOT applicable to DB errors]
         F --> F3[Checkpoint Restoration]
-        
+
         G --> G1[Interactive Parameter Tuning]
         G --> G2[Manual Curation Interface]
         G --> G3[Expert Review Mode]
-        
+
         H --> H1[Reduced Functionality]
         H --> H2[Alternative Algorithm]
         H --> H3[Partial Results]
     end
-    
+
     subgraph "Database Error Handling"
         I[Fail-Loud Termination]
         I --> I1[Process Termination]
         I --> I2[Structured Error Logging]
         I --> I3[No Recovery Attempt]
     end
-    
+
     B4 -.-> I
     C4 -.-> I
 ```
@@ -2951,23 +2951,23 @@ stateDiagram-v2
     Initializing --> ParameterValidation
     ParameterValidation --> Processing : Valid
     ParameterValidation --> ErrorRecovery : Invalid
-    
+
     Processing --> Segmentation
     Processing --> DirectProcessing : Shotgun Mode
-    
+
     Segmentation --> Preprocessing
     DirectProcessing --> Preprocessing
     Preprocessing --> Training
-    
+
     Training --> Checkpoint : Every N Epochs
     Checkpoint --> Training : Continue
     Training --> Validation : Converged
     Training --> ErrorRecovery : Diverged
-    
+
     Validation --> Projection
     Projection --> Visualization
     Visualization --> [*]
-    
+
     ErrorRecovery --> ParameterValidation : Retry
     ErrorRecovery --> [*] : Abort
 ```
@@ -2996,7 +2996,7 @@ The system implements sophisticated error boundary management that isolates reco
 
 **State Recovery Priorities:**
 1. **Data Integrity**: Immediate termination for checksum and consistency failures
-2. **Computational State**: Checkpoint restoration for model training interruptions  
+2. **Computational State**: Checkpoint restoration for model training interruptions
 3. **Resource Management**: Graceful degradation for memory and I/O constraints
 4. **User Interaction**: Manual intervention interfaces for quality control decisions
 5. **System Resources**: Automatic cleanup and resource reclamation on error conditions
@@ -3009,23 +3009,23 @@ The system implements sophisticated error boundary management that isolates reco
 flowchart TD
     A[HDF5/NPY File Processing] --> B[SHA256 Checksum Computation]
     B --> C{Checksum Match<br/>Database Record?}
-    
+
     C -->|Match| D[Continue Processing]
     C -->|Mismatch| E[Log Structured Error]
-    
+
     E --> F[Generate Audit Trail]
     F --> G[Raise RuntimeError]
     G --> H[Immediate Process Termination]
-    
+
     D --> I[Update Processing State]
     I --> J[Continue Analysis Pipeline]
-    
+
     subgraph "No Recovery Path"
         K[No Retry Logic]
         L[No Graceful Degradation]
         M[No Parameter Adjustment]
     end
-    
+
     E -.-> K
     F -.-> L
     G -.-> M
@@ -3071,17 +3071,17 @@ subgraph "Parallel Processing Framework"
     A[Main Process] --> B[Worker Pool<br/>Management]
     B --> C[CPU Count<br/>Detection]
     C --> D["Worker Allocation<br/>min(7, cpu_count-1)"]
-    
+
     D --> E[Segmentation<br/>Workers]
     D --> F[Preprocessing<br/>Workers]
     D --> G[Feature Extraction<br/>Workers]
     D --> BI[Bulk Insert Worker Pool<br/>commits every 10k rows]
-    
+
     E --> H[Batch Coordination]
     F --> H
     G --> H
     BI --> H
-    
+
     H --> I[Result<br/>Aggregation]
     I --> J[Memory<br/>Management]
     J --> A
@@ -3136,21 +3136,21 @@ flowchart LR
         D --> E[Store in<br/>Cache]
         E --> F[Return<br/>Result]
     end
-    
+
     subgraph "Cache Management"
         G[Memory Monitor]
         H[LRU Eviction]
         I[Dependency<br/>Tracking]
         J[Cache<br/>Invalidation]
     end
-    
+
     subgraph "Persistent Storage"
         K[HDF5 Files]
-        L[Projection Cache<br/>Directories]  
+        L[Projection Cache<br/>Directories]
         M[Model Checkpoints]
         N[Parameter Files]
     end
-    
+
     D --> G
     G --> H
     B -.-> I
@@ -3169,7 +3169,7 @@ flowchart LR
 
 **Network and Disk I/O:**
 - Asynchronous file operations for non-blocking user interface
-- Batch I/O operations to minimize system call overhead  
+- Batch I/O operations to minimize system call overhead
 - Intelligent prefetching based on access pattern prediction
 - Error resilience with automatic retry and corruption detection
 
@@ -3187,30 +3187,30 @@ flowchart TB
         D[Parameter<br/>Configuration Files] --> B
         YC[ava/conf/data.yaml] --> IC[Ingest CLI]
     end
-    
-    subgraph "Output Interfaces"  
+
+    subgraph "Output Interfaces"
         B --> E[Interactive HTML<br/>Visualizations]
         B --> F[Latent Space<br/>Projections]
         B --> G[Model Checkpoints<br/>and Metadata]
         B --> H[Feature Extraction<br/>Results]
     end
-    
+
     subgraph "Integration APIs"
         I[DataContainer<br/>Field API]
         J[Model Loading<br/>Interface]
         K[Visualization<br/>Export API]
         L[Batch Processing<br/>Interface]
     end
-    
+
     subgraph "Database Layer"
         IC --> B
         IC --> MD[Metadata Database]
         MD --> B
     end
-    
+
     B -.-> I
     B -.-> J
-    B -.-> K  
+    B -.-> K
     B -.-> L
 ```
 
@@ -3237,7 +3237,7 @@ flowchart TB
 ```mermaid
 flowchart TD
 subgraph "Deployment Validation"
-    A["System Requirements<br/>Check"] --> B["Python Environment<br/>Validation"] 
+    A["System Requirements<br/>Check"] --> B["Python Environment<br/>Validation"]
     B --> B2["Config YAML Validation<br/>(Pydantic)"]
     B2 --> C["Dependency<br/>Installation"]
     C --> D{"GPU Hardware<br/>Detection"}
@@ -3250,7 +3250,7 @@ end
 
 subgraph "Configuration Management"
     I["Default Parameter<br/>Templates"]
-    J["Species-Specific<br/>Configurations"] 
+    J["Species-Specific<br/>Configurations"]
     K["Hardware-Optimized<br/>Settings"]
     L["Validation<br/>Test Suites"]
 end
@@ -3282,7 +3282,7 @@ H -.-> L
 The deployment process now includes comprehensive verification of critical database and configuration dependencies during the "Dependency Installation" phase:
 
 - <span style="background-color: rgba(91, 57, 243, 0.2)">**SQLAlchemy 2.0+**: ORM functionality verification with connection pooling validation for both SQLite and PostgreSQL backends</span>
-- <span style="background-color: rgba(91, 57, 243, 0.2)">**Pydantic 2.0+**: Configuration validation engine verification with type safety enforcement and fail-fast behavior testing</span>  
+- <span style="background-color: rgba(91, 57, 243, 0.2)">**Pydantic 2.0+**: Configuration validation engine verification with type safety enforcement and fail-fast behavior testing</span>
 - <span style="background-color: rgba(91, 57, 243, 0.2)">**loguru 0.7+**: Structured logging framework verification with JSONL audit trail functionality and automatic log rotation capabilities</span>
 
 These dependencies undergo version compatibility testing against the existing scientific computing stack (PyTorch, NumPy, SciPy) to ensure no conflicts arise in production deployments. The validation process includes comprehensive integration testing of the repository pattern implementation and Query DSL functionality.
@@ -3306,14 +3306,14 @@ flowchart TD
         H --> I[Referential<br/>Integrity Check]
         I --> J[Ingestion<br/>Complete]
     end
-    
+
     subgraph "Database Schema Population"
         K[Recording Table<br/>Updates]
         L[Syllable Table<br/>Updates]
         M[Embedding Table<br/>Updates]
         N[Annotation Table<br/>Updates]
     end
-    
+
     F --> K
     F --> L
     F --> M
@@ -3348,7 +3348,7 @@ sequenceDiagram
     participant DB as Database
     participant AVA as AVA System
     participant DC as DataContainer
-    
+
     CLI->>Config: Load & validate configuration
     Config->>CLI: Return validated parameters
     CLI->>FS: Discover HDF5/NPY files
@@ -3358,14 +3358,14 @@ sequenceDiagram
     CLI->>DB: Insert metadata records
     DB->>CLI: Confirm referential integrity
     CLI->>DB: Commit transaction
-    
+
     Note over CLI,DB: Fail-loud on any validation error
-    
+
     AVA->>DC: Request dataset filtering
     DC->>DB: Execute Query DSL filters
     DB->>DC: Return deterministic file lists
     DC->>AVA: Provide filtered datasets
-    
+
     Note over DC,AVA: Seamless integration with existing APIs
 ```
 
@@ -3452,7 +3452,7 @@ The system implements a **unidirectional data flow** with strategic caching poin
 **Stage 1: Audio Ingestion and Segmentation**
 Audio files are loaded from configured directories with automatic sample rate detection. The segmentation module processes continuous recordings through amplitude-based detection or template matching to identify vocalization boundaries. Results are cached as per-audio `.txt` files containing onset/offset times in seconds. <span style="background-color: rgba(91, 57, 243, 0.2)">Optional database-backed queries can drive selective batch processing based on metadata criteria such as recording quality, duration ranges, or annotation status.</span>
 
-**Stage 2: Spectrogram Generation and Batching**  
+**Stage 2: Spectrogram Generation and Batching**
 Variable-length audio segments undergo Short-Time Fourier Transform (STFT) processing to generate log-magnitude spectrograms. These are normalized and interpolated to fixed 128×128 tiles, then assembled into HDF5 batch files with configurable `sylls_per_file` (default: 20) for memory-efficient training. <span style="background-color: rgba(91, 57, 243, 0.2)">Database metadata enables intelligent batch selection prioritizing unprocessed segments and balancing dataset composition.</span>
 
 **Stage 3: VAE Model Training and Encoding**
@@ -3520,9 +3520,9 @@ graph TB
         A[get_onsets_offsets] --> B[Amplitude Detection]
         C[segment] --> D[Batch Processing]
         E[refine_segments_pre_vae] --> F[Interactive Curation]
-        
+
         B --> G[Onset/Offset Arrays]
-        D --> H[Segment .txt Files]  
+        D --> H[Segment .txt Files]
         F --> I[Curated Results]
     end
 ```
@@ -3569,7 +3569,7 @@ The preprocessing module transforms variable-length audio segments into standard
 **HDF5 Batch Structure:**
 - `specs`: [N, 128, 128] float32 arrays containing log-magnitude spectrograms
 - `onsets`: [N] float64 arrays with syllable onset times
-- `offsets`: [N] float64 arrays with syllable offset times  
+- `offsets`: [N] float64 arrays with syllable offset times
 - `audio_filenames`: [N] string arrays for data provenance tracking
 
 #### 5.2.2.5 Scaling Considerations
@@ -3605,7 +3605,7 @@ sequenceDiagram
     participant VAE as VAE Model
     participant DL as DataLoader
     participant C as Checkpoint
-    
+
     U->>VAE: Initialize model
     U->>VAE: train_loop(loaders, epochs)
     loop Training Epochs
@@ -3656,7 +3656,7 @@ The DataContainer serves as the central data coordination hub, providing unified
 The DataContainer implements a comprehensive field API supporting all analysis requirements:
 
 ```python
-ALL_FIELDS = AUDIO_FIELDS + SEGMENT_FIELDS + PROJECTION_FIELDS + 
+ALL_FIELDS = AUDIO_FIELDS + SEGMENT_FIELDS + PROJECTION_FIELDS +
              SPEC_FIELDS + MUPET_FIELDS + DEEPSQUEAK_FIELDS + SAP_FIELDS
 ```
 
@@ -3747,7 +3747,7 @@ erDiagram
         datetime created_at
         json metadata
     }
-    
+
     SYLLABLE {
         int id PK
         int recording_id FK
@@ -3756,7 +3756,7 @@ erDiagram
         float end_time
         json bounds_metadata
     }
-    
+
     EMBEDDING {
         int id PK
         int syllable_id FK
@@ -3765,7 +3765,7 @@ erDiagram
         int dimensions
         json model_metadata
     }
-    
+
     ANNOTATION {
         int id PK
         int syllable_id FK
@@ -3774,7 +3774,7 @@ erDiagram
         string value
         datetime created_at
     }
-    
+
     RECORDING ||--o{ SYLLABLE : contains
     SYLLABLE ||--o{ EMBEDDING : generates
     SYLLABLE ||--o{ ANNOTATION : annotated_with
@@ -3894,11 +3894,11 @@ class RecordingRepository:
     def create(self, recording_data: RecordingCreateSchema) -> Recording:
         # Maximum 15 lines of implementation
         pass
-    
+
     def get_by_checksum(self, checksum: str) -> Optional[Recording]:
         # Single-responsibility query method
         pass
-    
+
     def bulk_insert(self, recordings: List[RecordingCreateSchema]) -> List[Recording]:
         # Batch operation optimization
         pass
@@ -3957,11 +3957,11 @@ sequenceDiagram
     participant FS as Filesystem
     participant DB as Database
     participant LOG as Logger
-    
+
     CLI->>DI: index_directory(path, pattern)
     DI->>FS: scan_recursive(glob_pattern)
     FS-->>DI: discovered_files[]
-    
+
     loop For each file
         DI->>FS: compute_sha256(file)
         FS-->>DI: checksum_hash
@@ -4071,11 +4071,11 @@ graph TB
         A[Architecture Options] --> B[Monolithic]
         A --> C[Microservices]
         A --> D[Modular Pipeline]
-        
+
         B --> E[Pros: Simple deployment<br/>Cons: Limited flexibility]
         C --> F[Pros: Scalability<br/>Cons: Complexity overhead]
         D --> G[Pros: Balance of modularity<br/>and scientific workflow needs]
-        
+
         D --> H[SELECTED]
     end
 ```
@@ -4122,7 +4122,7 @@ graph LR
         D[Compression Support]
         E[Memory Mapping]
     end
-    
+
     subgraph "HDF5 Advantages"
         F[Native Array Support]
         G[Hierarchical Structure]
@@ -4130,7 +4130,7 @@ graph LR
         I[Built-in Compression]
         J[Chunked Access]
     end
-    
+
     A --> F
     B --> G
     C --> H
@@ -4157,16 +4157,16 @@ graph LR
 graph TB
     subgraph "Hybrid Storage Architecture Decision Tree"
         A[Storage Challenge] --> B[Large Numerical Arrays<br/>+ Metadata Queries]
-        
+
         B --> C[Single Storage Solution]
         B --> D[Hybrid Architecture]
-        
+
         C --> E[HDF5 Only:<br/>No query capabilities]
         C --> F[Database Only:<br/>Poor array performance]
-        
+
         D --> G[HDF5 + Relational DB:<br/>Optimal for both use cases]
         D --> H[SELECTED APPROACH]
-        
+
         G --> I[Bulk arrays in HDF5]
         G --> J[References in database]
         G --> K[Preserve file workflows]
@@ -4216,11 +4216,11 @@ graph TB
         A[Access Pattern Options] --> B[Direct ORM]
         A --> C[Active Record]
         A --> D[Repository Pattern]
-        
+
         B --> E[Pros: Simple setup<br/>Cons: Violates 15-LOC limit]
         C --> F[Pros: Familiar pattern<br/>Cons: Tight coupling]
         D --> G[Pros: Clear boundaries<br/>15-LOC compliance]
-        
+
         D --> H[SELECTED]
     end
 ```
@@ -4252,11 +4252,11 @@ graph TB
         A[Logging Requirements] --> B[Console Prints]
         A --> C[Standard Logging]
         A --> D[Structured Logging]
-        
+
         B --> E[Pros: Simple<br/>Cons: No audit trail]
         C --> F[Pros: Familiar<br/>Cons: Text parsing needed]
         D --> G[Pros: Machine readable<br/>Query capabilities]
-        
+
         D --> H[loguru + JSONL<br/>SELECTED]
     end
 ```
@@ -4292,14 +4292,14 @@ graph TB
 graph TB
     subgraph "Error Response Philosophy"
         A[Error Detected] --> B{Data Integrity<br/>Threat?}
-        
+
         B -->|Yes| C[Immediate Termination]
         B -->|No| D[Recovery Attempt]
-        
+
         C --> E[Log Structured Error]
         C --> F[Raise RuntimeError]
         C --> G[No Silent Fallback]
-        
+
         D --> H[Retry with Backoff]
         D --> I[Parameter Adjustment]
         D --> J[Graceful Degradation]
@@ -4358,12 +4358,12 @@ flowchart TB
         E[Database Row IDs] --> B
         F[Processing Timestamps] --> B
     end
-    
+
     B --> G[Audit Trail Generation]
     G --> H[Log Rotation & Retention]
     G --> I[Debug SQL Query Logging]
     G --> J[Error Event Correlation]
-    
+
     subgraph "Contextual Fields"
         K[operation: string]
         L[file_path: string]
@@ -4372,7 +4372,7 @@ flowchart TB
         O[session_id: UUID]
         P[timestamp: ISO8601]
     end
-    
+
     A -.-> K
     C -.-> L
     D -.-> M
@@ -4444,16 +4444,16 @@ stateDiagram-v2
     Processing --> DataIntegrityCheck: Validate checksums/constraints
     DataIntegrityCheck --> ImmediateFailure: Validation fails
     DataIntegrityCheck --> ContinueProcessing: Validation passes
-    
+
     ImmediateFailure --> LogStructuredError: Record failure details
     LogStructuredError --> RaiseRuntimeError: Terminate immediately
     RaiseRuntimeError --> [*]: Process termination
-    
+
     ContinueProcessing --> ComputationalError: Processing exception
     ComputationalError --> RecoveryAttempt: Memory/resource issues only
     RecoveryAttempt --> Processing: Success
     RecoveryAttempt --> [*]: Multiple failures
-    
+
     ContinueProcessing --> [*]: Complete successfully
 ```
 
@@ -4527,11 +4527,11 @@ sequenceDiagram
     participant D as Data
     participant DB as Database
     participant U as User
-    
+
     S->>S: Detect failure/startup
     S->>DB: Validate checksums
     DB->>S: Return checksum records
-    
+
     alt Checksum validation success
         S->>C: Load latest checkpoint
         C->>S: Restore model state
@@ -4576,7 +4576,7 @@ sequenceDiagram
 
 **Folders Analyzed:**
 - `/` (root) - Package structure and configuration files
-- `ava/` - Main package organization and module structure  
+- `ava/` - Main package organization and module structure
 - `ava/models/` - VAE implementation and dataset streaming components
 - `ava/data/` - DataContainer coordination and field management
 - - `ava/data/database/` - Database schema, repository pattern, and session management
@@ -4639,7 +4639,7 @@ graph TB
             C --> D[VAE Model Module]
             D --> E[Projection Generation]
             E --> F[Plotting Module]
-            
+
             style G fill:#5B39F3,color:#FFFFFF
             G[Metadata Indexer]
             style H fill:#5B39F3,color:#FFFFFF
@@ -4647,30 +4647,30 @@ graph TB
             style I fill:#5B39F3,color:#FFFFFF
             I[SQLite / PostgreSQL RDBMS]
         end
-        
+
         subgraph "Data Coordination Layer"
             J[DataContainer Hub]
             J --> K[Field Request System]
             J --> L[HDF5 Caching]
             J --> M[Lazy Computation]
         end
-        
+
         subgraph "File System Interface"
             N[WAV Audio Input]
             O[HDF5 Batch Storage]
             P[Model Checkpoints]
             Q[Visualization Output]
         end
-        
+
         B -.-> J
         C -.-> J
         D -.-> J
         F -.-> J
-        
+
         J -.-> H
         H --> I
         G -.-> H
-        
+
         J --> O
         J --> P
         J --> Q
@@ -4718,7 +4718,7 @@ The enhanced architecture maintains AVA's core scientific computing principles w
 
 **Key Architectural Advantages:**
 - **Preserved Performance**: Existing HDF5-based streaming and caching remain unchanged
-- **Optional Enhancement**: Database features can be enabled selectively without affecting core workflows  
+- **Optional Enhancement**: Database features can be enabled selectively without affecting core workflows
 - **Type Safety**: Comprehensive type hints and Pydantic validation prevent runtime errors
 - **Referential Integrity**: Foreign key constraints ensure consistent metadata relationships
 - **Scientific Reproducibility**: Deterministic dataset splits and comprehensive audit logging support reproducible research
@@ -4739,23 +4739,23 @@ graph LR
             A1[joblib Parallelization] --> A2[CPU Count Detection]
             A2 --> A3[Worker Pool Management]
         end
-        
+
         subgraph "GPU Scaling"
             B1[PyTorch CUDA] --> B2[Automatic GPU Detection]
             B2 --> B3[Memory Management]
         end
-        
+
         subgraph "Memory Scaling"
             C1[HDF5 Streaming] --> C2[Chunked Processing]
             C2 --> C3[Lazy Loading]
         end
-        
+
         subgraph "I/O Scaling"
             D1[Batch File Operations] --> D2[Progress Tracking]
             D2 --> D3[Cache Optimization]
             D3 --> D4[Transaction-batched Bulk Inserts]
         end
-        
+
         subgraph "Database Connection Scaling"
             E1[SQLAlchemy Connection Pool] --> E2[pool_size=5, max_overflow=10]
             E2 --> E3[PostgreSQL Scaling Support]
@@ -4817,10 +4817,10 @@ sequenceDiagram
     participant F as File System
     participant DB as Database
     participant R as Recovery Manager
-    
+
     P->>C: Periodic state save
     C->>F: Write checkpoint
-    
+
     alt System Interruption
         P->>P: Detect failure
         P->>R: Initiate recovery
@@ -4829,14 +4829,14 @@ sequenceDiagram
         R->>P: Restore processing
         P->>P: Resume operations
     end
-    
+
     alt Data Corruption
         P->>F: Detect corruption
         F->>R: Report integrity issue
         R->>C: Load earlier checkpoint
         C->>P: Restore clean state
     end
-    
+
     alt Integrity Violation
         P->>DB: Request metadata operation
         DB->>DB: <span style="background-color: rgba(91, 57, 243, 0.2)">Validate checksums & constraints</span>
@@ -4895,12 +4895,12 @@ data:
   syllable_detection:
     threshold: 0.1
     min_duration: 0.02
-    
+
 model:
   latent_dim: 32
   batch_size: 512
   learning_rate: 0.001
-  
+
 processing:
   n_jobs: -1
   sylls_per_file: 1000
@@ -4944,16 +4944,16 @@ graph TB
             A5[DeepSqueak Platform] --> A6[CSV Data]
             A7[SAP Tool] --> A8[CSV Exports]
             style A9 fill:#5B39F3,color:#FFFFFF
-            A9[AVA Ingest CLI] --> A10[YAML Config] 
+            A9[AVA Ingest CLI] --> A10[YAML Config]
             A10 --> A11[Database]
         end
-        
+
         subgraph "AVA Core System"
             B1[File Import Layer]
             B2[Processing Pipeline]
             B3[Output Generation]
         end
-        
+
         subgraph "Output Integration"
             C1[Scientific Computing Stack]
             C2[Statistical Analysis Tools]
@@ -4964,16 +4964,16 @@ graph TB
             style C6 fill:#5B39F3,color:#FFFFFF
             C6[External Monitoring Tools]
         end
-        
+
         A2 --> B1
         A4 --> B1
         A6 --> B1
         A8 --> B1
         A11 --> B1
-        
+
         B1 --> B2
         B2 --> B3
-        
+
         B3 --> C1
         B3 --> C2
         B3 --> C3
@@ -5013,7 +5013,7 @@ sequenceDiagram
     participant DB as Database Layer
     participant FS as File System
     participant LOG as JSONL Logs
-    
+
     CLI->>YAML: Load configuration
     YAML->>DB: Initialize connection pool
     CLI->>FS: Scan audio directories
@@ -5084,7 +5084,7 @@ Rather than decomposing the system into microservices with a dedicated metadata 
 
 **Key Integration Benefits:**
 - **Zero Network Overhead**: Database operations execute as in-process function calls without inter-service communication
-- **Simplified Deployment**: Single-process deployment model remains unchanged, eliminating container orchestration requirements  
+- **Simplified Deployment**: Single-process deployment model remains unchanged, eliminating container orchestration requirements
 - **Consistent Error Handling**: Database failures integrate with existing exception handling patterns rather than requiring distributed error management
 - **Development Simplicity**: Local SQLite development environment mirrors production PostgreSQL deployment without service management complexity
 
@@ -5127,7 +5127,7 @@ Retaining the monolithic design ensures that the addition of database capabiliti
 
 **Technical Specification Sections Analyzed:**
 - `5.1 HIGH-LEVEL ARCHITECTURE` - Architectural style and modular pipeline design with database integration patterns
-- `5.2 COMPONENT DETAILS` - Detailed module descriptions and database component integration patterns  
+- `5.2 COMPONENT DETAILS` - Detailed module descriptions and database component integration patterns
 - `5.4 CROSS-CUTTING CONCERNS` - Performance optimization and error handling strategies
 - `3.5 DATABASES & STORAGE` - Database architecture and hybrid storage strategy implementation
 - `3.6 DEVELOPMENT & DEPLOYMENT` - Installation and operational requirements
@@ -5174,7 +5174,7 @@ erDiagram
         datetime created_at
         json metadata
     }
-    
+
     SYLLABLE {
         int id PK
         int recording_id FK
@@ -5183,7 +5183,7 @@ erDiagram
         float end_time
         json bounds_metadata
     }
-    
+
     EMBEDDING {
         int id PK
         int syllable_id FK
@@ -5192,7 +5192,7 @@ erDiagram
         int dimensions
         json model_metadata
     }
-    
+
     ANNOTATION {
         int id PK
         int syllable_id FK
@@ -5201,7 +5201,7 @@ erDiagram
         string value
         datetime created_at
     }
-    
+
     RECORDING ||--o{ SYLLABLE : "contains"
     SYLLABLE ||--o{ EMBEDDING : "generates"
     SYLLABLE ||--o{ ANNOTATION : "annotated_with"
@@ -5232,7 +5232,7 @@ erDiagram
 <span style="background-color: rgba(91, 57, 243, 0.2)">The system implements comprehensive integrity validation:</span>
 
 - <span style="background-color: rgba(91, 57, 243, 0.2)">**Checksum Verification**: SHA-256 checksums computed during ingestion must match stored values during all subsequent access operations</span>
-- <span style="background-color: rgba(91, 57, 243, 0.2)">**File Existence Validation**: Database references to HDF5/NPY files verified at query time with immediate RuntimeError on missing files</span>  
+- <span style="background-color: rgba(91, 57, 243, 0.2)">**File Existence Validation**: Database references to HDF5/NPY files verified at query time with immediate RuntimeError on missing files</span>
 - <span style="background-color: rgba(91, 57, 243, 0.2)">**Foreign Key Enforcement**: SQLAlchemy constraints prevent orphaned syllables, embeddings, or annotations through CASCADE delete behavior</span>
 - <span style="background-color: rgba(91, 57, 243, 0.2)">**Transaction Rollback**: Database corruption or constraint violations trigger automatic transaction rollback with comprehensive audit logging</span>
 
@@ -5269,23 +5269,23 @@ graph TB
         B --> C[Segment Cache<br/>.txt files]
         C --> D[Spectrogram<br/>Generation]
         D --> E[HDF5 Batches<br/>syllables_XXXX.hdf5]
-        
+
         E --> F[VAE Training<br/>Process]
         F --> G[Model Checkpoints<br/>checkpoint_XXX.tar]
         F --> H[Latent Vectors<br/>HDF5 cache]
-        
+
         H --> I[Projection<br/>Computation]
         I --> J[PCA/UMAP Cache<br/>HDF5 format]
         J --> K[Visualization<br/>HTML/PNG outputs]
     end
-    
+
     subgraph "DataContainer Coordination"
         L[Field Request<br/>API]
         M[Dependency<br/>Tracking]
         N[Cache<br/>Management]
         O[Lazy<br/>Computation]
     end
-    
+
     E -.-> L
     H -.-> L
     J -.-> L
@@ -5315,7 +5315,7 @@ graph LR
         A --> A1
         A --> A2
     end
-    
+
     subgraph "Tier 2: Segmentation Cache"
         B[Segment Directory<br/>.txt files]
         B1[Onset/Offset pairs]
@@ -5323,7 +5323,7 @@ graph LR
         B --> B1
         B --> B2
     end
-    
+
     subgraph "Tier 3: Spectrogram Batches"
         C[Specs Directory<br/>HDF5 files]
         C1[128x128 spectrograms]
@@ -5331,7 +5331,7 @@ graph LR
         C --> C1
         C --> C2
     end
-    
+
     subgraph "Tier 4: Model Persistence"
         D[Models Directory<br/>Checkpoint files]
         D1[PyTorch state_dict]
@@ -5339,7 +5339,7 @@ graph LR
         D --> D1
         D --> D2
     end
-    
+
     subgraph "Tier 5: Computed Features"
         E[Projections Directory<br/>HDF5 cache]
         E1[PCA embeddings]
@@ -5349,7 +5349,7 @@ graph LR
         E --> E2
         E --> E3
     end
-    
+
     A --> B
     B --> C
     C --> D
@@ -5389,11 +5389,11 @@ sequenceDiagram
     participant DC as DataContainer
     participant Cache as HDF5 Cache
     participant Compute as Computation Engine
-    
+
     C->>DC: request(field_name)
     DC->>DC: Check field dependencies
     DC->>Cache: Query cache status
-    
+
     alt Cache Hit
         Cache-->>DC: Return cached data
         DC-->>C: Deliver result
@@ -5500,19 +5500,19 @@ graph TB
         B[LRU Eviction<br/>Memory management]
         C[Dependency Graph<br/>Invalidation chains]
     end
-    
+
     subgraph "Persistent Cache Layer"
         D[HDF5 Spectrogram Cache<br/>Compressed storage]
         E[Projection Cache<br/>PCA/UMAP results]
         F[Feature Cache<br/>External tool integration]
     end
-    
+
     subgraph "Source Data Layer"
         G[Audio Files<br/>Immutable source]
         H[Segmentation Results<br/>Per-audio cache]
         I[Model Checkpoints<br/>Training snapshots]
     end
-    
+
     A --> B
     B --> C
     A -.-> D
@@ -5602,7 +5602,7 @@ subgraph "Enhanced Fault Recovery Workflow"
     E --> F[Selective<br/>Recomputation]
     F --> G[Recovery<br/>Complete]
     D --> G
-    
+
     subgraph "Database Recovery Path"
         H[Database<br/>Validation] --> I{Metadata<br/>Consistency}
         I -->|Failed| J[Restore from<br/>Backup]
@@ -5611,7 +5611,7 @@ subgraph "Enhanced Fault Recovery Workflow"
         K --> L[Rebuild<br/>Checksums]
         L --> G
     end
-    
+
     B -.-> H
     style H fill:#E8E3FF
     style I fill:#E8E3FF
@@ -5720,7 +5720,7 @@ def filter_by_temporal_range(self, start_date: datetime, end_date: datetime) -> 
         .where(Recording.created_at.between(start_date, end_date))\
         .order_by(Recording.created_at, Recording.id)\
         .compile(compile_kwargs={"literal_binds": True})
-    
+
     result = self.session.execute(compiled_query).scalars().all()
     return list(result)
 ```
@@ -5768,11 +5768,11 @@ graph TB
         C --> E[Processing<br/>Adjustment]
         D --> E
         E --> F[Performance<br/>Optimization]
-        
+
         G[File Handle<br/>Pool] --> H[Connection<br/>Reuse]
         H --> I[Resource<br/>Cleanup]
         I --> G
-        
+
         style J fill:#5B39F3,color:#FFFFFF
         J[SQLAlchemy<br/>Connection Pool] --> K[Database<br/>Connections]
         style K fill:#5B39F3,color:#FFFFFF
@@ -5862,7 +5862,7 @@ graph LR
         A4[Audio Recordings]
         A5[Existing HDF5 Spectrograms]
     end
-    
+
     subgraph "AVA Integration Layer"
         B1[File Discovery Engine]
         B2[Checksum Validation]
@@ -5870,25 +5870,25 @@ graph LR
         B4[Repository Layer]
         B5[Database Transaction Management]
     end
-    
+
     subgraph "Integrated System State"
         C1[Queryable Metadata Index]
         C2[Preserved File-based Workflows]
         C3[Audit Trail Logging]
         C4[Scientific Computing APIs]
     end
-    
+
     A1 --> B1
     A2 --> B1
     A3 --> B1
     A4 --> B1
     A5 --> B1
-    
+
     B1 --> B2
     B2 --> B3
     B3 --> B4
     B4 --> B5
-    
+
     B5 --> C1
     B5 --> C2
     B5 --> C3
@@ -5981,13 +5981,13 @@ The system operates as a monolithic scientific computing application that integr
 graph TB
     subgraph "External Systems"
         A1[MUPET Analysis Tool]
-        A2[DeepSqueak Platform]  
+        A2[DeepSqueak Platform]
         A3[SAP Sound Analysis Pro]
         A4[Audio Recording Systems]
         A5[FFmpeg Binary]
         A6[Read the Docs Platform]
     end
-    
+
     subgraph "AVA Integration Layer"
         B1[CSV Import Engine]
         B2[WAV File Processor]
@@ -5997,7 +5997,7 @@ graph TB
         style B6 fill:#5B39F3,color:#FFFFFF
         B6[Data Indexer Module]
     end
-    
+
     subgraph "Database Integration Components"
         style C1 fill:#5B39F3,color:#FFFFFF
         C1[DB Schema]
@@ -6010,7 +6010,7 @@ graph TB
         style C5 fill:#5B39F3,color:#FFFFFF
         C5[SQLAlchemy Engine]
     end
-    
+
     subgraph "AVA Core System"
         D1[Segmentation Module]
         D2[Preprocessing Module]
@@ -6018,14 +6018,14 @@ graph TB
         D4[Projection Module]
         D5[Visualization Module]
     end
-    
+
     A1 -->|CSV Files| B1
     A2 -->|CSV Files| B1
     A3 -->|CSV Files| B1
     A4 -->|WAV Files| B2
     A5 -->|Binary Calls| B3
     A6 -->|Git Integration| B4
-    
+
     B1 --> B5
     B2 --> B5
     B3 --> D5
@@ -6035,18 +6035,18 @@ graph TB
     B5 --> D3
     B5 --> D4
     B5 --> D5
-    
+
     B2 --> B6
     D1 --> B6
     D2 --> B6
     D3 --> B6
-    
+
     B6 --> C1
     C1 --> C2
     C2 --> C3
     C3 --> C4
     C4 --> C5
-    
+
     C2 -.->|Optional Queries| B5
     C4 -.->|Dataset Filtering| D1
     C4 -.->|Batch Selection| D2
@@ -6069,34 +6069,34 @@ graph TB
         style C fill:#5B39F3,color:#FFFFFF
         C --> D[Query DSL<br/>Dataset Filtering]
         style D fill:#5B39F3,color:#FFFFFF
-        
+
         style E fill:#5B39F3,color:#FFFFFF
         E[Data Indexer<br/>Filesystem Scanner] --> A
         E --> F[Checksum Validator<br/>SHA-256 Verification]
         style F fill:#5B39F3,color:#FFFFFF
         F --> B
     end
-    
+
     subgraph "Existing AVA Core Modules"
         G[DataContainer Hub] --> H[Segmentation Module]
-        G --> I[Preprocessing Module] 
+        G --> I[Preprocessing Module]
         G --> J[VAE Model Module]
         G --> K[Visualization Module]
     end
-    
+
     subgraph "File-Based Storage (Unchanged)"
         L[HDF5 Spectrograms<br/>Compressed Arrays]
         M[NPY Embeddings<br/>Latent Vectors]
         N[PyTorch Checkpoints<br/>Model States]
         O[WAV Audio Files<br/>Source Data]
     end
-    
+
     D -.->|Optional Queries| G
     E -->|Scans| L
     E -->|Scans| M
     E -->|Scans| N
     E -->|Scans| O
-    
+
     H --> L
     I --> L
     J --> M
@@ -6138,10 +6138,10 @@ sequenceDiagram
     participant DB as Database Layer
     participant FS as File System
     participant Log as Audit Logger
-    
+
     App->>DB: Request data operation
     DB->>DB: Validate checksums
-    
+
     alt Checksum Mismatch
         DB-->>Log: Log integrity violation
         DB-->>App: Raise RuntimeError("Checksum mismatch")
@@ -6240,10 +6240,10 @@ sequenceDiagram
     participant Compute as Computation Engine
     participant Repo as Repository Layer
     participant DB as SQLite/PostgreSQL
-    
+
     Client->>DC: request('latent_mean_umap')
     DC->>Cache: check_field_exists('latent_mean_umap')
-    
+
     alt Field Cached
         Cache->>DC: return cached_data
         DC->>Client: return field_data
@@ -6253,7 +6253,7 @@ sequenceDiagram
         Cache->>DC: return computed_data
         DC->>Client: return field_data
     end
-    
+
     opt Enhanced Dataset Selection
         Client->>Repo: filter_by_temporal_range()
         Repo->>DB: execute_optimized_query()
@@ -6291,30 +6291,30 @@ graph TB
         C[EmbeddingRepository<br/>Latent vectors & model provenance]
         style D fill:#5B39F3,color:#FFFFFF
         D[AnnotationRepository<br/>Labels & experimental metadata]
-        
+
         style E fill:#5B39F3,color:#FFFFFF
         E[Query DSL Interface<br/>Type-safe filtering & composition]
-        
+
         A --> E
         B --> E
         C --> E
         D --> E
     end
-    
+
     subgraph "Database Backend"
         F[SQLAlchemy Engine<br/>Connection pooling]
         G[SQLite / PostgreSQL<br/>Configurable backend]
-        
+
         F --> G
     end
-    
+
     subgraph "Scientific Computing Integration"
         H[DataContainer Hub<br/>Field request coordination]
         I[Analysis Modules<br/>Existing workflows preserved]
-        
+
         H --> I
     end
-    
+
     E --> F
     E -.->|Optional Enhancement| H
 ```
@@ -6346,7 +6346,7 @@ def filter_by_temporal_range(self, start_date: datetime, end_date: datetime) -> 
         .where(Recording.created_at.between(start_date, end_date))\
         .order_by(Recording.created_at, Recording.id)\
         .compile(compile_kwargs={"literal_binds": True})
-    
+
     result = self.session.execute(compiled_query).scalars().all()
     return list(result)
 
@@ -6358,7 +6358,7 @@ def get_annotated_syllables_with_embeddings(self, annotation_type: str) -> List[
         .join(Embedding, Syllable.id == Embedding.syllable_id)\
         .where(Annotation.annotation_type == annotation_type)\
         .order_by(Syllable.start_time, Syllable.id)
-    
+
     results = self.session.execute(query).all()
     return [(row.Syllable, row.Embedding) for row in results]
 ```
@@ -6395,32 +6395,32 @@ def get_annotated_syllables_with_embeddings(self, annotation_type: str) -> List[
 
 ```python
 def get_recordings_by_duration_range(
-    self, 
-    min_duration: float, 
+    self,
+    min_duration: float,
     max_duration: float
 ) -> List[Recording]:
     """Retrieve recordings filtered by total duration with deterministic ordering.
-    
+
     Args:
         min_duration: Minimum recording duration in seconds
         max_duration: Maximum recording duration in seconds
-        
+
     Returns:
         List of Recording objects ordered by creation time then ID
-        
+
     Raises:
         RuntimeError: If database integrity constraints are violated
     """
     if min_duration < 0 or max_duration < min_duration:
         raise ValueError("Invalid duration range parameters")
-    
+
     query = select(Recording).where(
         and_(
             Recording.duration >= min_duration,
             Recording.duration <= max_duration
         )
     ).order_by(Recording.created_at, Recording.id)
-    
+
     return list(self.session.execute(query).scalars().all())  # Line 14/15
 ```
 
@@ -6487,28 +6487,28 @@ flowchart TD
         C -->|Worker 1| D1[Audio Segmentation]
         C -->|Worker 2| D2[Audio Segmentation]
         C -->|Worker N| D3[Audio Segmentation]
-        
+
         D1 --> E1[Spectrogram Generation]
         D2 --> E2[Spectrogram Generation]
         D3 --> E3[Spectrogram Generation]
-        
+
         E1 --> F[HDF5 Batch Assembly]
         E2 --> F
         E3 --> F
-        
+
         F --> G[VAE Training Queue]
         G --> H[Latent Space Generation]
         H --> I[Projection Computation]
         I --> J[Visualization Output]
     end
-    
+
     subgraph "Error Handling Strategy"
         K[Progress Tracking]
         L[Checkpoint Recovery]
         M[Graceful Degradation]
         N[Data Integrity Validation]
     end
-    
+
     G -.-> K
     H -.-> L
     I -.-> M
@@ -6538,7 +6538,7 @@ sequenceDiagram
     participant CSV as CSV Export File
     participant AVA as AVA Import Engine
     participant DC as DataContainer
-    
+
     MUPET->>CSV: Export 14 acoustic features
     Note over CSV: Onset times in milliseconds
     CSV->>AVA: File system import
@@ -6566,13 +6566,13 @@ graph LR
         A1[Analysis Results] --> A2["filename_Stats.csv"]
         A2 --> A3[16 Detection Features]
     end
-    
+
     subgraph "AVA Import Engine"
         B1[Filename Pattern Detection] --> B2[Column Name Mapping]
         B2 --> B3[Temporal Alignment Engine]
         B3 --> B4[DataContainer Integration]
     end
-    
+
     A3 --> B1
     B4 --> C[HDF5 Feature Cache]
 ```
@@ -6607,7 +6607,7 @@ sequenceDiagram
     participant Shell as System Shell
     participant FFmpeg as FFmpeg Binary
     participant Output as Video File
-    
+
     Plot->>Shell: Generate frame sequence
     Note over Shell: viz-00001.jpg to viz-NNNNN.jpg
     Shell->>FFmpeg: ffmpeg -r {fps} -i viz-%05d.jpg temp.mp4
@@ -6668,12 +6668,12 @@ sequenceDiagram
     participant Engine as Database Engine
     participant Session as Session Context Manager
     participant Repository as Repository Layer
-    
+
     Config->>Factory: database.url connection string
     Factory->>Factory: Parse connection parameters
     Factory->>Engine: create_engine(url, echo=database.echo)
     Engine->>Engine: Initialize connection pool
-    
+
     Repository->>Session: with session_scope() as session:
     Session->>Engine: Acquire connection from pool
     Engine-->>Session: Active database connection
@@ -6754,19 +6754,19 @@ graph TB
             A2 --> A3[scikit-learn PCA]
             A3 --> A4[PyTorch Deep Learning]
         end
-        
+
         subgraph "AVA Data Interfaces"
             B1[HDF5 Array Storage] --> B2[Pandas DataFrame Integration]
             B2 --> B3[Matplotlib Visualization]
             B3 --> B4[Bokeh Interactive Plots]
         end
-        
+
         subgraph "External Tool Compatibility"
             C1[UMAP Dimensionality Reduction]
             C2[joblib Parallel Processing]
             C3[h5py File Management]
         end
-        
+
         A4 --> B1
         B4 --> C1
         A1 --> C2
@@ -6788,12 +6788,12 @@ flowchart TB
         A3[DeepSqueak Platform<br/>CSV Detection Results]
         A4[SAP Analysis Pro<br/>CSV Acoustic Parameters]
     end
-    
+
     subgraph "AVA Integration Layer"
         B1[Audio File Import<br/>Format Validation]
         B2[CSV Import Engine<br/>Temporal Alignment]
         B3[Feature Synchronization<br/>DataContainer Hub]
-        
+
         style B4 fill:#5B39F3,color:#FFFFFF
         B4[Filesystem Scan<br/>Directory Discovery]
         style B5 fill:#5B39F3,color:#FFFFFF
@@ -6805,7 +6805,7 @@ flowchart TB
         style B8 fill:#5B39F3,color:#FFFFFF
         B8[Query Selection<br/>Deterministic Result Sets]
     end
-    
+
     subgraph "Processing Pipeline"
         C1[Segmentation<br/>Amplitude Detection]
         C2[Spectrogram Generation<br/>STFT Processing]
@@ -6813,7 +6813,7 @@ flowchart TB
         C4[Projection Computation<br/>PCA & UMAP]
         C5[Visualization Generation<br/>Interactive & Static]
     end
-    
+
     subgraph "Output Integration Points"
         D1[HDF5 Data Archives<br/>Compressed Storage]
         D2[PyTorch Model Checkpoints<br/>Reusable Models]
@@ -6821,31 +6821,31 @@ flowchart TB
         D4[MP4 Video Generation<br/>FFmpeg Integration]
         D5[Static Analysis Plots<br/>Matplotlib Export]
     end
-    
+
     A1 --> B1
     A2 --> B2
     A3 --> B2
     A4 --> B2
-    
+
     B1 --> B3
     B2 --> B3
-    
+
     B1 --> B4
     B4 --> B5
     B5 --> B6
     B6 --> B7
     B7 --> B8
-    
+
     B3 --> C1
     C1 --> C2
     C2 --> C3
     C3 --> C4
     C4 --> C5
-    
+
     B8 -.-> C1
     B8 -.-> C2
     B8 -.-> C3
-    
+
     C3 --> D2
     C4 --> D1
     C5 --> D3
@@ -6884,10 +6884,10 @@ sequenceDiagram
     participant User as User Interface
     participant DB as Database Layer
     participant Indexer as Metadata Indexer
-    
+
     External->>Import: Data file available
     Import->>Validate: Format validation
-    
+
     alt Valid Data Format
         Validate->>Import: Validation successful
         Import->>User: Import complete
@@ -6896,17 +6896,17 @@ sequenceDiagram
         Recovery->>User: Warning with graceful degradation
         Recovery->>Import: Continue with available data
     end
-    
+
     alt Temporal Alignment Error
         Import->>Recovery: Alignment mismatch detected
         Recovery->>User: Tolerance adjustment recommendation
         Recovery->>Import: Skip misaligned segments
     end
-    
+
     opt Database Indexing Enabled
         Import->>Indexer: Trigger metadata extraction
         Indexer->>DB: Checksum validation & bulk insert
-        
+
         alt Integrity Violation
             DB->>DB: Detect checksum mismatch
             DB->>User: RuntimeError with diagnostic info
@@ -6944,26 +6944,26 @@ flowchart TB
         A3 --> A4[Index-Optimized Execution<br/>B-tree & Composite Indexes]
         A4 --> A5[Consistent Result Sets<br/>Reproducible Across Sessions]
     end
-    
+
     subgraph "Provenance Tracking Components"
         B1[SHA-256 File Checksums<br/>Cryptographic Integrity]
         B2[Hierarchical Relationships<br/>Recording → Syllable → Embedding]
         B3[Model Version Metadata<br/>Training Provenance]
         B4[Annotation Timestamping<br/>Experimental Context]
     end
-    
+
     A5 --> B1
     A5 --> B2
     A5 --> B3
     A5 --> B4
-    
+
     subgraph "Scientific Reproducibility Benefits"
         C1[Train/Validation/Test Splits<br/>Deterministic & Consistent]
         C2[Cross-Session Validation<br/>Identical Results Guaranteed]
         C3[Audit Trail Generation<br/>Complete Dataset Lineage]
         C4[Collaborative Research<br/>Shared Reproducible Datasets]
     end
-    
+
     B1 --> C1
     B2 --> C2
     B3 --> C3
@@ -7025,7 +7025,7 @@ test_recordings = [r for r in recordings if hash(r.checksum_sha256) % 10 >= 8]
 **Performance Optimization Techniques:**
 
 - **Parallel File Processing:** Multi-core utilization for independent file operations
-- **Persistent Caching:** HDF5 compression and chunking for optimal I/O performance  
+- **Persistent Caching:** HDF5 compression and chunking for optimal I/O performance
 - **Lazy Computation:** On-demand field generation with automatic dependency tracking
 - **Memory Streaming:** Chunked processing for datasets exceeding available RAM
 - **Batch Size Optimization:** Configurable parameters for memory-performance trade-offs
@@ -7058,22 +7058,22 @@ test_recordings = [r for r in recordings if hash(r.checksum_sha256) % 10 >= 8]
 graph TB
     subgraph "Database Connection Architecture"
         A[YAML Configuration<br/>Database Backend Selection] --> B{Backend Type}
-        
+
         B -->|SQLite| C[Local File Engine<br/>check_same_thread=False]
         B -->|PostgreSQL| D[Connection Pool Engine<br/>pool_size=5, max_overflow=10]
-        
+
         C --> E[Single Connection Model<br/>Thread-safe Access]
         D --> F[Pooled Connection Model<br/>Concurrent Operations]
-        
+
         style G fill:#5B39F3,color:#FFFFFF
         G[Repository Layer<br/>Context Managers] --> H[Session Scope<br/>Automatic Cleanup]
         style H fill:#5B39F3,color:#FFFFFF
         H --> I[Transaction Management<br/>Rollback on Failure]
         style I fill:#5B39F3,color:#FFFFFF
-        
+
         E --> G
         F --> G
-        
+
         I --> J[Query Execution<br/>Optimized Performance]
         J --> K[Metadata Results<br/>Type-Safe Objects]
     end
@@ -7103,17 +7103,17 @@ sequenceDiagram
     participant Engine as SQLAlchemy Engine
     participant DB as Database Backend
     participant Log as Audit Logger
-    
+
     CLI->>Repo: Begin bulk insert (batch_size=1000)
     Repo->>Engine: Session context manager
     Engine->>DB: Begin transaction
-    
+
     loop Batch Processing
         Repo->>Repo: Validate metadata integrity
         Repo->>Repo: Compute SHA-256 checksums
         Repo->>Engine: Bulk insert batch
         Engine->>DB: Execute parameterized queries
-        
+
         alt Constraint Violation
             DB-->>Engine: Foreign key error
             Engine->>Engine: Automatic rollback
@@ -7125,7 +7125,7 @@ sequenceDiagram
             Engine-->>Log: Progress metrics logged
         end
     end
-    
+
     Engine->>DB: Commit transaction
     DB-->>CLI: Ingestion complete
     Log->>Log: Final audit record
@@ -7154,21 +7154,21 @@ sequenceDiagram
 graph TB
     subgraph "Parallel Checksum Validation Pipeline"
         A[File Discovery<br/>Glob Pattern Matching] --> B[Worker Pool Allocation<br/>CPU-1 Workers]
-        
+
         B --> C1[Worker 1<br/>SHA-256 Computation]
         B --> C2[Worker 2<br/>SHA-256 Computation]
         B --> C3[Worker N<br/>SHA-256 Computation]
-        
+
         C1 --> D[Checksum Collection<br/>Thread-Safe Queue]
         C2 --> D
         C3 --> D
-        
+
         D --> E[Database Comparison<br/>Integrity Validation]
-        
+
         E --> F{Validation Result}
         F -->|Match| G[Continue Processing<br/>Normal Workflow]
         F -->|Mismatch| H[Immediate RuntimeError<br/>Fail-Loud Behavior]
-        
+
         style E fill:#5B39F3,color:#FFFFFF
         style F fill:#5B39F3,color:#FFFFFF
         style H fill:#5B39F3,color:#FFFFFF
@@ -7197,8 +7197,8 @@ graph TB
 ```python
 # Performance-optimized repository method example
 def filter_recordings_by_date_range(
-    self, 
-    start_date: datetime, 
+    self,
+    start_date: datetime,
     end_date: datetime
 ) -> List[Recording]:
     """Optimized temporal filtering with deterministic ordering."""
@@ -7206,7 +7206,7 @@ def filter_recordings_by_date_range(
         .where(Recording.created_at.between(start_date, end_date))\
         .order_by(Recording.created_at, Recording.id)\
         .compile(compile_kwargs={"literal_binds": True})
-    
+
     result = self.session.execute(compiled_query).scalars().all()
     return list(result)  # Method completes in 12 lines
 ```
@@ -7255,10 +7255,10 @@ graph TB
         style A6 fill:#5B39F3,color:#FFFFFF
         A5 --> A6[Database Validation Tests]
     end
-    
+
     subgraph "Validation Checkpoints"
         B1[CSV Import Validation]
-        B2[Audio Processing Validation] 
+        B2[Audio Processing Validation]
         B3[Model Checkpoint Validation]
         B4[Visualization Export Validation]
         B5[External Binary Integration Validation]
@@ -7269,7 +7269,7 @@ graph TB
         style B8 fill:#5B39F3,color:#FFFFFF
         B8[Query Determinism Validation]
     end
-    
+
     A6 --> B1
     A6 --> B2
     A6 --> B3
@@ -7376,19 +7376,19 @@ graph TB
             T3 --> T4[Query Determinism Tests]
             style T4 fill:#5B39F3,color:#FFFFFF
         end
-        
+
         subgraph "Integration Testing Framework"
             T5[pytest Test Runner] --> T6[SQLAlchemy Test Sessions]
             T6 --> T7[In-Memory SQLite Fixtures]
             T7 --> T8[Mock Data Generators]
         end
-        
+
         subgraph "Validation Reporting"
             T9[Coverage Analysis] --> T10[Performance Benchmarks]
             T10 --> T11[Error Classification]
             T11 --> T12[CI/CD Integration]
         end
-        
+
         T4 --> T5
         T8 --> T9
     end
@@ -7399,7 +7399,7 @@ graph TB
 <span style="background-color: rgba(91, 57, 243, 0.2)">All database integration tests execute automatically during continuous integration workflows with strict failure thresholds:</span>
 
 - **Test Coverage Threshold:** Minimum 100% line coverage for all repository methods and integration pathways
-- **Performance Regression Detection:** Automatic alerting on >10% throughput degradation in ingestion or query operations  
+- **Performance Regression Detection:** Automatic alerting on >10% throughput degradation in ingestion or query operations
 - **Database Compatibility Validation:** Cross-platform testing across SQLite and PostgreSQL backends during pull request validation
 - **Memory Leak Detection:** Long-running test suites monitor connection pool behavior and resource cleanup verification
 
@@ -7592,14 +7592,14 @@ flowchart TD
     A[System Python] --> B[Virtual Environment Creation]
     B --> C[Isolated Package Installation]
     C --> D[AVA Application Execution]
-    
+
     subgraph "Isolation Benefits"
         E[Dependency Conflicts Prevention]
         F[Version Control]
         G[Security Boundary]
         H[Reproducible Environment]
     end
-    
+
     D --> E
     D --> F
     D --> G
@@ -7653,7 +7653,7 @@ sequenceDiagram
     participant A as AVA Application
     participant FS as File System
     participant PT as PyTorch
-    
+
     U->>A: Load Model Request
     A->>FS: Check File Existence
     FS->>A: File Path Validation
@@ -7661,7 +7661,7 @@ sequenceDiagram
     PT->>A: Model State Dictionary
     A->>A: Dimension Compatibility Check
     A->>U: Model Ready or Error
-    
+
     Note over A,PT: Security relies on trusted model sources
 ```
 
@@ -7731,13 +7731,13 @@ flowchart LR
     C --> D[Dependency Verification]
     D --> E[Application Testing]
     E --> F[Security Baseline]
-    
+
     subgraph "Security Checkpoints"
         G[Version Verification]
         H[Hash Checking]
         I[Permission Validation]
     end
-    
+
     D --> G
     D --> H
     D --> I
@@ -7930,13 +7930,13 @@ flowchart TB
         G[Segmentation Statistics] --> H[Quality Assessment]
         I[Database Ingestion CLI] --> J[Structured JSONL Logs]
     end
-    
+
     B --> K[User Feedback]
     D --> K
     F --> K
     H --> K
     J --> L[Offline Log Analysis]
-    
+
     subgraph "Output Mechanisms"
         K --> M[Real-time Progress Display]
         K --> N[Completion Status Reports]
@@ -7991,23 +7991,23 @@ flowchart TD
         A[Input Validation] --> A1[Audio Format Verification]
         A --> A2[Parameter Range Validation]
         A --> A3[File Access Permissions]
-        
+
         B[Processing Health] --> B1[Memory Availability]
         B --> B2[GPU Status Checks]
         B --> B3[Dependency Verification]
-        
+
         C[Model Training Health] --> C1[Loss Convergence Monitoring]
         C --> C2[Gradient Stability Checks]
         C --> C3[Checkpoint Integrity]
-        
+
         D[Output Quality] --> D1[Reconstruction Quality Metrics]
         D --> D2[Latent Space Validation]
         D --> D3[Visualization Rendering]
-        
+
         E[Database Integrity] --> E1[Schema Constraint Validation]
         E --> E2[Foreign-Key Cascade Verification]
         E --> E3[Orphan Record Detection]
-        
+
         F[Checksum Validation] --> F1[SHA-256 File Verification]
         F --> F2[Mismatch Detection]
         F --> F3[Corruption Prevention]
@@ -8105,24 +8105,24 @@ flowchart TB
         B -->|Database| C[Transaction<br/>Rollback]
         B -->|File System| D[Cache<br/>Invalidation]
         B -->|Processing| E[Operation<br/>Termination]
-        
+
         C --> F[Integrity Verification]
         D --> F
         E --> F
-        
+
         F --> G[Recovery Status<br/>Logging]
         G --> H[System State<br/>Restoration]
         H --> I[Ready for<br/>Retry]
-        
+
         subgraph "Enhanced Database Recovery"
             J[Foreign Key<br/>Validation] --> K[Orphan Record<br/>Cleanup]
             K --> L[Schema Constraint<br/>Verification]
             L --> M[Referential Integrity<br/>Restoration]
         end
-        
+
         C -.-> J
         M --> F
-        
+
         style J fill:#5B39F3,color:#FFFFFF
         style K fill:#5B39F3,color:#FFFFFF
         style L fill:#5B39F3,color:#FFFFFF
@@ -8160,7 +8160,7 @@ stateDiagram-v2
     Error --> FatalError: Checksum/Integrity Violation
     Processing --> [*]: Complete
     FatalError --> [*]: Terminate
-    
+
     note right of LogError : Console error output
     note right of CheckpointSave : HDF5/PyTorch checkpoints
     note right of AttemptRecovery : Parameter adjustment
@@ -8211,14 +8211,14 @@ graph TB
         E --> F[Reconstruction Quality Measurement]
         F --> G[Latent Space Validation]
         G --> H[Projection Quality Assessment]
-        
+
         subgraph "Quality Metrics"
             QM1[R² Reconstruction Quality]
             QM2[Convergence Rate Analysis]
             QM3[Projection Variance Preservation]
             QM4[Segmentation Acceptance Rates]
         end
-        
+
         F --> QM1
         E --> QM2
         G --> QM3
@@ -8307,40 +8307,40 @@ flowchart TB
         B -->|Console| C[Console Error Review]
         B -->|CLI Exit| D[Check Exit Code Status]
         B -->|Log Alert| E[JSONL Log Analysis]
-        
+
         C --> F[Gather Context Information]
         D --> G[Inspect Last 50 Lines<br/>logs/ava.jsonl]
         E --> G
-        
+
         G --> H[Identify Error Category]
         F --> H
-        
+
         H --> I{Error Type}
         I -->|Recoverable| J[Apply Recovery Procedures]
         I -->|Database Integrity| K[Immediate Termination<br/>Protocol]
         I -->|Unknown/Complex| L[Escalate to GitHub<br/>with Log Snippets]
-        
+
         J --> M[Verify Resolution]
         K --> N[Generate Incident Report]
         L --> O[Community Support Response]
-        
+
         M --> P[Document Lessons Learned]
         N --> P
         O --> P
-        
+
         P --> Q[Update Response Procedures<br/>if Needed]
     end
-    
+
     subgraph "Enhanced Database Response"
         R[Non-Zero CLI Exit] --> S[Log Context Extraction]
         S --> T[Validation Failure Analysis]
         T --> U[Structured Error Reporting]
         U --> V[Process Termination<br/>with Audit Trail]
     end
-    
+
     D -.-> R
     K -.-> R
-    
+
     style D fill:#5B39F3,color:#FFFFFF
     style G fill:#5B39F3,color:#FFFFFF
     style K fill:#5B39F3,color:#FFFFFF
@@ -8584,7 +8584,7 @@ The lightweight monitoring approach is appropriate for the AVA system because:
 The following enterprise monitoring features are intentionally excluded:
 - <span style="background-color: rgba(91, 57, 243, 0.2)">No external log aggregation; structured logging now provided via Loguru (local JSONL files only)</span>
 - Distributed tracing systems
-- Real-time dashboards or monitoring UIs  
+- Real-time dashboards or monitoring UIs
 - Alert management infrastructure
 - APM (Application Performance Monitoring) tools
 - SLA monitoring and service level agreements
@@ -8610,7 +8610,7 @@ These gaps reflect the system's design priorities for simplicity, academic acces
 
 **Technical Specification Sections Referenced:**
 - 5.4 CROSS-CUTTING CONCERNS - Comprehensive monitoring and observability details
-- 4.3 ERROR HANDLING AND RECOVERY - Error detection and recovery workflow specifications  
+- 4.3 ERROR HANDLING AND RECOVERY - Error detection and recovery workflow specifications
 - 1.2 SYSTEM OVERVIEW - System context and scientific research requirements
 - 3.6 DEVELOPMENT & DEPLOYMENT - Deployment architecture and operational requirements
 
@@ -8667,24 +8667,24 @@ flowchart TD
         A --> D["performance/"]
         A --> E["fixtures/"]
         A --> F["db/"]
-        
+
         B --> B1["test_models/"]
         B --> B2["test_preprocessing/"]
         B --> B3["test_segmentation/"]
         B --> B4["test_data_container/"]
-        
+
         C --> C1["test_workflows/"]
         C --> C2["test_examples/"]
         C --> C3["test_pipelines/"]
-        
+
         D --> D1["test_training_performance/"]
         D --> D2["test_memory_usage/"]
         D --> D3["test_throughput/"]
-        
+
         E --> E1["audio_samples/"]
         E --> E2["model_checkpoints/"]
         E --> E3["reference_outputs/"]
-        
+
         style F fill:#5B39F3,color:#FFFFFF
         F --> F1["test_schema_constraints.py"]
         F --> F2["test_ingest_happy_path.py"]
@@ -8713,8 +8713,8 @@ flowchart TD
 def mock_audio_data():
     """Generate synthetic bioacoustic data for testing"""
     return generate_synthetic_vocalizations(
-        duration=1.0, 
-        sample_rate=22050, 
+        duration=1.0,
+        sample_rate=22050,
         species='test_species'
     )
 
@@ -8763,19 +8763,19 @@ flowchart TB
         A[Audio Input Integration] --> A1[File Format Validation]
         A --> A2[Batch Processing Integration]
         A --> A3[HDF5 Storage Integration]
-        
+
         B[Model Training Integration] --> B1[Checkpoint System Integration]
         B --> B2[Loss Monitoring Integration]
         B --> B3[Convergence Validation]
-        
+
         C[Pipeline Integration] --> C1[Segmentation-Preprocessing Integration]
         C --> C2[Training-Projection Integration]
         C --> C3[Visualization-Output Integration]
-        
+
         D[DataContainer Integration] --> D1[Field Computation Integration]
         D --> D2[Cache Management Integration]
         D --> D3[State Persistence Integration]
-        
+
         style E fill:#5B39F3,color:#FFFFFF
         E[Database Integration] --> E1[Repository Layer Integration]
         E --> E2[Schema Validation Integration]
@@ -8799,11 +8799,11 @@ flowchart TB
 ```python
 class TestVAEModelAPI:
     """Integration tests for VAE model API consistency"""
-    
+
     def test_training_pipeline_integration(self):
         """Validate complete training pipeline integration"""
         # Test train_epoch() -> test_epoch() -> checkpoint_save() integration
-        
+
     def test_inference_pipeline_integration(self):
         """Validate inference and projection pipeline integration"""
         # Test model.encode() -> projection computation -> visualization integration
@@ -8852,12 +8852,12 @@ class TestVAEModelAPI:
 ```python
 class TestEndToEndWorkflows:
     """E2E testing using maintained example scripts"""
-    
+
     def test_mouse_sylls_mwe_execution(self):
         """Validate complete mouse syllable analysis workflow"""
         # Execute examples/mouse_sylls_mwe.py with test data
         # Validate output quality metrics and file generation
-        
+
     def test_finch_window_mwe_execution(self):
         """Validate finch vocalization window analysis workflow"""
         # Execute examples/finch_window_mwe.py with synthetic data
@@ -8899,18 +8899,18 @@ flowchart TD
         G --> H[Quality Gate Evaluation]
         H --> I[Deployment Approval]
     end
-    
+
     subgraph "Parallel Test Execution"
         D --> D1[CPU Tests]
         D --> D2[GPU Tests]
         D --> D3[Memory Constraint Tests]
         D --> D4[DB Tests]
-        
+
         E --> E1[Pipeline Integration]
         E --> E2[HDF5 Storage Tests]
         E --> E3[Model API Tests]
     end
-    
+
     subgraph "Quality Assurance"
         H --> H1[Code Coverage Analysis]
         H --> H2[Performance Regression Detection]
@@ -8918,7 +8918,7 @@ flowchart TD
         H --> H4[Typing Compliance Pass]
         H --> H5[All failure-scenario tests pass]
     end
-    
+
     style C fill:#5B39F3,color:#FFFFFF
     style D4 fill:#5B39F3,color:#FFFFFF
     style H4 fill:#5B39F3,color:#FFFFFF
@@ -9039,7 +9039,7 @@ flowchart TD
         F --> G[Example Script Validation]
         G --> H[Release Approval]
     end
-    
+
     subgraph "Failure Handling"
         B --> B1[Test Failure Analysis]
         D --> D1[Model Quality Investigation]
@@ -9063,38 +9063,38 @@ flowchart TB
     subgraph "Testing Infrastructure"
         A[Development Environment] --> A1[Local Testing Setup]
         A --> A2[IDE Integration Testing]
-        
+
         B[CI/CD Environment] --> B1[GitHub Actions Runners]
         B --> B2[Container-Based Testing]
         B --> B3[GPU Test Runners]
-        
+
         C[Staging Environment] --> C1[Pre-Release Validation]
         C --> C2[Performance Benchmarking]
         C --> C3[Integration Validation]
-        
+
         D[Production Validation] --> D1[Example Script Monitoring]
         D --> D2[User Workflow Validation]
     end
-    
+
     subgraph "Resource Management"
         E[Compute Resources] --> E1[CPU Test Allocation]
         E --> E2[GPU Test Allocation]
         E --> E3[Memory Management]
-        
+
         F[Data Management] --> F1[Test Dataset Storage]
         F --> F2[Synthetic Data Generation]
         F --> F3[Result Artifact Management]
     end
-    
+
     subgraph "Database Test Resources"
         G[Unit Test Database Layer] --> G1[In-Memory SQLite Sessions]
         G --> G2[Ephemeral SQLite Files]
         G --> G3[Repository Method Isolation]
-        
+
         H[Integration Test Database Layer] --> H1[Docker PostgreSQL 15 Containers]
         H --> H2[Connection Pool Validation]
         H --> H3[Cross-Backend Compatibility]
-        
+
         I[Database Test Data] --> I1[Deterministic Fixture Generation]
         I --> I2[Checksum Test Validation]
         I --> I3[Schema Constraint Testing]
@@ -9180,23 +9180,23 @@ flowchart LR
         A[Test Execution] --> B[loguru Logger]
         B --> C[JSONL Output]
         C --> D[logs/ Directory]
-        
+
         E[Database Tests] --> F[Operation Logging]
         F --> G[Transaction Logs]
         G --> D
-        
+
         H[Performance Tests] --> I[Metrics Logging]
         I --> J[Benchmark Results]
         J --> D
     end
-    
+
     subgraph "Artifact Collection"
         D --> K[*.jsonl Pattern Match]
         K --> L[CI Artifact Upload]
         L --> M[Log Analysis Pipeline]
         M --> N[Test Debugging Support]
     end
-    
+
     subgraph "Log Analysis"
         N --> O[Failure Pattern Detection]
         N --> P[Performance Regression Analysis]
@@ -9224,10 +9224,10 @@ flowchart LR
     mkdir -p logs/
     chmod 755 logs/
     export LOGURU_LEVEL=INFO
-    
+
 - name: Execute Test Suite
   run: pytest --log-cli-level=INFO
-  
+
 - name: Collect JSONL Artifacts
   uses: actions/upload-artifact@v3
   with:
@@ -9292,32 +9292,32 @@ flowchart TD
         B --> B1[Load & Validate YAML Config pydantic]
         B1 --> |Validation Success| C[Synthetic Data Generation]
         B1 --> |Validation Failure| R1[Configuration Error Abort]
-        
+
         C --> C1[Checksum Computation]
         C --> D[Test Category Selection]
-        
+
         D --> E[Unit Tests]
-        D --> F[Integration Tests]  
+        D --> F[Integration Tests]
         D --> G[Performance Tests]
         D --> H[E2E Tests]
-        
+
         C1 --> E
         C1 --> F
-        
+
         E --> I[Coverage Analysis]
         F --> J[Integration Validation]
         G --> K[Performance Metrics]
         H --> L[Workflow Validation]
-        
+
         I --> M[Quality Gate Evaluation]
         J --> M
         K --> M
         L --> M
-        
+
         M --> N[Pass/Fail Decision]
         N --> O[Test Report Generation]
         N --> P[Failure Analysis]
-        
+
         O --> Q[Deployment Approval]
         P --> R[Issue Creation]
     end
@@ -9335,10 +9335,10 @@ flowchart LR
         E --> F[Environment Cleanup]
         F --> G[Resource Deallocation]
     end
-    
+
     subgraph "Resource Management"
         H[CPU Resource Pool] --> D
-        I[GPU Resource Pool] --> D  
+        I[GPU Resource Pool] --> D
         J[Memory Allocation] --> D
         K[Storage Management] --> C
     end
@@ -9352,21 +9352,21 @@ flowchart TB
         A[Synthetic Data Generation] --> A1[Audio Sample Creation]
         A --> A2[Species-Specific Parameters]
         A --> A3[Vocalization Pattern Simulation]
-        
+
         B[Reference Data Curation] --> B1[Minimal Real Sample Selection]
         B --> B2[Quality Validation]
         B --> B3[Privacy Anonymization]
-        
+
         C[Test Fixtures] --> C1[Model Checkpoint Preparation]
         C --> C2[Configuration Template Creation]
         C --> C3[Expected Output Generation]
         C --> C4[ava.db SQLite File Generation]
-        
+
         A1 --> D[Test Dataset Assembly]
         B1 --> D
         C1 --> D
         C4 --> D
-        
+
         D --> E[Test Execution Distribution]
         E --> F[Parallel Test Runner Assignment]
         F --> G[Test Result Aggregation]
@@ -9446,7 +9446,7 @@ The SQLite testing infrastructure supports comprehensive validation of:
 
 #### Files Examined
 - `examples/finch_window_mwe.py` - Shotgun VAE workflow demonstration for integration testing patterns
-- `examples/mouse_sylls_mwe.py` - Complete mouse USV analysis pipeline serving as E2E test template  
+- `examples/mouse_sylls_mwe.py` - Complete mouse USV analysis pipeline serving as E2E test template
 - `ava/models/vae.py` - VAE architecture implementation requiring unit test coverage
 - `ava/data/data_container.py` - DataContainer coordination system for integration testing
 - `ava/preprocessing/preprocess.py` - Audio preprocessing pipeline requiring validation testing
@@ -9476,7 +9476,7 @@ graph TB
 subgraph "AVA UI Architecture"
     A[Audio Data Input] --> B[Backend Processing]
     B --> C[UI Layer]
-    
+
     subgraph "Backend Data Flow"
         B --> B1[DataContainer API]
         B --> B2[VAE Model Processing]
@@ -9484,13 +9484,13 @@ subgraph "AVA UI Architecture"
         B1 --> DB["Metadata Database (SQLAlchemy ORM)"]
         DB --> C
     end
-    
+
     subgraph "UI Components"
         C --> C1[Interactive Visualizations]
         C --> C2[Static Plot Generation]
         C --> C3[Manual Curation Interfaces]
         C --> C4[Video Generation]
-        
+
         C1 --> C1A[Bokeh Tooltip Plots]
         C2 --> C2A[Matplotlib Static Plots]
         C2 --> C2B[Spectrogram Grids]
@@ -9498,7 +9498,7 @@ subgraph "AVA UI Architecture"
         C3 --> C3B[Parameter Tuning Interface]
         C4 --> C4A[MP4 Video Export]
     end
-    
+
     subgraph "Output Formats"
         C1A --> D1[HTML Files]
         C2A --> D2[PDF/Image Files]
@@ -9590,7 +9590,7 @@ sequenceDiagram
     participant UI_Component
     participant DataContainer
     participant Backend
-    
+
     Note over Researcher, Backend: Interactive Exploration Workflow
     Researcher->>Terminal: Execute tooltip_plot_DC()
     Terminal->>DataContainer: Request latent projections
@@ -9598,7 +9598,7 @@ sequenceDiagram
     Backend->>DataContainer: Return projection data
     DataContainer->>UI_Component: Provide data + spectrograms
     UI_Component->>Researcher: Generate interactive HTML
-    
+
     Note over Researcher, Backend: Manual Curation Workflow
     Researcher->>Terminal: Execute refine_segments()
     Terminal->>UI_Component: Generate exploration plot
@@ -9617,7 +9617,7 @@ sequenceDiagram
 **DataContainer API Integration:**
 - <span style="background-color: rgba(91, 57, 243, 0.2)">Optional metadata query via Repository/Query DSL before file access</span> <span style="background-color: rgba(91, 57, 243, 0.2)">(UI receives only file references; bulk spectrogram/embedding arrays continue to stream from the filesystem)</span>
 - Centralized data access through `dc.request()` method calls
-- Automatic path management via `dc.plots_dir` for output organization  
+- Automatic path management via `dc.plots_dir` for output organization
 - Lazy loading optimization for large-scale datasets
 - Persistent caching of computed projections and visualizations
 
@@ -9637,14 +9637,14 @@ flowchart LR
         C --> D[VAE Latent Features]
         D --> E[2D Projections UMAP/PCA]
     end
-    
+
     subgraph "UI Data Access"
         E --> F[Interactive Visualizations]
         C --> G[Tooltip Spectrograms]
         B --> H[Curation Interfaces]
         D --> I[Static Plot Generation]
     end
-    
+
     subgraph "Output Generation"
         F --> J[HTML Files]
         G --> J
@@ -9789,11 +9789,11 @@ tuning_interface = {
 
 **Primary Screen**: Interactive HTML scatter plot with hover functionality
 - **Layout**: Full-browser 2D scatter plot with embedded tooltip system
-- **Interactive Elements**: 
+- **Interactive Elements**:
   - Hover-activated spectrogram display (1000-2000 configurable tooltip points)
   - Pan and zoom controls via Bokeh navigation toolbar
   - Optional grid overlay for coordinate reference
-- **Visual Design**: 
+- **Visual Design**:
   - Default viridis colormap for point coloring
   - Configurable point transparency and size
   - Tight layout optimization for space efficiency
@@ -9803,7 +9803,7 @@ tuning_interface = {
 #### 7.5.1.2 Video Timeline Interface
 
 **Primary Screen**: MP4 video with synchronized audio and visual progression
-- **Layout**: 
+- **Layout**:
   - Main video panel showing spectrogram progression over time
   - Audio synchronization with original recording
   - Timeline scrubbing and playback controls (provided by media player)
@@ -9811,7 +9811,7 @@ tuning_interface = {
   - Frame-by-frame spectrogram display mapped to 2D VAE embeddings
   - Three mapping visualization modes: 'latent_nn', 're_umap', 'spectrogram_correlation'
   - Smooth temporal transitions between spectrograms
-- **Technical Implementation**: 
+- **Technical Implementation**:
   - Frame rate: configurable (default based on audio duration)
   - Resolution: determined by spectrogram dimensions
   - Output format: MP4 with embedded audio track
@@ -9841,7 +9841,7 @@ tuning_interface = {
   - Multiple spectrograms arranged in systematic grid pattern
   - Configurable gap spacing between individual spectrograms
   - Uniform scaling and colormap across all tiles
-- **Use Cases**: 
+- **Use Cases**:
   - Quality control inspection of large datasets
   - Comparative analysis across experimental conditions
   - Visual pattern recognition across multiple samples
@@ -9861,7 +9861,7 @@ tuning_interface = {
   3. Real-time validation and confirmation display
   4. Batch processing status updates
   5. Summary statistics and file modification reports
-- **Visual Feedback**: 
+- **Visual Feedback**:
   - Static plots showing selected regions highlighted
   - Progress indicators for batch file processing
   - Validation summaries with affected file counts
@@ -9896,7 +9896,7 @@ stateDiagram-v2
     ExploreInteractively --> IdentifyPatterns: Browser-based hover exploration
     IdentifyPatterns --> GenerateStatic: Create publication figures
     GenerateStatic --> [*]: Export PDF/images
-    
+
     ExploreInteractively --> RefineParameters: Identify issues
     RefineParameters --> GenerateProjections: Update settings
 ```
@@ -9912,7 +9912,7 @@ stateDiagram-v2
     SelectRegions --> ProcessBatch: Update segmentation files
     ProcessBatch --> ValidateResults: Generate validation plots
     ValidateResults --> [*]: Accept final results
-    
+
     ValidateResults --> IdentifyNoise: Additional refinement needed
 ```
 
@@ -10027,7 +10027,7 @@ stateDiagram-v2
 
 **Workflow Integration:**
 - **Seamless Transitions**: Smooth workflow progression between components
-- **Context Preservation**: Maintain user context across interface transitions  
+- **Context Preservation**: Maintain user context across interface transitions
 - **Undo/Redo Capabilities**: Reversible operations where appropriate
 - **Session Persistence**: Maintain state across analysis sessions
 
@@ -10049,7 +10049,7 @@ stateDiagram-v2
 
 #### Files Examined
 - `ava/plotting/tooltip_plot.py` - Interactive Bokeh visualization implementation with hover functionality
-- `ava/plotting/latent_projection.py` - Static matplotlib plotting for latent space projections  
+- `ava/plotting/latent_projection.py` - Static matplotlib plotting for latent space projections
 - `ava/plotting/grid_plot.py` - Grid-based spectrogram visualization system
 - `ava/plotting/shotgun_movie.py` - Video generation with audio synchronization
 - `ava/segmenting/refine_segments.py` - Manual curation interface workflows and coordinate selection
@@ -10273,14 +10273,14 @@ flowchart TD
         B --> C[Git Commit]
         C --> D[GitHub Push]
     end
-    
+
     subgraph "Documentation Pipeline"
         D --> E[Read the Docs Trigger]
         E --> F[Sphinx Build Process]
         F --> G[Documentation Deployment]
         G --> H[docs.readthedocs.io hosting]
     end
-    
+
     subgraph "Distribution Pipeline"
         B --> I[Version Update]
         I --> J[setup.py Configuration]
@@ -10288,7 +10288,7 @@ flowchart TD
         K --> L[pip install . installation]
         L --> M[scripts/ava_db_ingest.py executable]
     end
-    
+
     subgraph "Quality Assurance"
         B --> N[mypy --strict validation]
         N --> O[Example Script Validation]
@@ -10327,7 +10327,7 @@ graph TB
         A --> D[SciPy Signal Processing]
         B --> E[CUDA Support Optional]
     end
-    
+
     subgraph "Scientific Computing Stack"
         C --> F[scikit-learn]
         C --> G[umap-learn]
@@ -10335,7 +10335,7 @@ graph TB
         F --> I[PCA Projections]
         G --> J[UMAP Projections]
     end
-    
+
     subgraph "Data Management"
         C --> K[h5py]
         K --> L[HDF5 Storage]
@@ -10345,33 +10345,33 @@ graph TB
         O --> P[Metadata ORM]
         P --> Q[Database Abstraction]
     end
-    
+
     subgraph "Configuration & Validation"
         A --> R[Pydantic ≥2.0]
         R --> S[YAML Validation]
         S --> T[Type Safety]
         T --> U[Configuration Schema]
     end
-    
+
     subgraph "Logging"
         A --> V[loguru ≥0.7]
         V --> W[Structured JSONL]
         W --> X[Audit Trails]
         X --> Y[Database Operations]
     end
-    
+
     subgraph "Visualization Stack"
         C --> Z[Matplotlib]
         C --> AA[Bokeh]
         Z --> BB[Static Plots]
         AA --> CC[Interactive HTML]
     end
-    
+
     subgraph "External Tools"
         DD[FFmpeg] -.-> EE[Video Generation]
         FF[affinewarp] -.-> GG[Time Warping]
     end
-    
+
     EE -.-> A
     GG -.-> H
 ```
@@ -10421,7 +10421,7 @@ stateDiagram-v2
     GitHubPush --> AutomatedCI: GitHub Actions Trigger
     AutomatedCI --> DocsBuild: Documentation Updated
     DocsBuild --> [*]: Deployment Ready
-    
+
     note right of TDDWorkflow : Mandatory test-driven development
     note right of QualityGates : mypy --strict + failure-scenario tests
     note right of AutomatedCI : Unit tests + static analysis required
@@ -10491,18 +10491,18 @@ flowchart LR
         J --> K[Quality Gate Evaluation]
         K --> L[Deployment Approval]
     end
-    
+
     subgraph "Parallel Test Matrix"
         F --> F1[Python 3.7-3.11]
         F --> F2[Linux/macOS/Windows]
         F --> F3[SQLite/PostgreSQL]
         F --> F4[CPU/GPU Variants]
-        
+
         G --> G1[Schema Constraint Tests]
         G --> G2[Ingestion Workflow Tests]
         G --> G3[Query Performance Tests]
         G --> G4[Cross-Backend Compatibility]
-        
+
         H --> H1[RuntimeError Scenarios]
         H --> H2[Data Integrity Failures]
         H --> H3[Configuration Validation]
@@ -10585,7 +10585,7 @@ graph TD
         B --> C[Continuous Recordings]
         B --> D[Pre-segmented Vocalizations]
     end
-    
+
     subgraph "Processing Storage Layer"
         C --> E[Segmentation Cache]
         D --> E
@@ -10593,14 +10593,14 @@ graph TD
         F --> G[HDF5 Spectrogram Batches]
         G --> H[syllables_XXXX.hdf5]
     end
-    
+
     subgraph "Model Storage Layer"
         H --> I[VAE Training]
         I --> J[PyTorch Checkpoints]
         J --> K[checkpoint_XXX.tar]
         I --> L[Latent Representations]
     end
-    
+
     subgraph "Analysis Storage Layer"
         L --> M[Projection Cache]
         M --> N[PCA/UMAP Embeddings]
@@ -10608,7 +10608,7 @@ graph TD
         O --> P[Interactive HTML]
         O --> Q[Static Plots]
     end
-    
+
     subgraph "Metadata Database Layer"
         R[(ava.db)] --> S[recording table]
         R --> T[syllable table]
@@ -10633,7 +10633,7 @@ erDiagram
         datetime created_at
         json metadata
     }
-    
+
     SYLLABLE {
         int id PK
         int recording_id FK
@@ -10642,7 +10642,7 @@ erDiagram
         float end_time
         json bounds_metadata
     }
-    
+
     EMBEDDING {
         int id PK
         int syllable_id FK
@@ -10651,7 +10651,7 @@ erDiagram
         int dimensions
         json model_metadata
     }
-    
+
     ANNOTATION {
         int id PK
         int syllable_id FK
@@ -10660,7 +10660,7 @@ erDiagram
         string value
         datetime created_at
     }
-    
+
     RECORDING ||--o{ SYLLABLE : "contains"
     SYLLABLE ||--o{ EMBEDDING : "generates"
     SYLLABLE ||--o{ ANNOTATION : "annotated_with"
@@ -10710,7 +10710,7 @@ database:
   enabled: true  # Controls metadata database functionality
   url: "sqlite:///ava.db"  # Default SQLite in project root
   # url: "postgresql://user:pass@host:port/dbname"  # Optional PostgreSQL
-  
+
   # Connection pooling for PostgreSQL
   pool_size: 5
   max_overflow: 10
@@ -10732,7 +10732,7 @@ database:
 
 **Database Consistency Enforcement**:
 - **Atomic Operations**: All metadata ingestion wrapped in database transactions
-- **Foreign Key Constraints**: Strict referential integrity with CASCADE delete behavior  
+- **Foreign Key Constraints**: Strict referential integrity with CASCADE delete behavior
 - **Automatic Rollback**: Transaction failure triggers complete rollback with audit logging
 - **Batch Processing**: Transaction batching (≥1,000 records) optimizes ingestion performance
 
@@ -10773,7 +10773,7 @@ database:
 
 **Backup Component Hierarchy**:
 1. **Source Audio Preservation**: Immutable original recordings as primary backup
-2. **HDF5 Spectrogram Archives**: Compressed batch files enable processing resumption  
+2. **HDF5 Spectrogram Archives**: Compressed batch files enable processing resumption
 3. **Model Checkpoint Versioning**: Complete training state preservation with rollback capability
 4. **<span style="background-color: rgba(91, 57, 243, 0.2)">Metadata Database Backup</span>**: <span style="background-color: rgba(91, 57, 243, 0.2)">Periodic SQLite file dumps or pg_dump procedures capture indexing relationships</span>
 
@@ -10806,25 +10806,25 @@ flowchart TB
         C[Loguru JSONL Logger] --> D[Structured Audit Trail]
         E[Database Operations] --> F[Context-Rich Log Events]
         G[Validation Failures] --> H[Error-Level RuntimeError Messages]
-        
+
         subgraph "Logging Infrastructure"
             I[logs/ava.jsonl] --> J[Machine-Readable Events]
             K[Size-Based Rotation] --> L[50MB Limit, 10 File Retention]
             M[Context Binding] --> N[Operation Metadata]
         end
-        
+
         C --> I
         K --> I
         F --> M
         G --> M
     end
-    
+
     subgraph "Database Operation Context"
         O[File Discovery] --> P[Checksum Computation]
         P --> Q[Metadata Insertion]
         Q --> R[Transaction Management]
         R --> S[Constraint Validation]
-        
+
         O -.-> D
         P -.-> D
         Q -.-> D
@@ -10868,7 +10868,7 @@ flowchart TB
         C[Training Epoch Counters] --> D[Loss Convergence Tracking]
         E[File Processing Counts] --> F[Batch Operation Progress]
         G[Database Ingestion CLI] --> H[JSONL Audit Events]
-        
+
         subgraph "Dual Output Strategy"
             B --> I[Real-time User Feedback]
             D --> I
@@ -10878,7 +10878,7 @@ flowchart TB
             H --> L[Error Forensics]
         end
     end
-    
+
     subgraph "Enhanced Database Operations"
         M[Filesystem Scanning] --> N[Progress Counters + JSONL Events]
         O[SHA-256 Validation] --> P[Console Status + Structured Logs]
@@ -10917,15 +10917,15 @@ stateDiagram-v2
     DatabaseOperation --> ValidationCheck: Integrity Validation
     ValidationCheck --> Success: All Constraints Pass
     ValidationCheck --> ImmediateFail: Any Violation Detected
-    
+
     Success --> LogSuccess: JSONL Audit Event
     LogSuccess --> Processing: Continue Operation
-    
+
     ImmediateFail --> LogError: Error-Level JSONL Event
     LogError --> RuntimeError: Actionable Exception
     RuntimeError --> ProcessTermination: Fail-Loud Behavior
     ProcessTermination --> [*]: No Silent Fallbacks
-    
+
     note right of ImmediateFail : No recovery attempts for integrity violations
     note right of RuntimeError : Comprehensive diagnostic context
 ```
@@ -10950,23 +10950,23 @@ stateDiagram-v2
     [*] --> Processing
     Processing --> Error: Exception Occurs
     Error --> ErrorClassification: Categorize Error Type
-    
+
     ErrorClassification --> RecoverableError: Memory/Parameter Issues
     ErrorClassification --> IntegrityViolation: Database/Checksum Failures
-    
+
     RecoverableError --> LogWarning: JSONL Warning Event
     LogWarning --> SaveCheckpoint: State Preservation
     SaveCheckpoint --> AttemptRecovery: Parameter Adjustment
     AttemptRecovery --> Processing: Resume Operation
     AttemptRecovery --> FatalError: Max Retry Attempts
-    
+
     IntegrityViolation --> LogError: ERROR Level JSONL Event
     LogError --> ImmediateTermination: Fail-Loud Behavior
     ImmediateTermination --> [*]: Process Termination
-    
+
     Processing --> [*]: Successful Completion
     FatalError --> [*]: All Recovery Exhausted
-    
+
     note right of IntegrityViolation : No recovery attempts for integrity violations
     note right of LogError : Comprehensive diagnostic context
 ```
@@ -11019,14 +11019,14 @@ flowchart TB
         D --> E[Verify ERROR Level Assignment]
         E --> F[Check Diagnostic Context]
         F --> G[Confirm RuntimeError Propagation]
-        
+
         subgraph "Log Content Validation"
             H[Timestamp Verification] --> I[Operation Context Check]
             I --> J[Error Classification Validation]
             J --> K[Diagnostic Metadata Verification]
             K --> L[Audit Trail Continuity Check]
         end
-        
+
         C --> H
         G --> M[Test Pass/Fail Decision]
         L --> M
@@ -11095,7 +11095,7 @@ The system intentionally excludes enterprise-grade monitoring infrastructure whi
 
 **Cost Optimization Techniques**:
 1. **HDF5 Compression**: Reduces storage requirements by 60-80%
-2. **Batch Processing**: Minimizes memory footprint for large datasets  
+2. **Batch Processing**: Minimizes memory footprint for large datasets
 3. **Checkpoint Management**: Automatic cleanup prevents storage bloat
 4. **GPU Utilization**: Optional acceleration without mandatory hardware
 5. **<span style="background-color: rgba(91, 57, 243, 0.2)">Database Storage Efficiency</span>**: <span style="background-color: rgba(91, 57, 243, 0.2)">Excluding bulk array data from the relational database keeps storage growth linear and minimal, with the metadata database scaling only with the number of recordings rather than data volume (typically <50MB for 100,000 syllables)</span>
@@ -11160,19 +11160,19 @@ mindmap
 ```mermaid
 timeline
     title Infrastructure Evolution Roadmap
-    
+
     Current State : File-based Processing
                   : Console Monitoring
                   : Source Installation
-    
+
     Phase 1       : GitHub Actions CI
                   : PyPI Distribution
                   : Docker Images
-    
+
     Phase 2       : Cloud Storage Integration
                   : GPU Cluster Support
                   : Jupyter Hub Deployment
-    
+
     Phase 3       : Web Interface
                   : Multi-User Platform
                   : Enterprise Features
@@ -11196,14 +11196,14 @@ graph TB
         D3 --> D4[Read the Docs]
         D4 --> D5[Documentation Hosting]
     end
-    
+
     subgraph "Build and Distribution"
         B1[setuptools] --> B2[pip Installation]
         B3[requirements.txt] --> B4[Dependency Resolution]
         B2 --> B5[Cross-platform Deployment]
         B4 --> B5
     end
-    
+
     subgraph "Runtime Infrastructure"
         R1[Python 3.5+ Runtime] --> R2[Scientific Computing Stack]
         R2 --> R3[PyTorch + CUDA]
@@ -11213,7 +11213,7 @@ graph TB
         R5 --> R7[File-based Persistence]
         DB1[SQLite Metadata DB<br/>ava.db] --> R2
     end
-    
+
     subgraph "Storage Architecture"
         S1[Audio Files WAV] --> S2[Segmentation Cache txt]
         S2 --> S3[Spectrogram Batches HDF5]
@@ -11222,19 +11222,19 @@ graph TB
         S5 --> S6[Visualizations HTML/PNG]
         DB1 --> S1
     end
-    
+
     subgraph "Monitoring Infrastructure"
         M1[Console Output] --> M2[Progress Tracking]
         M2 --> M3[Error Detection]
         M3 --> M4[Checkpoint Recovery]
         M4 --> M5[Quality Validation]
     end
-    
+
     D3 --> B1
     B5 --> R1
     R7 --> S1
     R2 --> M1
-    
+
     style DB1 fill:#5B39F3,color:#FFFFFF
 ```
 
@@ -11247,29 +11247,29 @@ sequenceDiagram
     participant L as Local Environment
     participant DB as Metadata Database
     participant D as Documentation
-    
+
     R->>G: Clone repository
     G->>L: Source code download
     L->>L: pip install .
     L->>L: Dependency resolution
     L->>R: Installation complete
-    
+
     R->>L: Execute ava_db_ingest.py
     L->>DB: Scan filesystem for audio/HDF5 files
     L->>DB: Compute SHA-256 checksums
     L->>DB: Insert metadata into database
     DB->>R: Metadata ingestion complete
-    
+
     R->>L: Execute analysis script
     L->>L: Audio processing
     L->>L: Model training
     L->>L: Visualization generation
     L->>R: Results and plots
-    
+
     G->>D: Automated doc build
     D->>D: Sphinx processing
     D->>R: Updated documentation
-    
+
     Note over L,DB: New metadata ingestion step
 ```
 
@@ -11281,22 +11281,22 @@ flowchart TD
         A[Available Resources] --> B{GPU Available?}
         B -->|Yes| C[CUDA Acceleration]
         B -->|No| D[CPU Processing]
-        
+
         C --> E[Determine Batch Size]
         D --> E
-        
+
         E --> F{Memory Sufficient?}
         F -->|Yes| G[Full Batch Processing]
         F -->|No| H[Reduce Batch Size]
-        
+
         G --> I[Execute Analysis]
         H --> I
-        
+
         I --> J[Monitor Progress]
         J --> K{Quality Acceptable?}
         K -->|Yes| L[Save Results]
         K -->|No| M[Adjust Parameters]
-        
+
         M --> E
         L --> N[Complete]
     end
@@ -11519,17 +11519,17 @@ subgraph "Dual-Tier Storage Decision Matrix"
     A --> AA["Structured Metadata Queries"]
     A --> BB["Referential Integrity"]
     A --> CC["Scientific Reproducibility"]
-    
+
     F["HDF5 Selection"] --> G["Native Array Support"]
     F --> H["Hierarchical Structure"]
     F --> I["Binary Compatibility"]
     F --> J["Built-in LZF Compression"]
-    
+
     FF["Relational DB Selection"] --> GG["Indexed Metadata Access"]
     FF --> HH["ACID Guarantees"]
     FF --> II["SQL Query Expressiveness"]
     FF --> JJ["Zero Array Duplication"]
-    
+
     B --> G
     C --> H
     D --> I
@@ -11538,12 +11538,12 @@ subgraph "Dual-Tier Storage Decision Matrix"
     BB --> HH
     CC --> II
     CC --> JJ
-    
+
     K["Alternative Evaluations"] --> L["SQLite: Chosen for metadata<br/>Rejected for array storage"]
     K --> M["NumPy .npy: Retained for embeddings<br/>Enhanced with metadata indexing"]
     K --> N["Parquet: Rejected<br/>Limited multi-dimensional support"]
     K --> O["PostgreSQL: Chosen for production metadata<br/>Rejected for bulk arrays"]
-    
+
     style FF fill:#5B39F3,stroke:#000000
     style GG fill:#5B39F3,stroke:#000000
     style HH fill:#5B39F3,stroke:#000000

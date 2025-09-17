@@ -67,7 +67,7 @@ controls the reconstruction/regularization tradeoff of the model. Very large
 positive values will make the VAE behave more like a deterministic autoencoder,
 encouraging better reconstructions. Small positive values produce
 better-behaved latents, but with poorer reconstructions.
-The default value is 10.  
+The default value is 10.
 
 
 Shotgun VAE Training

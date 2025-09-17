@@ -10,11 +10,11 @@ All functions adhere to the 15 LOC constraint and implement fail-loud behavior
 for database connection and transaction failures.
 """
 
+from collections.abc import Generator
 from contextlib import contextmanager
-from typing import Generator
 
-from sqlalchemy import create_engine, text, Engine
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy import Engine, create_engine, text
+from sqlalchemy.orm import Session, sessionmaker
 
 from ava.db.schema import Base
 
@@ -22,18 +22,18 @@ from ava.db.schema import Base
 def create_engine_from_url(database_url: str, echo: bool = False) -> Engine:
     """
     Create SQLAlchemy engine from database URL with optimized connection pooling.
-    
+
     Configures appropriate pooling parameters based on database type:
     - SQLite: check_same_thread=False with foreign key enforcement
     - PostgreSQL: pool_size=5, max_overflow=10 for concurrent operations
-    
+
     Args:
         database_url: Database connection string (sqlite:/// or postgresql+psycopg://)
         echo: Enable SQL query logging for debugging
-        
+
     Returns:
         Configured SQLAlchemy Engine instance
-        
+
     Raises:
         RuntimeError: On invalid URL format or connection failure
     """
@@ -47,7 +47,7 @@ def create_engine_from_url(database_url: str, echo: bool = False) -> Engine:
         engine = create_engine(database_url, echo=echo, pool_size=5, max_overflow=10)
     else:
         raise RuntimeError(f"Unsupported database URL format: {database_url}")
-    
+
     # Create all tables using Base metadata
     Base.metadata.create_all(engine)
     return engine
@@ -57,16 +57,16 @@ def create_engine_from_url(database_url: str, echo: bool = False) -> Engine:
 def get_session(engine: Engine) -> Generator[Session, None, None]:
     """
     Context manager providing database session with automatic transaction handling.
-    
+
     Creates session from engine, yields it for database operations, commits on success,
     and rolls back on any exception. Ensures proper resource cleanup.
-    
+
     Args:
         engine: SQLAlchemy Engine instance from create_engine_from_url()
-        
+
     Yields:
         Session: Configured SQLAlchemy session with transaction management
-        
+
     Raises:
         RuntimeError: On session creation failure or transaction errors
     """
