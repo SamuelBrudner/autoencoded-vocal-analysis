@@ -108,6 +108,61 @@ should have the same format as syllable segments, but should cover longer
 periods of vocalization.
 
 
+Shotgun VAE Training (Lightning)
+################################
+
+If you prefer standardized training loops, logging, and checkpointing, you can
+use the PyTorch Lightning wrappers. They reuse the :code:`ava.models.vae.VAE`
+forward pass and loss, so training behavior should match :code:`train_loop`
+when using the same loaders and hyperparameters (loss values should agree up to
+minibatch noise).
+
+.. code:: Python3
+
+	# Install: pip install pytorch-lightning
+	from pytorch_lightning import Trainer
+	from pytorch_lightning.callbacks import ModelCheckpoint
+	from pytorch_lightning.loggers import CSVLogger
+
+	from ava.models.shotgun_vae_lightning import ShotgunVAELightningModule, \
+		ShotgunVAEDataModule
+
+	save_dir = 'model/parameters/should/be/saved/here/'
+	data = ShotgunVAEDataModule(
+		audio_dirs=audio_dirs,
+		roi_dirs=roi_dirs,
+		params=params,
+		split=0.8,
+		batch_size=128,
+		num_workers=4,
+	)
+	model = ShotgunVAELightningModule(z_dim=32, model_precision=10.0, lr=1e-3, \
+		save_dir=save_dir)
+
+	checkpoint_cb = ModelCheckpoint(
+		dirpath=save_dir,
+		filename="shotgun-vae-{epoch:03d}",
+		save_top_k=-1,
+		every_n_epochs=10,
+	)
+	logger = CSVLogger(save_dir, name="shotgun_vae_logs")
+
+	trainer = Trainer(
+		max_epochs=101,
+		callbacks=[checkpoint_cb],
+		logger=logger,
+		log_every_n_steps=10,
+	)
+	trainer.fit(model, datamodule=data)
+
+This will emit checkpoint files in :code:`save_dir` and training logs in
+:code:`save_dir/shotgun_vae_logs` while preserving the same ELBO objective as
+the original training script.
+For a quick parity check, run a few epochs with both the Lightning trainer and
+the legacy :code:`train_loop` on the same loaders and compare the average train
+loss values; they should be close (within minibatch noise).
+
+
 Warped Shotgun VAE Training
 ###########################
 

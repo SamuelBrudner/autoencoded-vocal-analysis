@@ -32,3 +32,11 @@ ava.models.window\_vae\_dataset module
     :members:
     :undoc-members:
     :show-inheritance:
+
+ava.models.shotgun\_vae\_lightning module
+-----------------------------------------
+
+.. automodule:: ava.models.shotgun_vae_lightning
+    :members:
+    :undoc-members:
+    :show-inheritance:
