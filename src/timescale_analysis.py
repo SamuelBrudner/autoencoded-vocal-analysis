@@ -38,14 +38,20 @@ def compute_mel_acf(audio_path: Path, p: Dict) -> Tuple[np.ndarray, np.ndarray, 
     for band in range(spec.shape[0]):
         x = spec[band, :]
         x = x - np.mean(x)
+        if np.allclose(x, 0):
+            continue
         # Full correlation
         corr = correlate(x, x, mode='full')
         corr = corr[len(corr)//2:] # Take positive lags
-        if corr[0] > 0:
-            corr = corr / corr[0]
+        if corr[0] <= 0:
+            continue
+        corr = corr / corr[0]
         all_acfs.append(corr)
     
-    avg_acf = np.mean(all_acfs, axis=0)
+    if all_acfs:
+        avg_acf = np.mean(all_acfs, axis=0)
+    else:
+        avg_acf = np.ones(time_bins)
     lags = np.arange(len(avg_acf)) * dt
     
     # Find 1/e decay
