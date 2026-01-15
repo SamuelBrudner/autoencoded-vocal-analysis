@@ -29,7 +29,29 @@ Context: Zebra finch song recordings from Ofer Tchernichovsi's lab.
 | day90 bells | 326,330 | 138.69 |
 | isolates | 1,079,311 | 650.69 |
 
+## Age Ranges (dph) by Directory
+Derived from numeric folder names directly under bird ID directories (bird IDs look like `R658` or `R 203`).
+
+| Directory | Bird IDs | Distinct dph | DPH range |
+| --- | ---: | ---: | ---: |
+| Day 35 bells | 2 | 97 | 34-140 |
+| day 35 Simple | 1 | 0 | N/A |
+| day 43 samba | 4 | 72 | 33-105 |
+| day 43 simple | 3 | 73 | 39-112 |
+| day 60 bells | 2 | 58 | 36-99 |
+| day 60 samba | 3 | 58 | 36-99 |
+| day 60 simple | 1 | 10 | 90-99 |
+| day 75 bells | 4 | 98 | 34-131 |
+| day 75 samba | 4 | 91 | 42-132 |
+| day 90 samba | 5 | 99 | 35-133 |
+| day 90 simple | 2 | 62 | 37-99 |
+| day43 Bells | 7 | 69 | 31-99 |
+| day90 bells | 4 | 63 | 37-99 |
+| isolates | 13 | 87 | 35-666 |
+
 ## Notes
 - The dataset is overwhelmingly `.wav` audio; other file types look like small database artifacts (e.g., `.myd/.myi/.frm`) and a handful of images/logs.
 - There are AppleDouble `._*` files at the root and within folders; these are macOS metadata and can usually be ignored for analysis.
 - Folder naming (per your guidance): `bells`, `simple`, `samba`, and `isolates` refer to different artificial tutoring regimes (song models). `Day **` indicates the day tutoring begins. Numeric subfolders inside these directories are the dph (days post-hatch) when the audio was recorded.
+- `day 35 Simple` uses date-stamped session folders under `R205` (e.g., `205Oct_31_15_33`) rather than standalone numeric dph folders, so age ranges are not inferable from folder names alone.
+- `isolates` includes a small set of high numeric folders (>200: 276, 284, 294, 332, 333, 334, 344, 346, 427, 666); confirm whether these represent dph or a different labeling scheme.
