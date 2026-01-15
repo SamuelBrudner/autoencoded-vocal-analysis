@@ -32,3 +32,4 @@ Context: Zebra finch song recordings from Ofer Tchernichovsi's lab.
 ## Notes
 - The dataset is overwhelmingly `.wav` audio; other file types look like small database artifacts (e.g., `.myd/.myi/.frm`) and a handful of images/logs.
 - There are AppleDouble `._*` files at the root and within folders; these are macOS metadata and can usually be ignored for analysis.
+- Folder naming (per your guidance): `bells`, `simple`, `samba`, and `isolates` refer to different artificial tutoring regimes (song models). `Day **` indicates the day tutoring begins. Numeric subfolders inside these directories are the dph (days post-hatch) when the audio was recorded.
