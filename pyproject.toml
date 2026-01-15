@@ -1,0 +1,7 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.codex_orchestrator]
+env = "ava"
+allow_env_creation = true
