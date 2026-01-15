@@ -54,4 +54,6 @@ Derived from numeric folder names directly under bird ID directories (bird IDs l
 - There are AppleDouble `._*` files at the root and within folders; these are macOS metadata and can usually be ignored for analysis.
 - Folder naming (per your guidance): `bells`, `simple`, `samba`, and `isolates` refer to different artificial tutoring regimes (song models). `Day **` indicates the day tutoring begins. Numeric subfolders inside these directories are the dph (days post-hatch) when the audio was recorded.
 - `day 35 Simple` uses date-stamped session folders under `R205` (e.g., `205Oct_31_15_33`) rather than standalone numeric dph folders, so age ranges are not inferable from folder names alone.
+- `day 35 Simple` contains 16 session directories (from `205Oct_26_10_40` through `205Jan_01_14_44`) and 81,390 `.wav` files for bird `R205`.
+- `day 35 Simple` filenames encode recording timestamps as `bird205_<index>_on_<Mon>_<DD>_<HH>_<MM>.wav` (recordings span Oct 26 through Jan 10); dph is not encoded in names.
 - `isolates` includes a small set of high numeric folders (>200: 276, 284, 294, 332, 333, 334, 344, 346, 427, 666); confirm whether these represent dph or a different labeling scheme.
