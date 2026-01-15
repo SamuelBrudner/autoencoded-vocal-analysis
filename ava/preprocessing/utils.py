@@ -8,7 +8,7 @@ __date__ = "August 2019 - October 2020"
 import numpy as np
 import warnings
 from scipy.signal import stft
-from scipy.interpolate import interp2d
+from scipy.interpolate import RegularGridInterpolator
 
 
 EPSILON = 1e-12
@@ -77,7 +77,7 @@ def get_spec(t1, t2, audio, p, fs=32000, target_freqs=None, target_times=None, \
 				noverlap=p['noverlap'])
 	t += max(0,t1)
 	spec = np.log(np.abs(spec) + EPSILON)
-	interp = interp2d(t, f, spec, copy=False, bounds_error=False, \
+	interp = RegularGridInterpolator((f, t), spec, bounds_error=False, \
 		fill_value=fill_value)
 	# Define target frequencies.
 	if target_freqs is None:
@@ -96,8 +96,9 @@ def get_spec(t1, t2, audio, p, fs=32000, target_freqs=None, target_times=None, \
 		shoulder = 0.5 * (max_dur - duration)
 		target_times = np.linspace(t1-shoulder, t2+shoulder, p['num_time_bins'])
 	# Then interpolate.
-	interp_spec = interp(target_times, target_freqs, assume_sorted=True)
-	spec = interp_spec
+	freq_grid, time_grid = np.meshgrid(target_freqs, target_times, \
+		indexing='ij')
+	spec = interp(np.stack([freq_grid, time_grid], axis=-1))
 	# Normalize.
 	spec -= p['spec_min_val']
 	spec /= (p['spec_max_val'] - p['spec_min_val'])

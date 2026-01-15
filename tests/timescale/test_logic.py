@@ -2,8 +2,9 @@ import numpy as np
 from scipy.io import wavfile
 from pathlib import Path
 from src.timescale_analysis import compute_mel_acf
-from ava.models.vae import X_SHAPE
 from ava.preprocessing.utils import get_spec
+
+NUM_FREQ_BINS = 128
 
 def test_timescale_logic():
     # Create a dummy wav file with some structure (e.g. filtered noise)
@@ -22,14 +23,14 @@ def test_timescale_logic():
     p = {
         'fs': fs,
         'get_spec': get_spec,
-        'num_freq_bins': X_SHAPE[0],
+        'num_freq_bins': NUM_FREQ_BINS,
         'num_time_bins': 256, # More bins for better resolution
         'nperseg': 512,
         'noverlap': 256,
         'max_dur': 2.0,
         'min_freq': 400,
         'max_freq': 10000,
-        'spec_min_val': -5.0,
+        'spec_min_val': -25.0,
         'spec_max_val': 2.0,
         'mel': True,
         'time_stretch': False,

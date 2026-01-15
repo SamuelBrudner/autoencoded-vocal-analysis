@@ -34,6 +34,7 @@ See the `examples/` subdirectory
 
    install
    overview
+   architecture_roadmap
    segment
    preprocess
    training
