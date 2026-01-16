@@ -1,23 +1,21 @@
 import numpy as np
 from scipy.io import wavfile
-from pathlib import Path
 from src.timescale_analysis import compute_mel_acf
 from ava.preprocessing.utils import get_spec
 
 NUM_FREQ_BINS = 128
 
-def test_timescale_logic():
+def test_timescale_logic(tmp_path):
     # Create a dummy wav file with some structure (e.g. filtered noise)
     fs = 32000
     # Signal with ~50ms correlation
-    audio = np.random.randn(fs)
+    rng = np.random.default_rng(0)
+    audio = rng.standard_normal(fs)
     from scipy.signal import butter, lfilter
     b, a = butter(4, 20/(fs/2), btype='low')
     audio = lfilter(b, a, audio)
-    
-    test_dir = Path("tests/data")
-    test_dir.mkdir(parents=True, exist_ok=True)
-    wav_path = test_dir / "test.wav"
+
+    wav_path = tmp_path / "test.wav"
     wavfile.write(str(wav_path), fs, audio.astype(np.float32))
     
     p = {
