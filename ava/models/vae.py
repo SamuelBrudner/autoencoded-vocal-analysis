@@ -20,13 +20,24 @@ __date__ = "November 2018 - November 2019"
 
 import numpy as np
 import os
-import torch
-from torch.distributions import LowRankMultivariateNormal
-import torch.nn as nn
-import torch.nn.functional as F
-from torch.optim import Adam
+from types import SimpleNamespace
 
-from ava.models.vae_dataset import SyllableDataset
+try:
+	import torch
+	from torch.distributions import LowRankMultivariateNormal
+	import torch.nn as nn
+	import torch.nn.functional as F
+	from torch.optim import Adam
+except ImportError as exc:  # pragma: no cover - optional in some envs
+	torch = None
+	LowRankMultivariateNormal = None
+	F = None
+	Adam = None
+	_TORCH_IMPORT_ERROR = exc
+	nn = SimpleNamespace(Module=object)
+else:
+	_TORCH_IMPORT_ERROR = None
+
 from ava.plotting.grid_plot import grid_plot
 
 
@@ -104,6 +115,11 @@ class VAE(nn.Module):
 			This means `self.z_dim` must match `z_dim` of the model being
 			loaded.
 		"""
+		if _TORCH_IMPORT_ERROR is not None:
+			raise ImportError(
+				"PyTorch is required for ava.models.vae. "
+				"Install with `pip install torch`."
+			) from _TORCH_IMPORT_ERROR
 		super(VAE, self).__init__()
 		self.save_dir = save_dir
 		self.lr = lr

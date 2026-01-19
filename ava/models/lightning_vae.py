@@ -265,7 +265,8 @@ def build_trainer(save_dir: str = "", epochs: int = 100,
 	vis_freq: Optional[int] = 1, vis_loader=None, num_specs: int = 5,
 	gap=(2, 6), vis_filename: str = "reconstruction.pdf",
 	trainer_kwargs: Optional[dict] = None,
-	stopping_kwargs: Optional[dict] = None) -> "pl.Trainer":
+	stopping_kwargs: Optional[dict] = None,
+	extra_callbacks: Optional[list] = None) -> "pl.Trainer":
 	"""Create a Trainer configured like the legacy training loop."""
 	if trainer_kwargs is None:
 		trainer_kwargs = {}
@@ -282,6 +283,8 @@ def build_trainer(save_dir: str = "", epochs: int = 100,
 		))
 	if stopping_kwargs is not None:
 		callbacks.append(VAEMotivatedStoppingCallback(**stopping_kwargs))
+	if extra_callbacks:
+		callbacks.extend(extra_callbacks)
 	trainer_kwargs = dict(trainer_kwargs)
 	trainer_kwargs.setdefault("enable_checkpointing", False)
 	trainer_kwargs.setdefault("logger", False)
@@ -301,7 +304,8 @@ def train_vae(loaders: dict, save_dir: str = "", lr: float = 1e-3,
 	test_freq: Optional[int] = 2, save_freq: Optional[int] = 10,
 	vis_freq: Optional[int] = 1, num_specs: int = 5, gap=(2, 6),
 	vis_filename: str = "reconstruction.pdf", trainer_kwargs: Optional[dict] = None,
-	vae: Optional[VAE] = None, stopping_kwargs: Optional[dict] = None):
+	vae: Optional[VAE] = None, stopping_kwargs: Optional[dict] = None,
+	extra_callbacks: Optional[list] = None):
 	"""Train a VAE with Lightning while preserving legacy outputs."""
 	if "train" not in loaders or loaders["train"] is None:
 		raise ValueError("loaders must include a non-empty 'train' dataloader.")
@@ -325,6 +329,7 @@ def train_vae(loaders: dict, save_dir: str = "", lr: float = 1e-3,
 		vis_filename=vis_filename,
 		trainer_kwargs=trainer_kwargs,
 		stopping_kwargs=stopping_kwargs,
+		extra_callbacks=extra_callbacks,
 	)
 	val_loader = None
 	if test_freq is not None:
