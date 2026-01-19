@@ -38,3 +38,4 @@ bd sync               # Sync with git
 - NEVER say "ready to push when you are" - YOU must push
 - If push fails, resolve and retry until it succeeds
 
+Finally, avoid opening PRs to the pearsonlab repo. We're only using our forked repo for now.
