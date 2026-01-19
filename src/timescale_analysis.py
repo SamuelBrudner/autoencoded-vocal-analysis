@@ -50,9 +50,9 @@ def compute_mel_acf(audio_path: Path, p: Dict) -> Tuple[np.ndarray, np.ndarray, 
     
     # Find 1/e decay
     target = 1.0 / np.exp(1)
-    idx = np.where(avg_acf <= target)[0]
+    idx = np.where(avg_acf[1:] <= target)[0]
     if len(idx) > 0:
-        tau_e = lags[idx[0]]
+        tau_e = lags[idx[0] + 1]
     else:
         tau_e = lags[-1]
         

@@ -16,7 +16,7 @@ import os
 
 from ava.data.data_container import DataContainer
 from ava.models.vae import X_SHAPE
-from ava.models.vae import VAE
+from ava.models.lightning_vae import train_vae
 from ava.models.window_vae_dataset import get_window_partition, \
 	get_fixed_window_data_loaders
 from ava.preprocessing.preprocess import tune_window_preprocessing_params
@@ -76,8 +76,7 @@ num_workers = min(7, os.cpu_count()-1)
 loaders = get_fixed_window_data_loaders(partition, params, \
 	num_workers=num_workers, batch_size=128)
 loaders['test'] = loaders['train']
-model = VAE(save_dir=root)
-model.train_loop(loaders, epochs=101, test_freq=None)
+model, trainer = train_vae(loaders, save_dir=root, epochs=101, test_freq=None)
 
 
 ############

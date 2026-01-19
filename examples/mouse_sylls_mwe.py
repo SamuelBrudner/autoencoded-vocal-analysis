@@ -19,7 +19,8 @@ import numpy as np
 import os
 
 from ava.data.data_container import DataContainer
-from ava.models.vae import X_SHAPE, VAE
+from ava.models.vae import X_SHAPE
+from ava.models.lightning_vae import train_vae
 from ava.models.vae_dataset import get_syllable_partition, \
 	get_syllable_data_loaders
 from ava.preprocessing.preprocess import process_sylls, \
@@ -129,13 +130,11 @@ Parallel(n_jobs=n_jobs)(delayed(process_sylls)(*args) for args in gen)
 ###################################################
 # 5) Train a generative model on these syllables. #
 ###################################################
-model = VAE(save_dir=root)
-# model.load_state(root+'checkpoint_150.tar')
 partition = get_syllable_partition(spec_dirs, split=1, max_num_files=2500)
 num_workers = os.cpu_count()-1
 loaders = get_syllable_data_loaders(partition, num_workers=num_workers)
 loaders['test'] = loaders['train']
-model.train_loop(loaders, epochs=151, test_freq=None)
+model, trainer = train_vae(loaders, save_dir=root, epochs=151, test_freq=None)
 
 
 ############

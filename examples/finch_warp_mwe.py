@@ -16,7 +16,7 @@ import os
 
 from ava.data.data_container import DataContainer
 from ava.models.vae import X_SHAPE
-from ava.models.vae import VAE
+from ava.models.lightning_vae import train_vae
 from ava.models.window_vae_dataset import get_warped_window_data_loaders
 from ava.preprocessing.preprocess import tune_window_preprocessing_params
 from ava.preprocessing.utils import get_spec
@@ -75,8 +75,8 @@ num_workers = min(7, os.cpu_count()-1)
 loaders = get_warped_window_data_loaders(audio_dirs, template_dir, params, \
 		num_workers=num_workers, load_warp=True)
 loaders['test'] = loaders['train']
-model = VAE(save_dir=root)
-model.train_loop(loaders, epochs=201, save_freq=50, test_freq=None)
+model, trainer = train_vae(loaders, save_dir=root, epochs=201, save_freq=50,
+	test_freq=None)
 
 
 ############

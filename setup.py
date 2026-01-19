@@ -34,6 +34,7 @@ setuptools.setup(
     ],
     install_requires=[
         "torch>=1.1,!=1.12.0",
+        "pytorch-lightning>=1.9",
         "numpy",
         "matplotlib",
         "joblib",

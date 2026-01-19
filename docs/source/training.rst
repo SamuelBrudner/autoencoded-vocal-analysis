@@ -31,13 +31,10 @@ Now we're ready to train the VAE.
 
 .. code:: Python3
 
-	# Construct network.
-	from ava.models.vae import VAE
+	# Construct network and train with Lightning.
+	from ava.models.lightning_vae import train_vae
 	save_dir = 'model/parameters/should/be/saved/here/'
-	model = VAE(save_dir=save_dir)
-
-	# Train.
-	model.train_loop(loaders, epochs=101)
+	model, trainer = train_vae(loaders, save_dir=save_dir, epochs=101)
 
 
 
@@ -51,14 +48,16 @@ You may also want to continue training a previously saved model:
 .. code:: Python3
 
 	# Make an untrained model.
-	model = VAE(save_dir=save_dir)
+	from ava.models.vae import VAE
+	vae = VAE(save_dir=save_dir)
 
 	# Load saved state.
 	model_checkpoint = 'path/to/checkpoint_100.tar'
-	model.load_state(model_checkpoint)
+	vae.load_state(model_checkpoint)
 
 	# Train another few epochs.
-	model.train_loop(loaders, epochs=51)
+	from ava.models.lightning_vae import train_vae
+	model, trainer = train_vae(loaders, vae=vae, epochs=51)
 
 
 
@@ -97,10 +96,9 @@ Then training is the same as before:
 .. code:: Python3
 
 	# Train.
-	from ava.models.vae import VAE
+	from ava.models.lightning_vae import train_vae
 	save_dir = 'model/parameters/should/be/saved/here/'
-	model = VAE(save_dir=save_dir)
-	model.train_loop(loaders, epochs=101)
+	model, trainer = train_vae(loaders, save_dir=save_dir, epochs=101)
 
 
 Note that we define segments for the shotgun VAE in :code:`roi_dirs`. These
