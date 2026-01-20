@@ -1,8 +1,10 @@
+sphinx
+sphinx-rtd-theme
 numpy
 matplotlib
 joblib
-umap
+umap-learn
 numba
-sklearn
+scikit-learn
 scipy
 h5py

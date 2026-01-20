@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.io import wavfile
 from pathlib import Path
-from src.timescale_analysis import compute_mel_acf
+from ava.timescale_analysis import compute_mel_acf
 from ava.models.vae import X_SHAPE
 from ava.preprocessing.utils import get_spec
 

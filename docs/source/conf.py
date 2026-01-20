@@ -15,6 +15,11 @@
 import os
 import sys
 
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+SRC_ROOT = os.path.join(ROOT, "src")
+if SRC_ROOT not in sys.path:
+    sys.path.insert(0, SRC_ROOT)
+
 import ava
 # sys.path.insert(0, os.path.abspath('.'))
 # sys.path.insert(0, os.path.abspath('../../../autoencoded-vocal-analysis/'))

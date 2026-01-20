@@ -1,6 +1,58 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "autoencoded-vocal-analysis"
+dynamic = ["version"]
+description = "Generative modeling of animal vocalizations"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [{name = "Jack Goffinet", email = "jack.goffinet@duke.edu"}]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "torch>=1.1,!=1.12.0",
+    "pytorch-lightning>=1.9",
+    "numpy",
+    "matplotlib",
+    "joblib",
+    "umap-learn",
+    "numba",
+    "scikit-learn",
+    "scipy",
+    "bokeh",
+    "h5py",
+    "tqdm",
+    "affinewarp @ git+https://github.com/ahwillia/affinewarp.git",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "optuna",
+]
+docs = [
+    "sphinx",
+    "sphinx-rtd-theme",
+]
+
+[project.urls]
+Homepage = "https://github.com/pearsonlab/autoencoded-vocal-analysis"
+Documentation = "https://autoencoded-vocal-analysis.readthedocs.io/en/latest/index.html"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.dynamic]
+version = {attr = "ava.__version__"}
 
 [tool.codex_orchestrator]
 env = "ava"
