@@ -1,0 +1,22 @@
+name: ava-train
+channels:
+  - pytorch
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pip
+  - pytorch
+  - pytorch-lightning
+  - numpy
+  - scipy
+  - scikit-learn
+  - numba
+  - matplotlib
+  - joblib
+  - h5py
+  - bokeh
+  - tqdm
+  - umap-learn
+  - pip:
+      - "affinewarp @ git+https://github.com/ahwillia/affinewarp.git"
