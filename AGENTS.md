@@ -12,6 +12,20 @@ bd close <id>         # Complete work
 bd sync               # Sync with git
 ```
 
+## Commit Messages
+
+Use this exact subject format:
+
+```
+(feat): <description of the work that was done> (prescribed by bead <ID>)
+```
+
+Example:
+
+```
+(feat): add dataset preprocessing checks (prescribed by bead autoencoded-vocal-analysis-4no)
+```
+
 ## Landing the Plane (Session Completion)
 
 **When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git commit` succeeds.
