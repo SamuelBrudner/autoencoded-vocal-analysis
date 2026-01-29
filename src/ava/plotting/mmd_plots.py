@@ -50,6 +50,12 @@ np.random.shuffle(COLOR_LIST)
 np.random.seed(None)
 
 
+def _ensure_parent_dir(path):
+	parent = os.path.dirname(path)
+	if parent != '' and not os.path.exists(parent):
+		os.makedirs(parent)
+
+
 def mmd_matrix_plot_DC(dc, condition_from_fn, mmd2_fn, condition_fn, \
 	parallel=False, load_data=False, cluster=False, alg='quadratic', max_n=None,\
 	sigma=None, cmap='Greys', colorbar=True, cax=None, ticks=[0.0,0.3], \
@@ -164,6 +170,7 @@ def mmd_matrix_plot(mmd2, cluster=False, cmap='viridis', ax=None, \
 		labels = ["{0:.1f}".format(round(tick,1)) for tick in ticks]
 		cbar.ax.set_xticklabels(labels)
 	if save_and_close:
+		_ensure_parent_dir(filename)
 		plt.savefig(filename)
 		plt.close('all')
 
@@ -248,6 +255,7 @@ def mmd_tsne_plot_DC(dc, mmd2_fn=None, condition_fn=None, mmd2=None, \
 			ax.annotate(label_func(conditions[i]), embed[i])
 	plt.axis('off')
 	if save_and_close:
+		_ensure_parent_dir(os.path.join(dc.plots_dir, filename))
 		plt.savefig(os.path.join(dc.plots_dir, filename))
 		plt.close('all')
 

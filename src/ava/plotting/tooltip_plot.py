@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 plt.switch_backend('agg')
 import os
 import numpy as np
-import umap
 
 
 
@@ -83,6 +82,8 @@ def tooltip_plot(embedding, images, output_dir='temp', num_imgs=10000, title="",
 
 	n = min(len(embedding), n)
 	num_imgs = min(len(images), num_imgs)
+	if not os.path.exists(output_dir):
+		os.makedirs(output_dir)
 	_write_images(embedding, images, output_dir=output_dir, num_imgs=num_imgs, n=n)
 	output_file(os.path.join(output_dir, "main.html"))
 	source = ColumnDataSource(
@@ -98,7 +99,11 @@ def tooltip_plot(embedding, images, output_dir='temp', num_imgs=10000, title="",
 				y=embedding[num_imgs:,1],
 			)
 		)
-	p = figure(plot_width=800, plot_height=600, title=title)
+	p = figure(width=800, height=800, title=title)
+	if hasattr(p, "match_aspect"):
+		p.match_aspect = True
+	if hasattr(p, "aspect_ratio"):
+		p.aspect_ratio = 1
 	p.scatter('x', 'y', size=3, fill_color='blue', fill_alpha=0.1, source=source2)
 	tooltip_points = p.scatter('x', 'y', size=5, fill_color='red', source=source)
 	hover = HoverTool(

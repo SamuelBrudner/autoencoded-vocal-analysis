@@ -20,6 +20,7 @@ dependencies = [
     "pytorch-lightning>=1.9",
     "numpy",
     "matplotlib",
+    "moviepy",
     "joblib",
     "umap-learn",
     "numba",

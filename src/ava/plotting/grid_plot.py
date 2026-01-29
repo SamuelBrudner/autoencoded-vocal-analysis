@@ -11,6 +11,12 @@ import numpy as np
 import os
 
 
+def _ensure_parent_dir(path):
+	parent = os.path.dirname(path)
+	if parent != '' and not os.path.exists(parent):
+		os.makedirs(parent)
+
+
 
 def indexed_grid_plot_DC(dc, indices, ax=None, save_and_close=True, gap=3, \
 	side_len=128, filename='grid.pdf'):
@@ -90,6 +96,7 @@ def grid_plot(specs, gap=3, vmin=0.0, vmax=1.0, ax=None, save_and_close=True, \
 		vmin=vmin, vmax=vmax)
 	ax.axis('off')
 	if save_and_close:
+		_ensure_parent_dir(filename)
 		plt.tight_layout()
 		plt.savefig(filename)
 		plt.close('all')

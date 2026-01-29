@@ -24,7 +24,6 @@ from scipy.io import wavfile
 from scipy.io.wavfile import WavFileWarning
 from scipy.spatial.distance import euclidean, correlation
 from sklearn.neighbors import NearestNeighbors
-import subprocess
 import torch
 from torch.utils.data import Dataset, DataLoader
 import warnings
@@ -165,7 +164,7 @@ def shotgun_movie_DC(dc, audio_file, p, method='spectrogram_correlation', \
 	# Save images.
 	print("Saving images:")
 	if not os.path.exists(output_dir):
-		os.mkdir(output_dir)
+		os.makedirs(output_dir)
 	for i in range(len(new_embed)):
 		plt.scatter(original_embed[:,0], original_embed[:,1], \
 				c=[c]*len(original_embed), alpha=alpha, s=s)
@@ -179,15 +178,13 @@ def shotgun_movie_DC(dc, audio_file, p, method='spectrogram_correlation', \
 		plt.close('all')
 	print("\tDone.")
 	# Make video.
-	img_fns = os.path.join(output_dir, 'viz-%05d.jpg')
 	video_fn = os.path.join(output_dir, mp4_fn)
-	bashCommand = 'ffmpeg -y -r {} -i {} {}'.format(fps, img_fns, 'temp.mp4')
-	process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
-	output, error = process.communicate()
-	bashCommand = 'ffmpeg -y -r {} -i {} -i {} -c:a aac -strict ' + \
-			'-2 {}'.format(fps,'temp.mp4',audio_file,video_fn)
-	process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
-	output, error = process.communicate()
+	image_files = [
+		os.path.join(output_dir, f"viz-{i:05d}.jpg")
+		for i in range(len(new_embed))
+	]
+	_make_movie(image_files, video_fn, fps=fps, audio_file=audio_file,
+		start_time=shoulder)
 
 
 
@@ -200,6 +197,44 @@ class SimpleDataset(Dataset):
 
 	def __getitem__(self, index):
 		return torch.from_numpy(self.specs[index]).type(torch.FloatTensor)
+
+
+def _make_movie(image_files, video_fn, fps, audio_file=None, start_time=0.0):
+	try:
+		from moviepy.video.io.ImageSequenceClip import ImageSequenceClip
+		from moviepy.audio.io.AudioFileClip import AudioFileClip
+	except ModuleNotFoundError as exc:
+		raise ModuleNotFoundError(
+			"moviepy is required for shotgun_movie. Install with `pip install "
+			"moviepy`."
+		) from exc
+	clip = ImageSequenceClip(image_files, fps=fps)
+	audio_clip = None
+	if audio_file is not None:
+		try:
+			audio_clip = AudioFileClip(audio_file)
+			if start_time is not None and start_time > 0:
+				start = min(max(start_time, 0.0), audio_clip.duration)
+				end = min(start + clip.duration, audio_clip.duration)
+				if end > start:
+					audio_clip = audio_clip.subclip(start, end)
+			audio_clip = audio_clip.set_duration(clip.duration)
+			clip = clip.set_audio(audio_clip)
+		except Exception as exc:
+			warnings.warn(f"Unable to attach audio to movie: {exc}")
+	try:
+		clip.write_videofile(
+			video_fn,
+			fps=fps,
+			codec="libx264",
+			audio_codec="aac",
+			verbose=False,
+			logger=None,
+		)
+	finally:
+		clip.close()
+		if audio_clip is not None:
+			audio_clip.close()
 
 
 

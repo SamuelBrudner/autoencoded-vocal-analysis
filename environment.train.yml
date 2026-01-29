@@ -13,6 +13,7 @@ dependencies:
   - scikit-learn
   - numba
   - matplotlib
+  - moviepy
   - joblib
   - h5py
   - bokeh
