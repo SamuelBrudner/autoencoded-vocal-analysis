@@ -18,6 +18,8 @@ classifiers = [
 dependencies = [
     "torch>=2.1",
     "pytorch-lightning>=1.9",
+    "tensorboard",
+    "pyyaml",
     "numpy",
     "matplotlib",
     "moviepy",

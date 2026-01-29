@@ -1,0 +1,55 @@
+preprocess:
+  fs: 303030
+  get_spec: get_spec
+  num_freq_bins: 128
+  num_time_bins: 128
+  nperseg: 1024
+  noverlap: 512
+  max_dur: 1000000000.0
+  window_length: 0.2
+  min_freq: 30000.0
+  max_freq: 110000.0
+  spec_min_val: -6.5
+  spec_max_val: -2.5
+  mel: false
+  time_stretch: false
+  within_syll_normalize: false
+  real_preprocess_params:
+    - min_freq
+    - max_freq
+    - spec_min_val
+    - spec_max_val
+  int_preprocess_params: []
+  binary_preprocess_params:
+    - mel
+    - within_syll_normalize
+
+data:
+  batch_size: 128
+  num_workers:
+  shuffle_train: true
+  shuffle_test: false
+  min_spec_val:
+  spec_cache_dir:
+  audio_cache_size: 0
+  pin_memory:
+  persistent_workers:
+  prefetch_factor: 2
+
+training:
+  lr: 0.001
+  z_dim: 32
+  model_precision: 10.0
+  epochs: 101
+  test_freq:
+  save_freq: 20
+  vis_freq: 1
+  num_specs: 5
+  gap:
+    - 2
+    - 6
+  vis_filename: reconstruction.pdf
+  posterior_type: diag
+  compile_model: false
+  trainer_kwargs: {}
+  stopping_kwargs:

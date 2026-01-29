@@ -11,6 +11,8 @@ Contains
 	Feeds syllable data to the VAE.
 `ava.models.shotgun_vae_dataset`
 	Feeds random data to the shotgun VAE.
+`ava.models.fixed_window_config`
+	Structured configuration for fixed-window VAE experiments.
 `ava.models.window_vae_dataset`
 	Legacy name for shotgun VAE datasets.
 `ava.models.utils`
@@ -19,6 +21,7 @@ Contains
 
 __all__ = [
 	"lightning_vae",
+	"fixed_window_config",
 	"optuna_sweep",
 	"shotgun_vae_dataset",
 	"utils",

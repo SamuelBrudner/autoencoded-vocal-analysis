@@ -4,6 +4,7 @@ PyTorch Lightning training utilities for the VAE.
 from __future__ import annotations
 
 import math
+import os
 from typing import Optional
 
 import torch
@@ -16,6 +17,7 @@ except ImportError as exc:  # pragma: no cover - only hit when optional dep miss
 		"PyTorch Lightning is required for ava.models.lightning_vae. "
 		"Install with `pip install pytorch-lightning`."
 	) from exc
+from pytorch_lightning.loggers import TensorBoardLogger
 
 from ava.models.vae import VAE
 
@@ -333,7 +335,12 @@ def build_trainer(save_dir: str = "", epochs: int = 100,
 		)
 		trainer_kwargs["precision"] = 16 if use_amp else 32
 	trainer_kwargs.setdefault("enable_checkpointing", False)
-	trainer_kwargs.setdefault("logger", False)
+	if "logger" not in trainer_kwargs:
+		log_root = save_dir if save_dir else os.getcwd()
+		trainer_kwargs["logger"] = TensorBoardLogger(
+			save_dir=log_root,
+			name="lightning_logs",
+		)
 	if test_freq is not None:
 		trainer_kwargs.setdefault("check_val_every_n_epoch", test_freq)
 	default_root_dir = save_dir if save_dir else None

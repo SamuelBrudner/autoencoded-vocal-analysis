@@ -9,46 +9,29 @@ Minimal working example for shotgun VAE using unwarped birdsong.
 
 """
 
-from itertools import repeat
-from joblib import Parallel, delayed
-import numpy as np
 import os
 
 from ava.data.data_container import DataContainer
-from ava.models.vae import X_SHAPE
 from ava.models.lightning_vae import train_vae
+from ava.models.fixed_window_config import FixedWindowExperimentConfig
 from ava.models.shotgun_vae_dataset import get_shotgun_partition, \
 	get_fixed_shotgun_data_loaders
 from ava.preprocessing.preprocess import tune_window_preprocessing_params
-from ava.preprocessing.utils import get_spec
 
 
 #########################################
 # 0) Define directories and parameters. #
 #########################################
-zebra_finch_params = {
-	'fs': 32000,
-	'get_spec': get_spec,
-	'num_freq_bins': X_SHAPE[0], # match VAE input_shape
-	'num_time_bins': X_SHAPE[1], # match VAE input_shape
-	'nperseg': 512, # FFT
-	'noverlap': 256, # FFT
-	'max_dur': 1e9, # Big number
-	'window_length': 0.12,
-	'min_freq': 400,
-	'max_freq': 10e3,
-	'spec_min_val': 2.0,
-	'spec_max_val': 6.5,
-	'mel': True, # Frequency spacing
-	'time_stretch': False,
-	'within_syll_normalize': False,
-	'real_preprocess_params': ('min_freq', 'max_freq', 'spec_min_val', \
-			'spec_max_val'),
-	'int_preprocess_params': tuple([]),
-	'binary_preprocess_params': ('mel', 'within_syll_normalize'),
-}
+config_path = os.path.join(
+	os.path.dirname(__file__),
+	"configs",
+	"fixed_window_finch.yaml",
+)
+config = FixedWindowExperimentConfig.from_yaml(config_path)
+params = config.preprocess.to_params()
+data_config = config.data
+train_config = config.training
 root = '/path/to/directory/'
-params = zebra_finch_params
 audio_dirs = [os.path.join(root, 'audio')]
 roi_dirs = [os.path.join(root, 'segs')]
 spec_dirs = [os.path.join(root, 'h5s')]
@@ -72,11 +55,16 @@ params = tune_window_preprocessing_params(audio_dirs, params)
 ###################################################
 partition = get_shotgun_partition(audio_dirs, roi_dirs, 1)
 partition['test'] = partition['train']
-num_workers = min(7, os.cpu_count()-1)
-loaders = get_fixed_shotgun_data_loaders(partition, params, \
-	num_workers=num_workers, batch_size=128)
+loader_kwargs = data_config.to_loader_kwargs()
+num_workers = data_config.num_workers
+if num_workers is None:
+	num_workers = min(7, (os.cpu_count() or 1) - 1)
+	num_workers = max(num_workers, 0)
+loader_kwargs["num_workers"] = num_workers
+loaders = get_fixed_shotgun_data_loaders(partition, params, **loader_kwargs)
 loaders['test'] = loaders['train']
-model, trainer = train_vae(loaders, save_dir=root, epochs=101, test_freq=None)
+train_kwargs = train_config.to_train_kwargs()
+model, trainer = train_vae(loaders, save_dir=root, **train_kwargs)
 
 
 ############
