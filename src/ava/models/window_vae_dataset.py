@@ -30,6 +30,7 @@ import os
 from scipy.interpolate import interp1d
 from scipy.io import wavfile
 from scipy.io.wavfile import WavFileWarning
+import torch
 from torch.utils.data import Dataset, DataLoader
 import warnings
 
@@ -46,6 +47,21 @@ DEFAULT_WARP_PARAMS = {
 """Default time-warping parameters sent to affinewarp"""
 
 EPSILON = 1e-9
+
+
+def _default_num_workers(max_workers=8):
+	cpu_count = os.cpu_count() or 1
+	return max(0, min(max_workers, cpu_count - 1))
+
+
+def _seed_fixed_window_worker(worker_id):
+	worker_info = torch.utils.data.get_worker_info()
+	if worker_info is None:
+		return
+	seed = worker_info.seed % 2**32
+	dataset = worker_info.dataset
+	if hasattr(dataset, "seed"):
+		dataset.seed(seed)
 
 
 def _roi_has_data(filename):
@@ -120,8 +136,9 @@ def get_window_partition(audio_dirs, roi_dirs, split=0.8, shuffle=True, \
 
 
 def get_fixed_window_data_loaders(partition, p, batch_size=64, \
-	shuffle=(True, False), num_workers=4, min_spec_val=None, \
-	spec_cache_dir=None, spec_cache=None, audio_cache_size=0):
+	shuffle=(True, False), num_workers=None, min_spec_val=None, \
+	spec_cache_dir=None, spec_cache=None, audio_cache_size=0, \
+	pin_memory=None, persistent_workers=None, prefetch_factor=2):
 	"""
 	Get DataLoaders for training and testing: fixed-duration shotgun VAE
 
@@ -136,8 +153,9 @@ def get_fixed_window_data_loaders(partition, p, batch_size=64, \
 	shuffle : tuple of bool, optional
 		Whether to shuffle train and test sets, respectively. Defaults to
 		``(True, False)``.
-	num_workers : int, optional
-		Number of CPU workers to feed data to the network. Defaults to ``4``.
+	num_workers : {int, None}, optional
+		Number of CPU workers to feed data to the network. Defaults to
+		``max(0, min(8, (os.cpu_count() or 1) - 1))`` when ``None``.
 	spec_cache_dir : {str, None}, optional
 		Directory for an on-disk spectrogram/amplitude cache. Defaults to
 		``None`` (no on-disk cache).
@@ -147,6 +165,15 @@ def get_fixed_window_data_loaders(partition, p, batch_size=64, \
 	audio_cache_size : int, optional
 		Maximum number of audio files to keep in an in-memory LRU cache.
 		Defaults to ``0`` (no audio caching).
+	pin_memory : {bool, None}, optional
+		Whether to pin memory in returned batches. Defaults to ``True`` when
+		CUDA is available.
+	persistent_workers : {bool, None}, optional
+		Whether to keep workers alive between epochs. Defaults to ``True``
+		when ``num_workers > 0``.
+	prefetch_factor : int, optional
+		Number of batches to prefetch per worker. Defaults to ``2`` when
+		``num_workers > 0``.
 
 	Returns
 	-------
@@ -154,12 +181,30 @@ def get_fixed_window_data_loaders(partition, p, batch_size=64, \
 		Maps the keys ``'train'`` and ``'test'`` to their respective
 		DataLoaders.
 	"""
+	if num_workers is None:
+		num_workers = _default_num_workers()
+	num_workers = max(int(num_workers), 0)
+	if pin_memory is None:
+		pin_memory = torch.cuda.is_available()
+	if persistent_workers is None:
+		persistent_workers = num_workers > 0
+	if num_workers == 0:
+		persistent_workers = False
+	loader_kwargs = {
+		"num_workers": num_workers,
+		"pin_memory": pin_memory,
+		"worker_init_fn": _seed_fixed_window_worker,
+	}
+	if num_workers > 0:
+		loader_kwargs["persistent_workers"] = persistent_workers
+		if prefetch_factor is not None:
+			loader_kwargs["prefetch_factor"] = prefetch_factor
 	train_dataset = FixedWindowDataset(partition['train']['audio'], \
 			partition['train']['rois'], p, transform=numpy_to_tensor, \
 			min_spec_val=min_spec_val, spec_cache_dir=spec_cache_dir, \
 			spec_cache=spec_cache, audio_cache_size=audio_cache_size)
 	train_dataloader = DataLoader(train_dataset, batch_size=batch_size, \
-			shuffle=shuffle[0], num_workers=num_workers)
+			shuffle=shuffle[0], **loader_kwargs)
 	if not partition['test']:
 		return {'train':train_dataloader, 'test':None}
 	test_dataset = FixedWindowDataset(partition['test']['audio'], \
@@ -167,7 +212,7 @@ def get_fixed_window_data_loaders(partition, p, batch_size=64, \
 			min_spec_val=min_spec_val, spec_cache_dir=spec_cache_dir, \
 			spec_cache=spec_cache, audio_cache_size=audio_cache_size)
 	test_dataloader = DataLoader(test_dataset, batch_size=batch_size, \
-			shuffle=shuffle[1], num_workers=num_workers)
+			shuffle=shuffle[1], **loader_kwargs)
 	return {'train':train_dataloader, 'test':test_dataloader}
 
 
@@ -225,6 +270,14 @@ class FixedWindowDataset(Dataset):
 		self._spec_cache_keys = {}
 		if self.spec_cache_dir:
 			os.makedirs(self.spec_cache_dir, exist_ok=True)
+		self._rng = np.random.RandomState()
+
+
+	def seed(self, seed=None):
+		if seed is None:
+			self._rng = np.random.RandomState()
+		else:
+			self._rng = np.random.RandomState(int(seed))
 
 
 	def __len__(self):
@@ -379,20 +432,19 @@ class FixedWindowDataset(Dataset):
 		except TypeError:
 			index = [index]
 			single_index = True
-		np.random.seed(seed)
+		rng = self._rng if seed is None else np.random.RandomState(seed)
 		for i in index:
 			while True:
 				# First find the file, then the ROI.
-				file_index = np.random.choice(np.arange(len(self.filenames)), \
+				file_index = rng.choice(len(self.filenames), \
 					p=self.file_weights)
 				load_filename = self.filenames[file_index]
-				roi_index = \
-					np.random.choice(np.arange(len(self.roi_weights[file_index])),
+				roi_index = rng.choice(len(self.roi_weights[file_index]), \
 					p=self.roi_weights[file_index])
 				roi = self.rois[file_index][roi_index]
 				# Then choose a chunk of audio uniformly at random.
 				onset = roi[0] + (roi[1] - roi[0] - self.p['window_length']) \
-					* np.random.rand()
+					* rng.rand()
 				offset = onset + self.p['window_length']
 				target_times = np.linspace(onset, offset, \
 						self.p['num_time_bins'])
@@ -432,7 +484,6 @@ class FixedWindowDataset(Dataset):
 				onsets.append(onset)
 				offsets.append(offset)
 				break
-		np.random.seed(None)
 		if return_seg_info:
 			if single_index:
 				return specs[0], file_indices[0], onsets[0], offsets[0]
