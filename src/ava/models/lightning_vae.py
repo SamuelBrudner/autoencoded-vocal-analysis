@@ -26,7 +26,8 @@ class VAELightningModule(pl.LightningModule):
 	def __init__(self, vae: Optional[VAE] = None, save_dir: str = "",
 		lr: float = 1e-3, z_dim: int = 32, model_precision: float = 10.0,
 		input_shape: Optional[tuple[int, int]] = None,
-		posterior_type: str = "diag"):
+		posterior_type: str = "diag", compile_model: bool = False,
+		compile_kwargs: Optional[dict] = None):
 		super().__init__()
 		if vae is None:
 			vae_kwargs = dict(
@@ -49,11 +50,22 @@ class VAELightningModule(pl.LightningModule):
 		self._train_loss_count = 0
 		self._val_loss_sum = 0.0
 		self._val_loss_count = 0
+		self._compiled_loss_fn = None
+		if compile_model:
+			if not hasattr(torch, "compile"):
+				raise RuntimeError(
+					"torch.compile requested but not available in this "
+					"PyTorch version."
+				)
+			compile_kwargs = dict(compile_kwargs or {})
+			self._compiled_loss_fn = torch.compile(
+				self._compute_loss_and_stats_impl, **compile_kwargs
+			)
 
 	def forward(self, x, return_latent_rec: bool = False):
 		return self.vae(x, return_latent_rec=return_latent_rec)
 
-	def _compute_loss_and_stats(self, batch):
+	def _compute_loss_and_stats_impl(self, batch):
 		mu, u, d = self.vae.encode(batch)
 		latent_dist = self.vae._posterior_distribution(mu, u, d)
 		z = latent_dist.rsample()
@@ -68,10 +80,24 @@ class VAELightningModule(pl.LightningModule):
 		elbo = elbo + pxz_term
 		elbo = elbo + torch.sum(latent_dist.entropy())
 		loss = -elbo
+		recon_mse = F.mse_loss(x_rec, x_flat, reduction="mean")
+		latent_mean_abs = mu.abs().mean()
+		latent_var_mean = self.vae._latent_variance_mean(u, d)
+		return loss, recon_mse, latent_mean_abs, latent_var_mean
+
+	def _compute_loss_and_stats(self, batch):
+		if self._compiled_loss_fn is None:
+			loss, recon_mse, latent_mean_abs, latent_var_mean = (
+				self._compute_loss_and_stats_impl(batch)
+			)
+		else:
+			loss, recon_mse, latent_mean_abs, latent_var_mean = (
+				self._compiled_loss_fn(batch)
+			)
 		stats = {
-			"recon_mse": F.mse_loss(x_rec, x_flat, reduction="mean"),
-			"latent_mean_abs": mu.abs().mean(),
-			"latent_var_mean": self.vae._latent_variance_mean(u, d),
+			"recon_mse": recon_mse,
+			"latent_mean_abs": latent_mean_abs,
+			"latent_var_mean": latent_var_mean,
 		}
 		return loss, stats
 
@@ -297,6 +323,15 @@ def build_trainer(save_dir: str = "", epochs: int = 100,
 	if extra_callbacks:
 		callbacks.extend(extra_callbacks)
 	trainer_kwargs = dict(trainer_kwargs)
+	trainer_kwargs.setdefault("accelerator", "auto")
+	trainer_kwargs.setdefault("devices", 1)
+	if "precision" not in trainer_kwargs:
+		accelerator = trainer_kwargs.get("accelerator")
+		use_amp = (
+			accelerator in (None, "auto", "gpu", "cuda")
+			and torch.cuda.is_available()
+		)
+		trainer_kwargs["precision"] = 16 if use_amp else 32
 	trainer_kwargs.setdefault("enable_checkpointing", False)
 	trainer_kwargs.setdefault("logger", False)
 	if test_freq is not None:
@@ -318,7 +353,8 @@ def train_vae(loaders: dict, save_dir: str = "", lr: float = 1e-3,
 	vae: Optional[VAE] = None, stopping_kwargs: Optional[dict] = None,
 	extra_callbacks: Optional[list] = None,
 	input_shape: Optional[tuple[int, int]] = None,
-	posterior_type: str = "diag"):
+	posterior_type: str = "diag", compile_model: bool = False,
+	compile_kwargs: Optional[dict] = None):
 	"""Train a VAE with Lightning while preserving legacy outputs."""
 	if "train" not in loaders or loaders["train"] is None:
 		raise ValueError("loaders must include a non-empty 'train' dataloader.")
@@ -330,6 +366,8 @@ def train_vae(loaders: dict, save_dir: str = "", lr: float = 1e-3,
 		model_precision=model_precision,
 		input_shape=input_shape,
 		posterior_type=posterior_type,
+		compile_model=compile_model,
+		compile_kwargs=compile_kwargs,
 	)
 	vis_loader = loaders.get("test") or loaders["train"]
 	trainer = build_trainer(
