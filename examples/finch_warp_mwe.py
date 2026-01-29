@@ -17,7 +17,7 @@ import os
 from ava.data.data_container import DataContainer
 from ava.models.vae import X_SHAPE
 from ava.models.lightning_vae import train_vae
-from ava.models.window_vae_dataset import get_warped_window_data_loaders
+from ava.models.shotgun_vae_dataset import get_warped_shotgun_data_loaders
 from ava.preprocessing.preprocess import tune_window_preprocessing_params
 from ava.preprocessing.utils import get_spec
 
@@ -73,7 +73,7 @@ params = tune_window_preprocessing_params(audio_dirs, params)
 # 2) Train a generative model on these syllables. #
 ###################################################
 num_workers = min(7, os.cpu_count()-1)
-loaders = get_warped_window_data_loaders(audio_dirs, params, \
+loaders = get_warped_shotgun_data_loaders(audio_dirs, params, \
 		num_workers=num_workers, load_warp=True, warp_fn=warp_fn)
 loaders['test'] = loaders['train']
 model, trainer = train_vae(loaders, save_dir=root, epochs=201, save_freq=50,

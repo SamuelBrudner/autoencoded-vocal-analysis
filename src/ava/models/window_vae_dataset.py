@@ -1,6 +1,11 @@
 """
 Methods for feeding randomly sampled spectrogram data to the shotgun VAE.
 
+Note
+----
+Prefer importing from ``ava.models.shotgun_vae_dataset``; this module is
+retained for backwards compatibility.
+
 Meant to be used with `ava.models.vae.VAE`.
 
 TO DO

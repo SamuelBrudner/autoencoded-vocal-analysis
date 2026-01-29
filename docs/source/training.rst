@@ -84,11 +84,11 @@ beforehand, we make them during training.
 	roi_dirs = [...] # same format as syllable segments
 
 	# Make a Dataloader.
-	from ava.models.window_vae_dataset import get_window_partition, \
-			get_fixed_window_data_loaders
+	from ava.models.shotgun_vae_dataset import get_shotgun_partition, \
+			get_fixed_shotgun_data_loaders
 	split = 0.8 # 80/20 train/test split
-	partition = get_window_partition(audio_dirs, roi_dirs, split)
-	loaders = get_fixed_window_data_loaders(partition, params)
+	partition = get_shotgun_partition(audio_dirs, roi_dirs, split)
+	loaders = get_fixed_shotgun_data_loaders(partition, params)
 
 
 Then training is the same as before:

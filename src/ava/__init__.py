@@ -13,6 +13,7 @@ Contents
 	├── models
 	│	├── vae_dataset
 	│	├── vae
+	│	├── shotgun_vae_dataset
 	│	└── window_vae_dataset
 	├── plotting
 	│	├── grid_plot

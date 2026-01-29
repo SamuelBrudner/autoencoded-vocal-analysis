@@ -13,10 +13,10 @@ def test_read_onsets_offsets_empty_file(tmp_path):
 	assert offsets.size == 0
 
 
-def test_get_window_partition_skips_empty_roi(tmp_path):
+def test_get_shotgun_partition_skips_empty_roi(tmp_path):
 	pytest.importorskip("torch")
 	pytest.importorskip("affinewarp")
-	from ava.models.window_vae_dataset import get_window_partition
+	from ava.models.shotgun_vae_dataset import get_shotgun_partition
 
 	audio_dir = tmp_path / "audio"
 	roi_dir = tmp_path / "rois"
@@ -27,7 +27,7 @@ def test_get_window_partition_skips_empty_roi(tmp_path):
 	wavfile.write(str(wav_path), 8000, audio)
 	roi_path = roi_dir / "sample.txt"
 	roi_path.write_text("# empty\n")
-	partition = get_window_partition(
+	partition = get_shotgun_partition(
 		[str(audio_dir)],
 		[str(roi_dir)],
 		split=0.8,

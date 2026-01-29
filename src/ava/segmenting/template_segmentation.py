@@ -637,7 +637,7 @@ def segment_sylls_from_warped_songs(warped_window_dset, audio_dirs, spec_dirs, \
 
 	Parameters
 	----------
-	warped_window_dset : ava.models.window_vae_dataset.WarpedWindowDataset
+	warped_window_dset : ava.models.shotgun_vae_dataset.WarpedShotgunDataset
 		Dataset defining a warping.
 	audio_dirs : list of str
 		Audio directories.

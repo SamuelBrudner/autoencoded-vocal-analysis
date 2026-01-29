@@ -25,10 +25,10 @@ ava.models.vae\_dataset module
     :undoc-members:
     :show-inheritance:
 
-ava.models.window\_vae\_dataset module
+ava.models.shotgun\_vae\_dataset module
 --------------------------------------
 
-.. automodule:: ava.models.window_vae_dataset
+.. automodule:: ava.models.shotgun_vae_dataset
     :members:
     :undoc-members:
     :show-inheritance:
