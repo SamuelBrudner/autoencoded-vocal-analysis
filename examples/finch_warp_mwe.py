@@ -53,6 +53,7 @@ root = '/path/to/directory/'
 params = zebra_finch_params_warped_window
 audio_dirs = [os.path.join(root, i) for i in ['songs/DIR', 'songs/UNDIR']]
 template_dir = os.path.join(root, 'templates')
+warp_fn = os.path.join(root, 'warp_params.npy')
 spec_dirs = [os.path.join(root, 'h5s')]
 proj_dirs = [os.path.join(root, 'projections')]
 model_filename = os.path.join(root, 'checkpoint_200.tar')
@@ -72,8 +73,8 @@ params = tune_window_preprocessing_params(audio_dirs, params)
 # 2) Train a generative model on these syllables. #
 ###################################################
 num_workers = min(7, os.cpu_count()-1)
-loaders = get_warped_window_data_loaders(audio_dirs, template_dir, params, \
-		num_workers=num_workers, load_warp=True)
+loaders = get_warped_window_data_loaders(audio_dirs, params, \
+		num_workers=num_workers, load_warp=True, warp_fn=warp_fn)
 loaders['test'] = loaders['train']
 model, trainer = train_vae(loaders, save_dir=root, epochs=201, save_freq=50,
 	test_freq=None)

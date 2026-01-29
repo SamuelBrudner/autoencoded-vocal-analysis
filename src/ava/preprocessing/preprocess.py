@@ -64,6 +64,8 @@ def process_sylls(audio_dir, segment_dir, save_dir, p, shuffle=True, \
 	for audio_filename, seg_filename in zip(audio_filenames, seg_filenames):
 		# Get onsets and offsets.
 		onsets, offsets = read_onsets_offsets_from_file(seg_filename, p)
+		if len(onsets) == 0:
+			continue
 		# Retrieve a spectrogram for each detected syllable.
 		specs, good_sylls = get_syll_specs(onsets, offsets, audio_filename, p)
 		onsets = [onsets[i] for i in good_sylls]
@@ -315,15 +317,15 @@ def get_audio_seg_filenames(audio_dir, segment_dir, p):
 	# Collect all the audio filenames.
 	temp_filenames = [i for i in sorted(os.listdir(audio_dir)) if \
 			is_audio_file(i)]
-	audio_filenames = [os.path.join(audio_dir, i) for i in temp_filenames]
-	temp_filenames = [i[:-4] + '.txt' for i in temp_filenames]
-	seg_filenames = [os.path.join(segment_dir, i) for i in temp_filenames]
-	# Remove filenames with segments that don't exist.
-	for i in range(len(seg_filenames)-1,-1,-1):
-		if not os.path.exists(seg_filenames[i]):
-			del seg_filenames[i]
-			del audio_filenames[i]
-	return audio_filenames, seg_filenames
+	seg_filenames = set(i for i in os.listdir(segment_dir) \
+			if len(i) >= 4 and i[-4:] == '.txt')
+	audio_filenames, seg_filenames_out = [], []
+	for audio_filename in temp_filenames:
+		seg_filename = audio_filename[:-4] + '.txt'
+		if seg_filename in seg_filenames:
+			audio_filenames.append(os.path.join(audio_dir, audio_filename))
+			seg_filenames_out.append(os.path.join(segment_dir, seg_filename))
+	return audio_filenames, seg_filenames_out
 
 
 def get_audio_filenames(audio_dir):
@@ -342,18 +344,9 @@ def read_onsets_offsets_from_file(txt_filename, p):
 	* The text file must have two coulumns separated by whitespace and ``#``
 	  prepended to header and footer lines.
 	"""
-	def _has_numeric_rows(path):
-		with open(path, 'r') as handle:
-			for line in handle:
-				stripped = line.strip()
-				if not stripped or stripped.startswith('#'):
-					continue
-				return True
-		return False
-
-	if not _has_numeric_rows(txt_filename):
-		return np.array([]), np.array([])
-	segs = np.loadtxt(txt_filename)
+	with warnings.catch_warnings():
+		warnings.filterwarnings("ignore", message="loadtxt: input contained no data*")
+		segs = np.loadtxt(txt_filename)
 	if segs.size == 0:
 		return np.array([]), np.array([])
 	assert segs.size % 2 == 0, "Incorrect formatting: " + txt_filename

@@ -25,6 +25,7 @@ into the VAE. First, we want to define and tune our preprocessing parameters:
 	    'time_stretch': True, # stretch short syllables?
 	    'within_syll_normalize': False, # normalize spectrogram values on a
 	                                    # spectrogram-by-spectrogram basis
+	    'normalize_quantile': 0.1, # used only when within_syll_normalize is True
 	    'max_num_syllables': None, # maximum number of syllables per directory
 	    'sylls_per_file': 20, # syllable per file
 	    'real_preprocess_params': ('min_freq', 'max_freq', 'spec_min_val', \
@@ -39,6 +40,11 @@ into the VAE. First, we want to define and tune our preprocessing parameters:
 	seg_dirs = [...] # directories containing onset/offset decisions
 	preprocess_params = tune_syll_preprocessing_params(audio_dirs, seg_dirs, \
 			preprocess_params)
+
+
+.. note:: ``get_spec`` returns ``(spec, valid)``. The preprocessing helpers
+	skip segments marked invalid and will warn when segments exceed
+	:code:`max_dur`.
 
 
 

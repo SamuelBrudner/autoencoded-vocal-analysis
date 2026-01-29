@@ -24,8 +24,6 @@ except ImportError as exc:  # pragma: no cover - optional dependency
 
 import torch
 
-from ava.models.lightning_vae import train_vae
-
 
 def _require_lightning():
 	if pl is None:
@@ -188,6 +186,8 @@ def run_optuna_sweep(loaders: dict, save_dir: str, n_trials: int = 20,
 	trainer_kwargs: Optional[Dict[str, Any]] = None,
 	stopping_kwargs: Optional[Dict[str, Any]] = None) -> "optuna.study.Study":
 	"""Run an Optuna sweep for VAE hyperparameters using Lightning training."""
+	_require_lightning()
+	from ava.models.lightning_vae import train_vae
 	if objective_metric is None:
 		objective_metric = (
 			"val_loss" if test_freq is not None and loaders.get("test") is not None
