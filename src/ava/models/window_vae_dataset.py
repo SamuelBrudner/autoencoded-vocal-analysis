@@ -249,19 +249,60 @@ class FixedWindowDataset(Dataset):
 			Maximum number of audio files to keep in an in-memory LRU cache.
 			Defaults to ``0`` (no audio caching).
 		"""
-		self.filenames = np.array(sorted(audio_filenames))
+		sorted_pairs = sorted(zip(audio_filenames, roi_filenames), \
+			key=lambda pair: pair[0])
+		self.filenames = np.array([pair[0] for pair in sorted_pairs])
 		self.fs = p.get('fs', None)
-		self.roi_filenames = roi_filenames
+		self.roi_filenames = [pair[1] for pair in sorted_pairs]
 		self.dataset_length = dataset_length
 		self.min_spec_val = min_spec_val
 		self.p = p
-		self.rois = [np.loadtxt(i, ndmin=2) for i in roi_filenames]
-		self.file_weights = np.array([np.sum(np.diff(i)) for i in self.rois])
-		self.file_weights /= np.sum(self.file_weights)
+		window_length = self.p.get('window_length', None)
+		if window_length is None:
+			raise ValueError("FixedWindowDataset requires p['window_length'].")
+		valid_filenames = []
+		valid_roi_filenames = []
+		self.rois = []
+		self._roi_lengths = []
+		for audio_fn, roi_fn in zip(self.filenames, self.roi_filenames):
+			rois = np.loadtxt(roi_fn, ndmin=2)
+			roi_lengths = np.diff(rois, axis=1).flatten()
+			valid_mask = roi_lengths >= (window_length - EPSILON)
+			if not np.any(valid_mask):
+				warnings.warn(
+					"No ROIs are long enough for window_length=" + \
+						f"{window_length} in {roi_fn}; skipping {audio_fn}.",
+					UserWarning
+				)
+				continue
+			self.rois.append(rois[valid_mask])
+			self._roi_lengths.append(roi_lengths[valid_mask])
+			valid_filenames.append(audio_fn)
+			valid_roi_filenames.append(roi_fn)
+		self.filenames = np.array(valid_filenames)
+		self.roi_filenames = np.array(valid_roi_filenames)
+		if len(self.filenames) == 0:
+			raise ValueError(
+				"No ROIs are long enough for window_length=" + \
+					f"{window_length}. Check ROI files or window_length."
+			)
+		self.file_weights = np.array(
+			[np.sum(lengths) for lengths in self._roi_lengths],
+			dtype=float
+		)
+		total_weight = np.sum(self.file_weights)
+		if total_weight <= 0:
+			raise ValueError("FixedWindowDataset has no positive ROI weights.")
+		self.file_weights /= total_weight
 		self.roi_weights = []
-		for i in range(len(self.rois)):
-			temp = np.diff(self.rois[i]).flatten()
-			self.roi_weights.append(temp/np.sum(temp))
+		for lengths in self._roi_lengths:
+			roi_total = np.sum(lengths)
+			if roi_total <= 0:
+				self.roi_weights.append(
+					np.ones(len(lengths)) / len(lengths)
+				)
+			else:
+				self.roi_weights.append(lengths / roi_total)
 		self.transform = transform
 		self.spec_cache_dir = spec_cache_dir
 		self.spec_cache = spec_cache
