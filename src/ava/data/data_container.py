@@ -469,8 +469,14 @@ class DataContainer():
 		spf = self.sylls_per_file
 		# Load the model, making sure to get z_dim correct.
 		map_loc = 'cuda' if torch.cuda.is_available() else 'cpu'
-		z_dim = torch.load(self.model_filename, map_location=map_loc)['z_dim']
-		model = VAE(z_dim=z_dim)
+		checkpoint = torch.load(self.model_filename, map_location=map_loc)
+		z_dim = checkpoint['z_dim']
+		vae_kwargs = {'z_dim': z_dim}
+		if 'input_shape' in checkpoint:
+			vae_kwargs['input_shape'] = tuple(checkpoint['input_shape'])
+		if 'posterior_type' in checkpoint:
+			vae_kwargs['posterior_type'] = checkpoint['posterior_type']
+		model = VAE(**vae_kwargs)
 		model.load_state(self.model_filename)
 		# For each directory...
 		all_latent = []

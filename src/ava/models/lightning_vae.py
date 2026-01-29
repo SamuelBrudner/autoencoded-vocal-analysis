@@ -24,11 +24,22 @@ class VAELightningModule(pl.LightningModule):
 	"""LightningModule wrapper for the VAE."""
 
 	def __init__(self, vae: Optional[VAE] = None, save_dir: str = "",
-		lr: float = 1e-3, z_dim: int = 32, model_precision: float = 10.0):
+		lr: float = 1e-3, z_dim: int = 32, model_precision: float = 10.0,
+		input_shape: Optional[tuple[int, int]] = None,
+		posterior_type: str = "diag"):
 		super().__init__()
 		if vae is None:
-			vae = VAE(save_dir=save_dir, lr=lr, z_dim=z_dim,
-				model_precision=model_precision, device_name="cpu")
+			vae_kwargs = dict(
+				save_dir=save_dir,
+				lr=lr,
+				z_dim=z_dim,
+				model_precision=model_precision,
+				device_name="cpu",
+				posterior_type=posterior_type,
+			)
+			if input_shape is not None:
+				vae_kwargs["input_shape"] = input_shape
+			vae = VAE(**vae_kwargs)
 		elif save_dir:
 			vae.save_dir = save_dir
 		self.vae = vae
@@ -44,7 +55,7 @@ class VAELightningModule(pl.LightningModule):
 
 	def _compute_loss_and_stats(self, batch):
 		mu, u, d = self.vae.encode(batch)
-		latent_dist = torch.distributions.LowRankMultivariateNormal(mu, u, d)
+		latent_dist = self.vae._posterior_distribution(mu, u, d)
 		z = latent_dist.rsample()
 		x_rec = self.vae.decode(z)
 		x_flat = batch.view(batch.shape[0], -1)
@@ -60,7 +71,7 @@ class VAELightningModule(pl.LightningModule):
 		stats = {
 			"recon_mse": F.mse_loss(x_rec, x_flat, reduction="mean"),
 			"latent_mean_abs": mu.abs().mean(),
-			"latent_var_mean": (u.squeeze(-1) ** 2 + d).mean(),
+			"latent_var_mean": self.vae._latent_variance_mean(u, d),
 		}
 		return loss, stats
 
@@ -305,7 +316,9 @@ def train_vae(loaders: dict, save_dir: str = "", lr: float = 1e-3,
 	vis_freq: Optional[int] = 1, num_specs: int = 5, gap=(2, 6),
 	vis_filename: str = "reconstruction.pdf", trainer_kwargs: Optional[dict] = None,
 	vae: Optional[VAE] = None, stopping_kwargs: Optional[dict] = None,
-	extra_callbacks: Optional[list] = None):
+	extra_callbacks: Optional[list] = None,
+	input_shape: Optional[tuple[int, int]] = None,
+	posterior_type: str = "diag"):
 	"""Train a VAE with Lightning while preserving legacy outputs."""
 	if "train" not in loaders or loaders["train"] is None:
 		raise ValueError("loaders must include a non-empty 'train' dataloader.")
@@ -315,6 +328,8 @@ def train_vae(loaders: dict, save_dir: str = "", lr: float = 1e-3,
 		lr=lr,
 		z_dim=z_dim,
 		model_precision=model_precision,
+		input_shape=input_shape,
+		posterior_type=posterior_type,
 	)
 	vis_loader = loaders.get("test") or loaders["train"]
 	trainer = build_trainer(

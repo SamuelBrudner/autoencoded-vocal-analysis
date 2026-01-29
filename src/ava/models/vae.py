@@ -41,10 +41,12 @@ else:
 from ava.plotting.grid_plot import grid_plot
 
 
-X_SHAPE = (128,128)
-"""Processed spectrogram shape: ``[freq_bins, time_bins]``"""
-X_DIM = np.prod(X_SHAPE)
-"""Processed spectrogram dimension: ``freq_bins * time_bins``"""
+DEFAULT_INPUT_SHAPE = (128, 128)
+"""Default processed spectrogram shape: ``[freq_bins, time_bins]``."""
+X_SHAPE = DEFAULT_INPUT_SHAPE
+"""Legacy alias for the default processed spectrogram shape."""
+X_DIM = int(np.prod(X_SHAPE))
+"""Legacy default spectrogram dimension: ``freq_bins * time_bins``."""
 
 
 
@@ -65,6 +67,10 @@ class VAE(nn.Module):
 		Name of device to train the model on. When ``'auto'`` is passed,
 		``'cuda'`` is chosen if ``torch.cuda.is_available()``, otherwise
 		``'cpu'`` is chosen. Defaults to ``'auto'``.
+	input_shape : tuple of int, optional
+		Expected spectrogram shape as ``(freq_bins, time_bins)``.
+	posterior_type : {"diag", "lowrank"}, optional
+		Posterior covariance structure.
 
 	Notes
 	-----
@@ -76,20 +82,20 @@ class VAE(nn.Module):
 	entropy. The prior :math:`p(z)` is a unit spherical normal distribution. The
 	conditional distribution :math:`p(x|z)` is set as a spherical normal
 	distribution to prevent overfitting. The variational distribution,
-	:math:`q(z|x)` is an approximately rank-1 multivariate normal distribution.
-	Here, :math:`q(z|x)` and :math:`p(x|z)` are parameterized by neural
-	networks. Gradients are passed through stochastic layers via the
-	reparameterization trick, implemented by the PyTorch `rsample` method.
+	:math:`q(z|x)` is modeled as a diagonal Gaussian by default for speed, with
+	an optional low-rank-plus-diagonal covariance. Here, :math:`q(z|x)` and
+	:math:`p(x|z)` are parameterized by neural networks. Gradients are passed
+	through stochastic layers via the reparameterization trick, implemented by
+	the PyTorch `rsample` method.
 
-	The dimensions of the network are hard-coded for use with 128 x 128
-	spectrograms. Although a desired latent dimension can be passed to
-	`__init__`, the dimensions of the network limit the practical range of
-	values roughly 8 to 64 dimensions. Fiddling with the image dimensions will
-	require updating the parameters of the layers defined in `_build_network`.
+	The convolutional stack downsamples the input three times with stride-2
+	convolutions. The expected spectrogram shape is configurable via
+	``input_shape``, which drives the linear layer sizes and decoder
+	output_padding so reconstructions match the input dimensions.
 	"""
 
 	def __init__(self, save_dir='', lr=1e-3, z_dim=32, model_precision=10.0,
-		device_name="auto"):
+		device_name="auto", input_shape=X_SHAPE, posterior_type="diag"):
 		"""Construct a VAE.
 
 		Parameters
@@ -108,12 +114,19 @@ class VAE(nn.Module):
 			Name of device to train the model on. Valid options are ["cpu",
 			"cuda", "auto"]. "auto" will choose "cuda" if it is available.
 			Defaults to "auto".
+		input_shape : tuple of int, optional
+			Expected spectrogram shape as ``(freq_bins, time_bins)``. Defaults
+			to ``X_SHAPE``.
+		posterior_type : {"diag", "lowrank"}, optional
+			Posterior covariance structure. ``"diag"`` uses a diagonal Gaussian
+			for speed, while ``"lowrank"`` retains the legacy low-rank-plus-
+			diagonal posterior. Defaults to ``"diag"``.
 
 		Note
 		----
 		- The model is built before it's parameters can be loaded from a file.
 			This means `self.z_dim` must match `z_dim` of the model being
-			loaded.
+			loaded, and `input_shape` must match the checkpoint configuration.
 		"""
 		if _TORCH_IMPORT_ERROR is not None:
 			raise ImportError(
@@ -125,6 +138,16 @@ class VAE(nn.Module):
 		self.lr = lr
 		self.z_dim = z_dim
 		self.model_precision = model_precision
+		self.input_shape = self._normalize_input_shape(input_shape)
+		self.input_dim = int(np.prod(self.input_shape))
+		self.posterior_type = self._normalize_posterior_type(posterior_type)
+		self._conv_shapes = self._compute_downsample_shapes(self.input_shape)
+		self._conv_feature_shape = (32, self._conv_shapes[-1][0],
+			self._conv_shapes[-1][1])
+		self._conv_feature_dim = int(np.prod(self._conv_feature_shape))
+		self._decoder_output_padding = self._compute_output_paddings(
+			self._conv_shapes
+		)
 		assert device_name != "cuda" or torch.cuda.is_available()
 		if device_name == "auto":
 			device_name = "cuda" if torch.cuda.is_available() else "cpu"
@@ -141,6 +164,108 @@ class VAE(nn.Module):
 	@property
 	def device(self):
 		return next(self.parameters()).device
+
+
+	@staticmethod
+	def _normalize_input_shape(input_shape):
+		if input_shape is None or len(input_shape) != 2:
+			raise ValueError(
+				"input_shape must be a tuple of (freq_bins, time_bins)."
+			)
+		try:
+			shape = (int(input_shape[0]), int(input_shape[1]))
+		except (TypeError, ValueError) as exc:
+			raise ValueError("input_shape must contain two integers.") from exc
+		if shape[0] <= 0 or shape[1] <= 0:
+			raise ValueError("input_shape values must be positive.")
+		return shape
+
+
+	@staticmethod
+	def _normalize_posterior_type(posterior_type):
+		if posterior_type is None:
+			return "diag"
+		value = str(posterior_type).strip().lower()
+		if value in {"diag", "diagonal", "diagonal_gaussian"}:
+			return "diag"
+		if value in {"lowrank", "low_rank", "low-rank"}:
+			return "lowrank"
+		raise ValueError("posterior_type must be 'diag' or 'lowrank'.")
+
+
+	@staticmethod
+	def _downsample_dim(size):
+		return (size + 1) // 2
+
+
+	@classmethod
+	def _compute_downsample_shapes(cls, input_shape):
+		height, width = input_shape
+		shapes = [(height, width)]
+		for _ in range(3):
+			height = cls._downsample_dim(height)
+			width = cls._downsample_dim(width)
+			shapes.append((height, width))
+		return shapes
+
+
+	@staticmethod
+	def _output_padding_for(target_size, input_size):
+		padding = target_size - (2 * input_size - 1)
+		if padding not in (0, 1):
+			raise ValueError(
+				"Input shape cannot be reconstructed with current decoder."
+			)
+		return padding
+
+
+	@classmethod
+	def _compute_output_paddings(cls, shapes):
+		pad_stage_2 = (
+			cls._output_padding_for(shapes[2][0], shapes[3][0]),
+			cls._output_padding_for(shapes[2][1], shapes[3][1]),
+		)
+		pad_stage_4 = (
+			cls._output_padding_for(shapes[1][0], shapes[2][0]),
+			cls._output_padding_for(shapes[1][1], shapes[2][1]),
+		)
+		pad_stage_6 = (
+			cls._output_padding_for(shapes[0][0], shapes[1][0]),
+			cls._output_padding_for(shapes[0][1], shapes[1][1]),
+		)
+		return {
+			"convt2": pad_stage_2,
+			"convt4": pad_stage_4,
+			"convt6": pad_stage_6,
+		}
+
+
+	def _check_input(self, x):
+		if x.dim() != 3:
+			raise ValueError("Input must have shape [batch, height, width].")
+		if tuple(x.shape[1:]) != self.input_shape:
+			raise ValueError(
+				f"Expected input shape {self.input_shape}, got "
+				f"{tuple(x.shape[1:])}."
+			)
+
+
+	def _posterior_distribution(self, mu, u, d):
+		if self.posterior_type == "diag":
+			scale = torch.sqrt(d)
+			base_dist = torch.distributions.Normal(mu, scale)
+			return torch.distributions.Independent(base_dist, 1)
+		if self.posterior_type == "lowrank":
+			if u is None:
+				raise ValueError("Low-rank posterior requires u.")
+			return LowRankMultivariateNormal(mu, u, d)
+		raise ValueError(f"Unknown posterior_type '{self.posterior_type}'.")
+
+
+	def _latent_variance_mean(self, u, d):
+		if self.posterior_type == "diag":
+			return d.mean()
+		return (u.squeeze(-1) ** 2 + d).mean()
 
 
 	def _build_network(self):
@@ -160,7 +285,7 @@ class VAE(nn.Module):
 		self.bn5 = nn.BatchNorm2d(16)
 		self.bn6 = nn.BatchNorm2d(24)
 		self.bn7 = nn.BatchNorm2d(24)
-		self.fc1 = nn.Linear(8192,1024)
+		self.fc1 = nn.Linear(self._conv_feature_dim,1024)
 		self.fc2 = nn.Linear(1024,256)
 		self.fc31 = nn.Linear(256,64)
 		self.fc32 = nn.Linear(256,64)
@@ -172,13 +297,22 @@ class VAE(nn.Module):
 		self.fc5 = nn.Linear(self.z_dim,64)
 		self.fc6 = nn.Linear(64,256)
 		self.fc7 = nn.Linear(256,1024)
-		self.fc8 = nn.Linear(1024,8192)
+		self.fc8 = nn.Linear(1024,self._conv_feature_dim)
 		self.convt1 = nn.ConvTranspose2d(32,24,3,1,padding=1)
-		self.convt2 = nn.ConvTranspose2d(24,24,3,2,padding=1,output_padding=1)
+		self.convt2 = nn.ConvTranspose2d(
+			24,24,3,2,padding=1,
+			output_padding=self._decoder_output_padding["convt2"]
+		)
 		self.convt3 = nn.ConvTranspose2d(24,16,3,1,padding=1)
-		self.convt4 = nn.ConvTranspose2d(16,16,3,2,padding=1,output_padding=1)
+		self.convt4 = nn.ConvTranspose2d(
+			16,16,3,2,padding=1,
+			output_padding=self._decoder_output_padding["convt4"]
+		)
 		self.convt5 = nn.ConvTranspose2d(16,8,3,1,padding=1)
-		self.convt6 = nn.ConvTranspose2d(8,8,3,2,padding=1,output_padding=1)
+		self.convt6 = nn.ConvTranspose2d(
+			8,8,3,2,padding=1,
+			output_padding=self._decoder_output_padding["convt6"]
+		)
 		self.convt7 = nn.ConvTranspose2d(8,1,3,1,padding=1)
 		self.bn8 = nn.BatchNorm2d(32)
 		self.bn9 = nn.BatchNorm2d(24)
@@ -220,8 +354,8 @@ class VAE(nn.Module):
 		Parameters
 		----------
 		x : torch.Tensor
-			The input images, with shape: ``[batch_size, height=128,
-			width=128]``
+			The input images, with shape: ``[batch_size, height, width]`` where
+			``(height, width)`` matches ``self.input_shape``.
 
 		Returns
 		-------
@@ -229,11 +363,13 @@ class VAE(nn.Module):
 			Posterior mean, with shape ``[batch_size, self.z_dim]``
 		u : torch.Tensor
 			Posterior covariance factor, as defined above. Shape:
-			``[batch_size, self.z_dim]``
+			``[batch_size, self.z_dim, 1]``. For diagonal posteriors, this is
+			returned as zeros.
 		d : torch.Tensor
 			Posterior diagonal factor, as defined above. Shape:
 			``[batch_size, self.z_dim]``
 		"""
+		self._check_input(x)
 		x = x.unsqueeze(1)
 		x = F.relu(self.conv1(self.bn1(x)))
 		x = F.relu(self.conv2(self.bn2(x)))
@@ -242,13 +378,16 @@ class VAE(nn.Module):
 		x = F.relu(self.conv5(self.bn5(x)))
 		x = F.relu(self.conv6(self.bn6(x)))
 		x = F.relu(self.conv7(self.bn7(x)))
-		x = x.view(-1, 8192)
+		x = x.view(x.shape[0], -1)
 		x = F.relu(self.fc1(x))
 		x = F.relu(self.fc2(x))
 		mu = F.relu(self.fc31(x))
 		mu = self.fc41(mu)
-		u = F.relu(self.fc32(x))
-		u = self.fc42(u).unsqueeze(-1) # Last dimension is rank \Sigma = 1.
+		if self.posterior_type == "lowrank":
+			u = F.relu(self.fc32(x))
+			u = self.fc42(u).unsqueeze(-1) # Last dimension is rank \Sigma = 1.
+		else:
+			u = mu.new_zeros((mu.shape[0], self.z_dim, 1))
 		d = F.relu(self.fc33(x))
 		d = torch.exp(self.fc43(d)) # d must be positive.
 		return mu, u, d
@@ -274,13 +413,13 @@ class VAE(nn.Module):
 		-------
 		x : torch.Tensor
 			Batch of means mu, described above. Shape: ``[batch_size,
-			X_DIM=128*128]``
+			self.input_dim]``
 		"""
 		z = F.relu(self.fc5(z))
 		z = F.relu(self.fc6(z))
 		z = F.relu(self.fc7(z))
 		z = F.relu(self.fc8(z))
-		z = z.view(-1,32,16,16)
+		z = z.view(-1, *self._conv_feature_shape)
 		z = F.relu(self.convt1(self.bn8(z)))
 		z = F.relu(self.convt2(self.bn9(z)))
 		z = F.relu(self.convt3(self.bn10(z)))
@@ -288,7 +427,7 @@ class VAE(nn.Module):
 		z = F.relu(self.convt5(self.bn12(z)))
 		z = F.relu(self.convt6(self.bn13(z)))
 		z = self.convt7(self.bn14(z))
-		return z.view(-1, X_DIM)
+		return z.view(-1, self.input_dim)
 
 
 	def forward(self, x, return_latent_rec=False):
@@ -315,9 +454,10 @@ class VAE(nn.Module):
 		----------
 		x : torch.Tensor
 			A batch of samples from the data distribution (spectrograms).
-			Shape: ``[batch_size, height=128, width=128]``
+			Shape: ``[batch_size, height, width]`` where ``(height, width)``
+			matches ``self.input_shape``.
 		return_latent_rec : bool, optional
-			Whether to return latent means and reconstructions. Defaults to
+			Whether to return latent samples and reconstructions. Defaults to
 			``False``.
 
 		Returns
@@ -325,26 +465,29 @@ class VAE(nn.Module):
 		loss : torch.Tensor
 			Negative ELBO times the batch size. Shape: ``[]``
 		latent : numpy.ndarray, if `return_latent_rec`
-			Latent means. Shape: ``[batch_size, self.z_dim]``
+			Latent samples. Shape: ``[batch_size, self.z_dim]``
 		reconstructions : numpy.ndarray, if `return_latent_rec`
-			Reconstructed means. Shape: ``[batch_size, height=128, width=128]``
+			Reconstructed means. Shape: ``[batch_size, height, width]``
 		"""
 		mu, u, d = self.encode(x)
-		latent_dist = LowRankMultivariateNormal(mu, u, d)
+		latent_dist = self._posterior_distribution(mu, u, d)
 		z = latent_dist.rsample()
 		x_rec = self.decode(z)
 		# E_{q(z|x)} p(z)
 		elbo = -0.5 * (torch.sum(torch.pow(z,2)) + self.z_dim * np.log(2*np.pi))
 		# E_{q(z|x)} p(x|z)
-		pxz_term = -0.5 * X_DIM * (np.log(2*np.pi/self.model_precision))
-		l2s = torch.sum(torch.pow(x.view(x.shape[0],-1) - x_rec, 2), dim=1)
+		pxz_term = -0.5 * self.input_dim * (
+			np.log(2*np.pi/self.model_precision)
+		)
+		x_flat = x.view(x.shape[0], -1)
+		l2s = torch.sum(torch.pow(x_flat - x_rec, 2), dim=1)
 		pxz_term = pxz_term - 0.5 * self.model_precision * torch.sum(l2s)
 		elbo = elbo + pxz_term
 		# H[q(z|x)]
 		elbo = elbo + torch.sum(latent_dist.entropy())
 		if return_latent_rec:
 			return -elbo, z.detach().cpu().numpy(), \
-				x_rec.view(-1, X_SHAPE[0], X_SHAPE[1]).detach().cpu().numpy()
+				x_rec.view(-1, *self.input_shape).detach().cpu().numpy()
 		return -elbo
 
 
@@ -460,6 +603,8 @@ class VAE(nn.Module):
 		state['optimizer_state'] = self.optimizer.state_dict()
 		state['loss'] = self.loss
 		state['z_dim'] = self.z_dim
+		state['input_shape'] = self.input_shape
+		state['posterior_type'] = self.posterior_type
 		state['epoch'] = self.epoch
 		state['lr'] = self.lr
 		state['save_dir'] = self.save_dir
@@ -480,10 +625,22 @@ class VAE(nn.Module):
 
 		Note
 		----
-		- `self.lr`, `self.save_dir`, and `self.z_dim` are not loaded.
+		- `self.lr` and `self.save_dir` are not loaded. `input_shape` is
+		  validated against the checkpoint when available.
 		"""
 		checkpoint = torch.load(filename, map_location=self.device)
 		assert checkpoint['z_dim'] == self.z_dim
+		if 'input_shape' in checkpoint:
+			if tuple(checkpoint['input_shape']) != self.input_shape:
+				raise ValueError(
+					"Checkpoint input_shape "
+					f"{tuple(checkpoint['input_shape'])} does not match "
+					f"model input_shape {self.input_shape}."
+				)
+		if 'posterior_type' in checkpoint:
+			self.posterior_type = checkpoint['posterior_type']
+		else:
+			self.posterior_type = "lowrank"
 		layers = self._get_layers()
 		for layer_name in layers:
 			layer = layers[layer_name]

@@ -55,6 +55,17 @@ def test_lightning_metrics_match_legacy_forward():
 	assert torch.isfinite(stats["latent_var_mean"]).item()
 
 
+def test_vae_dynamic_input_shape_roundtrip():
+	_set_seed(5)
+	input_shape = (63, 81)
+	batch = torch.randn(3, *input_shape)
+	vae = VAE(save_dir="", device_name="cpu", input_shape=input_shape)
+	loss, _, recon = vae.forward(batch, return_latent_rec=True)
+
+	assert torch.isfinite(loss).item()
+	assert recon.shape == (batch.shape[0], *input_shape)
+
+
 def test_lightning_checkpoint_loads_legacy(tmp_path):
 	_set_seed(101)
 	data = torch.randn(6, 128, 128)

@@ -28,8 +28,8 @@ from ava.preprocessing.utils import get_spec
 zebra_finch_params_warped_window = {
 	'fs': 32000,
 	'get_spec': get_spec,
-	'num_freq_bins': X_SHAPE[0],
-	'num_time_bins': X_SHAPE[1],
+	'num_freq_bins': X_SHAPE[0], # match VAE input_shape
+	'num_time_bins': X_SHAPE[1], # match VAE input_shape
 	'nperseg': 512, # FFT
 	'noverlap': 256, # FFT
 	'max_dur': 1e9, # Big number

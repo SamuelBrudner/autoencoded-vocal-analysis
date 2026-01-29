@@ -29,8 +29,8 @@ from ava.preprocessing.utils import get_spec
 mouse_params = {
 	'fs': 303030,
 	'get_spec': get_spec,
-	'num_freq_bins': X_SHAPE[0],
-	'num_time_bins': X_SHAPE[1],
+	'num_freq_bins': X_SHAPE[0], # match VAE input_shape
+	'num_time_bins': X_SHAPE[1], # match VAE input_shape
 	'nperseg': 1024, # FFT
 	'noverlap': 512, # FFT
 	'max_dur': 1e9, # Big number

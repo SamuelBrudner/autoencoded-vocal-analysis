@@ -114,7 +114,14 @@ def shotgun_movie_DC(dc, audio_file, p, method='spectrogram_correlation', \
 		# Make a DataLoader out of these spectrograms.
 		loader = DataLoader(SimpleDataset(specs))
 		# Get latent means.
-		model = VAE()
+		map_loc = 'cuda' if torch.cuda.is_available() else 'cpu'
+		checkpoint = torch.load(dc.model_filename, map_location=map_loc)
+		vae_kwargs = {}
+		if 'input_shape' in checkpoint:
+			vae_kwargs['input_shape'] = tuple(checkpoint['input_shape'])
+		if 'posterior_type' in checkpoint:
+			vae_kwargs['posterior_type'] = checkpoint['posterior_type']
+		model = VAE(**vae_kwargs)
 		model.load_state(dc.model_filename)
 		latent = model.get_latent(loader)
 	if method == 'latent_nn':

@@ -59,8 +59,8 @@ params = {
 		'max_dur': 0.2, # maximum syllable duration
 		'min_freq': 30e3, # minimum frequency
 		'max_freq': 110e3, # maximum frequency
-		'num_freq_bins': X_SHAPE[0], # hard-coded
-		'num_time_bins': X_SHAPE[1], # hard-coded
+		'num_freq_bins': X_SHAPE[0], # match VAE input_shape
+		'num_time_bins': X_SHAPE[1], # match VAE input_shape
 		'nperseg': 1024, # FFT
 		'noverlap': 512, # FFT
 		'spec_min_val': 2.0, # minimum log-spectrogram value
