@@ -342,7 +342,20 @@ def read_onsets_offsets_from_file(txt_filename, p):
 	* The text file must have two coulumns separated by whitespace and ``#``
 	  prepended to header and footer lines.
 	"""
+	def _has_numeric_rows(path):
+		with open(path, 'r') as handle:
+			for line in handle:
+				stripped = line.strip()
+				if not stripped or stripped.startswith('#'):
+					continue
+				return True
+		return False
+
+	if not _has_numeric_rows(txt_filename):
+		return np.array([]), np.array([])
 	segs = np.loadtxt(txt_filename)
+	if segs.size == 0:
+		return np.array([]), np.array([])
 	assert segs.size % 2 == 0, "Incorrect formatting: " + txt_filename
 	segs = segs.reshape(-1,2)
 	return segs[:,0], segs[:,1]

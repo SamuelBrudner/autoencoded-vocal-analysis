@@ -632,13 +632,22 @@ class DataContainer():
 						# Read the onsets and features.
 						feature_onsets, features = \
 							_read_columns(feature_fn, [onset_col, field_col])
+						if len(feature_onsets) == 0:
+							raise ValueError(
+								"No feature data found in "+feature_fn
+							)
 						if kind == 'sap': # SAP writes onsets in milliseconds.
 							feature_onsets /= 1e3
 						k = 0
 					# Look for the corresponding onset in the feature file.
-					while spec_onset > feature_onsets[k] + 0.01:
+					while k < len(feature_onsets) and \
+							spec_onset > feature_onsets[k] + 0.01:
 						k += 1
-						assert k < len(feature_onsets)
+					if k >= len(feature_onsets):
+						raise ValueError(
+							"Ran out of feature onsets in "+feature_fn+ \
+							" while matching "+field
+						)
 					if abs(spec_onset - feature_onsets[k]) > 0.01:
 						print("Mismatch between spec_dirs and feature_dirs!")
 						print("hdf5 file:", hdf5)
@@ -770,8 +779,41 @@ def _read_columns(filename, columns=(0,1), delimiter=',', skiprows=1, \
 
 	TO DO: Add categorical variables.
 	"""
-	data = np.loadtxt(filename, delimiter=delimiter, usecols=columns, \
-		skiprows=skiprows).reshape(-1,len(columns))
+	def _has_numeric_rows(path, skip):
+		with open(path, 'r') as handle:
+			nonempty = [line for line in handle if line.strip()]
+		if len(nonempty) <= skip:
+			return False
+		for line in nonempty[skip:]:
+			if line.lstrip().startswith('#'):
+				continue
+			return True
+		return False
+
+	has_rows = _has_numeric_rows(filename, skiprows)
+	if not has_rows:
+		empty = np.empty((0, len(columns)))
+		if unpack:
+			return tuple(empty[:,i] for i in range(len(columns)))
+		return empty
+	try:
+		data = np.loadtxt(filename, delimiter=delimiter, usecols=columns, \
+			skiprows=skiprows)
+	except ValueError:
+		if not has_rows:
+			empty = np.empty((0, len(columns)))
+			if unpack:
+				return tuple(empty[:,i] for i in range(len(columns)))
+			return empty
+		raise
+	if data.size == 0:
+		empty = np.empty((0, len(columns)))
+		if unpack:
+			return tuple(empty[:,i] for i in range(len(columns)))
+		return empty
+	data = np.atleast_2d(data)
+	if data.shape[1] != len(columns):
+		data = data.reshape(-1, len(columns))
 	if unpack:
 		return tuple(data[:,i] for i in range(data.shape[1]))
 	return data

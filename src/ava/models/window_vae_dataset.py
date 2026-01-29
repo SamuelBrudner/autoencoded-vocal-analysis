@@ -11,7 +11,10 @@ TO DO
 __date__ = "August 2019 - November 2020"
 
 
-from affinewarp import PiecewiseWarping
+try:
+	from affinewarp import PiecewiseWarping
+except ModuleNotFoundError:
+	PiecewiseWarping = None
 import h5py
 import numpy as np
 import os
@@ -35,6 +38,15 @@ DEFAULT_WARP_PARAMS = {
 
 EPSILON = 1e-9
 
+
+def _roi_has_data(filename):
+	with open(filename, 'r') as handle:
+		for line in handle:
+			stripped = line.strip()
+			if not stripped or stripped.startswith('#'):
+				continue
+			return True
+	return False
 
 
 def get_window_partition(audio_dirs, roi_dirs, split=0.8, shuffle=True, \
@@ -72,8 +84,7 @@ def get_window_partition(audio_dirs, roi_dirs, split=0.8, shuffle=True, \
 				for i in temp_wavs]
 		if exclude_empty_roi_files:
 			for i in reversed(range(len(temp_wavs))):
-				segs = np.loadtxt(temp_rois[i])
-				if len(segs) == 0:
+				if not _roi_has_data(temp_rois[i]):
 					del temp_wavs[i]
 					del temp_rois[i]
 		audio_filenames += temp_wavs
@@ -281,7 +292,7 @@ class FixedWindowDataset(Dataset):
 		if not os.path.exists(save_dir):
 			os.mkdir(save_dir)
 		for write_file_num in range(num_files):
-			specs, file_indices, _, _ = \
+			specs, file_indices, onsets, offsets = \
 					self.__getitem__(np.arange(sylls_per_file), \
 					seed=write_file_num, return_seg_info=True)
 			specs = np.array([spec.detach().numpy() for spec in specs])
@@ -290,6 +301,8 @@ class FixedWindowDataset(Dataset):
 			fn = os.path.join(save_dir, fn)
 			with h5py.File(fn, "w") as f:
 				f.create_dataset('specs', data=specs)
+				f.create_dataset('onsets', data=np.array(onsets))
+				f.create_dataset('offsets', data=np.array(offsets))
 				f.create_dataset('audio_filenames', data=filenames.astype('S'))
 
 
@@ -486,6 +499,10 @@ class WarpedWindowDataset(Dataset):
 		Otherwise, if ``warp_type == 'amplitude'``, warping is performed on
 		spectrograms summed over the frequency dimension.
 		"""
+		if PiecewiseWarping is None:
+			raise ModuleNotFoundError(
+				"affinewarp is required for WarpedWindowDataset warping."
+			)
 		if save_warp:
 			assert self.warp_fn is not None, "``warp_fn`` must be specified " +\
 					"to save warps!"

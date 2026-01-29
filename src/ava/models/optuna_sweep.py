@@ -19,14 +19,21 @@ except ImportError as exc:  # pragma: no cover - optional dependency
 try:
 	import pytorch_lightning as pl
 except ImportError as exc:  # pragma: no cover - optional dependency
-	raise ImportError(
-		"PyTorch Lightning is required for ava.models.optuna_sweep. "
-		"Install with `pip install pytorch-lightning`."
-	) from exc
+	pl = None
+	_PL_IMPORT_ERROR = exc
 
 import torch
 
 from ava.models.lightning_vae import train_vae
+
+
+def _require_lightning():
+	if pl is None:
+		raise ImportError(
+			"PyTorch Lightning is required for ava.models.optuna_sweep. "
+			"Install with `pip install pytorch-lightning`."
+		) from _PL_IMPORT_ERROR
+	return pl
 
 
 DEFAULT_VAE_SEARCH_SPACE = {
@@ -104,38 +111,43 @@ def _resolve_objective_metric(trainer, module, metric: str) -> float:
 	return value
 
 
-class OptunaPruningCallback(pl.Callback):
-	"""Report metrics to Optuna and prune unpromising trials."""
+if pl is not None:
+	class OptunaPruningCallback(pl.Callback):
+		"""Report metrics to Optuna and prune unpromising trials."""
 
-	def __init__(self, trial: "optuna.trial.Trial", metric: str = "val_loss",
-		min_epochs: int = 0):
-		self.trial = trial
-		self.metric = metric
-		self.min_epochs = min_epochs
-		self._reported_epochs = set()
+		def __init__(self, trial: "optuna.trial.Trial", metric: str = "val_loss",
+			min_epochs: int = 0):
+			self.trial = trial
+			self.metric = metric
+			self.min_epochs = min_epochs
+			self._reported_epochs = set()
 
-	def _maybe_report(self, trainer, epoch: int):
-		if epoch < self.min_epochs or epoch in self._reported_epochs:
-			return
-		value = _metric_value(trainer.callback_metrics, self.metric)
-		if value is None:
-			return
-		self._reported_epochs.add(epoch)
-		self.trial.report(value, step=epoch)
-		if self.trial.should_prune():
-			raise optuna.TrialPruned(
-				f"Trial pruned at epoch {epoch} with {self.metric}={value:.4f}"
-			)
+		def _maybe_report(self, trainer, epoch: int):
+			if epoch < self.min_epochs or epoch in self._reported_epochs:
+				return
+			value = _metric_value(trainer.callback_metrics, self.metric)
+			if value is None:
+				return
+			self._reported_epochs.add(epoch)
+			self.trial.report(value, step=epoch)
+			if self.trial.should_prune():
+				raise optuna.TrialPruned(
+					f"Trial pruned at epoch {epoch} with {self.metric}={value:.4f}"
+				)
 
-	def on_train_epoch_end(self, trainer, pl_module):
-		if self.metric.startswith("train_"):
-			epoch = int(trainer.current_epoch)
-			self._maybe_report(trainer, epoch)
+		def on_train_epoch_end(self, trainer, pl_module):
+			if self.metric.startswith("train_"):
+				epoch = int(trainer.current_epoch)
+				self._maybe_report(trainer, epoch)
 
-	def on_validation_epoch_end(self, trainer, pl_module):
-		if not self.metric.startswith("train_"):
-			epoch = int(trainer.current_epoch)
-			self._maybe_report(trainer, epoch)
+		def on_validation_epoch_end(self, trainer, pl_module):
+			if not self.metric.startswith("train_"):
+				epoch = int(trainer.current_epoch)
+				self._maybe_report(trainer, epoch)
+else:
+	class OptunaPruningCallback:
+		def __init__(self, *args, **kwargs):
+			_require_lightning()
 
 
 def _write_trial_summary(trial_dir: str, trial: "optuna.trial.Trial",
