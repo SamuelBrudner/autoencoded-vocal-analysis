@@ -20,6 +20,10 @@ try:
 	from affinewarp import PiecewiseWarping
 except ModuleNotFoundError:
 	PiecewiseWarping = None
+from collections import OrderedDict
+import hashlib
+import json
+import tempfile
 import h5py
 import numpy as np
 import os
@@ -116,7 +120,8 @@ def get_window_partition(audio_dirs, roi_dirs, split=0.8, shuffle=True, \
 
 
 def get_fixed_window_data_loaders(partition, p, batch_size=64, \
-	shuffle=(True, False), num_workers=4, min_spec_val=None):
+	shuffle=(True, False), num_workers=4, min_spec_val=None, \
+	spec_cache_dir=None, spec_cache=None, audio_cache_size=0):
 	"""
 	Get DataLoaders for training and testing: fixed-duration shotgun VAE
 
@@ -133,6 +138,15 @@ def get_fixed_window_data_loaders(partition, p, batch_size=64, \
 		``(True, False)``.
 	num_workers : int, optional
 		Number of CPU workers to feed data to the network. Defaults to ``4``.
+	spec_cache_dir : {str, None}, optional
+		Directory for an on-disk spectrogram/amplitude cache. Defaults to
+		``None`` (no on-disk cache).
+	spec_cache : {dict, None}, optional
+		Optional in-memory cache for spectrograms/amplitude traces. Defaults
+		to ``None``.
+	audio_cache_size : int, optional
+		Maximum number of audio files to keep in an in-memory LRU cache.
+		Defaults to ``0`` (no audio caching).
 
 	Returns
 	-------
@@ -142,14 +156,16 @@ def get_fixed_window_data_loaders(partition, p, batch_size=64, \
 	"""
 	train_dataset = FixedWindowDataset(partition['train']['audio'], \
 			partition['train']['rois'], p, transform=numpy_to_tensor, \
-			min_spec_val=min_spec_val)
+			min_spec_val=min_spec_val, spec_cache_dir=spec_cache_dir, \
+			spec_cache=spec_cache, audio_cache_size=audio_cache_size)
 	train_dataloader = DataLoader(train_dataset, batch_size=batch_size, \
 			shuffle=shuffle[0], num_workers=num_workers)
 	if not partition['test']:
 		return {'train':train_dataloader, 'test':None}
 	test_dataset = FixedWindowDataset(partition['test']['audio'], \
 			partition['test']['rois'], p, transform=numpy_to_tensor, \
-			min_spec_val=min_spec_val)
+			min_spec_val=min_spec_val, spec_cache_dir=spec_cache_dir, \
+			spec_cache=spec_cache, audio_cache_size=audio_cache_size)
 	test_dataloader = DataLoader(test_dataset, batch_size=batch_size, \
 			shuffle=shuffle[1], num_workers=num_workers)
 	return {'train':train_dataloader, 'test':test_dataloader}
@@ -159,7 +175,8 @@ def get_fixed_window_data_loaders(partition, p, batch_size=64, \
 class FixedWindowDataset(Dataset):
 
 	def __init__(self, audio_filenames, roi_filenames, p, transform=None,
-		dataset_length=2048, min_spec_val=None):
+		dataset_length=2048, min_spec_val=None, spec_cache_dir=None, \
+		spec_cache=None, audio_cache_size=0):
 		"""
 		Create a torch.utils.data.Dataset for chunks of animal vocalization.
 
@@ -177,12 +194,18 @@ class FixedWindowDataset(Dataset):
 		min_spec_val : {float, None}, optional
 			Used to disregard silence. If not `None`, spectrogram with a maximum
 			value less than `min_spec_val` will be disregarded.
+		spec_cache_dir : {str, None}, optional
+			Directory for an on-disk spectrogram/amplitude cache. Defaults to
+			``None`` (no on-disk cache).
+		spec_cache : {dict, None}, optional
+			Optional in-memory cache for spectrograms/amplitude traces. Defaults
+			to ``None``.
+		audio_cache_size : int, optional
+			Maximum number of audio files to keep in an in-memory LRU cache.
+			Defaults to ``0`` (no audio caching).
 		"""
 		self.filenames = np.array(sorted(audio_filenames))
-		with warnings.catch_warnings():
-			warnings.filterwarnings("ignore", category=WavFileWarning)
-			self.audio = [wavfile.read(fn)[1] for fn in self.filenames]
-			self.fs = wavfile.read(audio_filenames[0])[0]
+		self.fs = p.get('fs', None)
 		self.roi_filenames = roi_filenames
 		self.dataset_length = dataset_length
 		self.min_spec_val = min_spec_val
@@ -195,11 +218,139 @@ class FixedWindowDataset(Dataset):
 			temp = np.diff(self.rois[i]).flatten()
 			self.roi_weights.append(temp/np.sum(temp))
 		self.transform = transform
+		self.spec_cache_dir = spec_cache_dir
+		self.spec_cache = spec_cache
+		self.audio_cache_size = max(int(audio_cache_size), 0)
+		self._audio_cache = OrderedDict()
+		self._spec_cache_keys = {}
+		if self.spec_cache_dir:
+			os.makedirs(self.spec_cache_dir, exist_ok=True)
 
 
 	def __len__(self):
 		"""NOTE: length is arbitrary"""
 		return self.dataset_length
+
+
+	def _read_wav(self, filename):
+		with warnings.catch_warnings():
+			warnings.filterwarnings("ignore", category=WavFileWarning)
+			try:
+				fs, audio = wavfile.read(filename, mmap=True)
+			except TypeError:
+				fs, audio = wavfile.read(filename)
+		return fs, audio
+
+
+	def _get_audio(self, filename):
+		if self.audio_cache_size > 0 and filename in self._audio_cache:
+			self._audio_cache.move_to_end(filename)
+			return self._audio_cache[filename]
+		fs, audio = self._read_wav(filename)
+		if self.fs is None:
+			self.fs = fs
+		elif fs != self.fs:
+			warnings.warn(
+				"Found inconsistent sample rate for " + filename + ".",
+				UserWarning
+			)
+		if self.audio_cache_size > 0:
+			self._audio_cache[filename] = audio
+			self._audio_cache.move_to_end(filename)
+			while len(self._audio_cache) > self.audio_cache_size:
+				self._audio_cache.popitem(last=False)
+		return audio
+
+
+	def _spec_cache_params(self):
+		spec_keys = [
+			'nperseg',
+			'noverlap',
+			'min_freq',
+			'max_freq',
+			'spec_min_val',
+			'spec_max_val',
+			'num_freq_bins',
+			'num_time_bins',
+			'mel',
+			'time_stretch',
+			'max_dur',
+			'within_syll_normalize',
+			'normalize_quantile',
+			'window_length',
+		]
+		params = {key: self.p.get(key, None) for key in spec_keys}
+		get_spec = self.p.get('get_spec', None)
+		params['get_spec'] = getattr(get_spec, '__name__', repr(get_spec))
+		return params
+
+
+	def _make_spec_cache_key(self, filename, onset, offset, shoulder):
+		if filename in self._spec_cache_keys:
+			base_key = self._spec_cache_keys[filename]
+		else:
+			try:
+				file_stats = {
+					'path': os.path.abspath(filename),
+					'mtime': os.path.getmtime(filename),
+					'size': os.path.getsize(filename),
+				}
+			except OSError:
+				file_stats = {
+					'path': os.path.abspath(filename),
+					'mtime': None,
+					'size': None,
+				}
+			base_payload = {
+				'file': file_stats,
+				'params': self._spec_cache_params(),
+			}
+			base_json = json.dumps(base_payload, sort_keys=True, default=str)
+			base_key = hashlib.sha256(base_json.encode('utf-8')).hexdigest()
+			self._spec_cache_keys[filename] = base_key
+		window_payload = {
+			'base': base_key,
+			'onset': float(onset),
+			'offset': float(offset),
+			'shoulder': float(shoulder),
+			'num_time_bins': int(self.p['num_time_bins']),
+		}
+		window_json = json.dumps(window_payload, sort_keys=True, default=str)
+		return hashlib.sha256(window_json.encode('utf-8')).hexdigest()
+
+
+	def _spec_cache_get(self, cache_key):
+		if self.spec_cache is not None and cache_key in self.spec_cache:
+			return self.spec_cache[cache_key]
+		if self.spec_cache_dir:
+			cache_path = os.path.join(self.spec_cache_dir, cache_key + '.npz')
+			if os.path.exists(cache_path):
+				with np.load(cache_path) as data:
+					return {
+						'spec': data['spec'],
+						'amp': data['amp'],
+					}
+		return None
+
+
+	def _spec_cache_set(self, cache_key, spec, amp):
+		if self.spec_cache is not None:
+			self.spec_cache[cache_key] = {'spec': spec, 'amp': amp}
+		if self.spec_cache_dir:
+			cache_path = os.path.join(self.spec_cache_dir, cache_key + '.npz')
+			if not os.path.exists(cache_path):
+				with tempfile.NamedTemporaryFile(
+					suffix='.npz',
+					dir=self.spec_cache_dir,
+					delete=False
+				) as tmp:
+					tmp_path = tmp.name
+				try:
+					np.savez_compressed(tmp_path, spec=spec, amp=amp)
+					os.replace(tmp_path, cache_path)
+				except OSError:
+					if os.path.exists(tmp_path):
+						os.remove(tmp_path)
 
 
 	def __getitem__(self, index, seed=None, shoulder=0.05, \
@@ -246,9 +397,28 @@ class FixedWindowDataset(Dataset):
 				target_times = np.linspace(onset, offset, \
 						self.p['num_time_bins'])
 				# Then make a spectrogram.
-				spec, flag = self.p['get_spec'](max(0.0, onset-shoulder), \
-						offset+shoulder, self.audio[file_index], self.p, \
-						fs=self.fs, target_times=target_times)
+				cache_key = None
+				spec = None
+				if self.spec_cache_dir or self.spec_cache is not None:
+					cache_key = self._make_spec_cache_key(
+						load_filename,
+						onset,
+						offset,
+						shoulder
+					)
+					cached = self._spec_cache_get(cache_key)
+					if cached is not None:
+						spec = cached['spec']
+				if spec is None:
+					audio = self._get_audio(load_filename)
+					spec, flag = self.p['get_spec'](max(0.0, onset-shoulder), \
+							offset+shoulder, audio, self.p, fs=self.fs, \
+							target_times=target_times)
+					if cache_key is not None:
+						amp = np.sum(spec, axis=0, keepdims=True).T
+						self._spec_cache_set(cache_key, spec, amp)
+				else:
+					flag = True
 				if not flag:
 					continue
 				# Remake the spectrogram if it's silent.
