@@ -30,6 +30,8 @@ import torch
 import umap
 import warnings
 
+from ava.data.metadata import CANONICAL_METADATA_FIELDS, CANONICAL_SPEC_FIELDS, \
+		validate_projection_alignment, validate_spec_metadata
 from ava.models.vae import VAE
 from ava.models.vae_dataset import get_syllable_partition, \
 		get_syllable_data_loaders
@@ -40,7 +42,7 @@ AUDIO_FIELDS = ['audio']
 FILENAME_FIELDS = ['sap_time']
 SEGMENT_FIELDS = ['segments', 'segment_audio']
 PROJECTION_FIELDS = ['latent_means', 'latent_mean_pca', 'latent_mean_umap']
-SPEC_FIELDS = ['specs', 'onsets', 'offsets', 'audio_filenames']
+SPEC_FIELDS = list(CANONICAL_SPEC_FIELDS)
 MUPET_FIELDS = ['syllable_number', 'syllable_start_time', 'syllable_end_time',
 	'inter-syllable_interval', 'syllable_duration', 'starting_frequency',
 	'final_frequency', 'minimum_frequency', 'maximum_frequency',
@@ -72,6 +74,7 @@ PRETTY_NAMES = {
 	'specs': 'Spectrograms',
 	'onsets': 'Onsets (s)',
 	'offsets': 'Offsets (s)',
+	'audio_filenames': 'Filenames',
 	'aduio_filenames': 'Filenames',
 	'syllable_number': 'Syllable Number',
 	'syllable_start_time': 'Onsets (s)',
@@ -363,6 +366,16 @@ class DataContainer():
 			hdf5s = get_hdf5s_from_dir(spec_dir)
 			for j, hdf5 in enumerate(hdf5s):
 				filename = os.path.join(load_dir, os.path.split(hdf5)[-1])
+				if load_dir == spec_dir:
+					require_metadata = field in CANONICAL_METADATA_FIELDS
+					validate_spec_metadata(hdf5, require_metadata=require_metadata)
+				else:
+					validate_projection_alignment(
+						hdf5,
+						filename,
+						require_metadata=False,
+						allow_missing_projection=False,
+					)
 				with h5py.File(filename, 'r') as f:
 					assert field in f, "Can\'t find field \'"+field+"\' in"+ \
 						" file \'"+filename+"\'!"
@@ -596,6 +609,7 @@ class DataContainer():
 			hdf5s = get_hdf5s_from_dir(spec_dir)
 			current_fn, k = None, None
 			for hdf5 in hdf5s:
+				validate_spec_metadata(hdf5, require_metadata=True)
 				# Get the filenames and onsets from self.spec_dirs.
 				with h5py.File(hdf5, 'r') as f:
 					audio_filenames = np.array(f['audio_filenames'])
@@ -642,6 +656,18 @@ class DataContainer():
 					feature_arr[j] = features[k]
 				# Write the fields to self.projection_dirs.
 				write_fn = os.path.join(proj_dir, os.path.split(hdf5)[-1])
+				spec_len = validate_projection_alignment(
+					hdf5,
+					write_fn,
+					require_metadata=True,
+					allow_missing_projection=True,
+				)
+				if len(feature_arr) != spec_len:
+					raise ValueError(
+						"Feature length mismatch for "+hdf5+ \
+						": expected "+str(spec_len)+ \
+						", got "+str(len(feature_arr))
+					)
 				with h5py.File(write_fn, 'a') as f:
 					f.create_dataset(field, data=feature_arr)
 				to_return.append(feature_arr)
@@ -659,7 +685,27 @@ class DataContainer():
 			hdf5s = get_hdf5s_from_dir(spec_dir)
 			for j in range(len(hdf5s)):
 				filename = os.path.join(proj_dir, os.path.split(hdf5s[j])[-1])
+				spec_len = validate_projection_alignment(
+					hdf5s[j],
+					filename,
+					require_metadata=True,
+					allow_missing_projection=True,
+				)
+				if sylls_per_file is None:
+					sylls_per_file = spec_len
+				if spec_len != sylls_per_file:
+					raise ValueError(
+						"Inconsistent syllable counts in "+hdf5s[j]+ \
+						": expected "+str(sylls_per_file)+ \
+						", got "+str(spec_len)
+					)
 				to_write = data[k:k+sylls_per_file]
+				if to_write.shape[0] != spec_len:
+					raise ValueError(
+						"Projection length mismatch for "+hdf5s[j]+ \
+						": expected "+str(spec_len)+ \
+						", got "+str(to_write.shape[0])
+					)
 				with h5py.File(filename, 'a') as f:
 					f.create_dataset(key, data=to_write)
 				k += sylls_per_file

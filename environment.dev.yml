@@ -1,6 +1,6 @@
 name: ava-dev
 channels:
-  - pytorch
+  - pytorch>=2.1
   - conda-forge
   - defaults
 dependencies:
