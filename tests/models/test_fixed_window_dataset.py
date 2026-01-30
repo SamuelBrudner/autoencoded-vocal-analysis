@@ -34,3 +34,28 @@ def test_fixed_window_dataset_aligns_and_filters(tmp_path):
 	assert dataset.rois[0].shape[0] == 1
 	roi_lengths = np.diff(dataset.rois[0], axis=1).flatten()
 	assert np.allclose(roi_lengths, np.array([0.5]))
+
+
+def test_fixed_window_dataset_sampling_weights(tmp_path):
+	a_wav = tmp_path / "a.wav"
+	b_wav = tmp_path / "b.wav"
+	_write_silence(a_wav)
+	_write_silence(b_wav)
+
+	a_roi = tmp_path / "a.txt"
+	b_roi = tmp_path / "b.txt"
+	np.savetxt(a_roi, np.array([[0.0, 0.6], [0.1, 0.3]]))
+	np.savetxt(b_roi, np.array([[0.0, 0.2]]))
+
+	dataset = FixedWindowDataset(
+		audio_filenames=[str(a_wav), str(b_wav)],
+		roi_filenames=[str(a_roi), str(b_roi)],
+		p={
+			"window_length": 0.1,
+			"file_weight_cap": 0.3,
+			"roi_weight_mode": "uniform",
+		},
+	)
+
+	assert np.allclose(dataset.file_weights, np.array([0.6, 0.4]))
+	assert np.allclose(dataset.roi_weights[0], np.array([0.5, 0.5]))

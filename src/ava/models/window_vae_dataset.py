@@ -47,11 +47,54 @@ DEFAULT_WARP_PARAMS = {
 """Default time-warping parameters sent to affinewarp"""
 
 EPSILON = 1e-9
+_FILE_WEIGHT_MODE_ALIASES = {
+	"duration": "duration",
+	"durations": "duration",
+	"roi_duration": "duration",
+	"roi_durations": "duration",
+	"length": "duration",
+	"uniform": "uniform",
+	"equal": "uniform",
+	"roi_count": "roi_count",
+	"n_rois": "roi_count",
+	"count": "roi_count",
+}
+_ROI_WEIGHT_MODE_ALIASES = {
+	"duration": "duration",
+	"durations": "duration",
+	"length": "duration",
+	"uniform": "uniform",
+	"equal": "uniform",
+}
 
 
 def _default_num_workers(max_workers=8):
 	cpu_count = os.cpu_count() or 1
 	return max(0, min(max_workers, cpu_count - 1))
+
+
+def _normalize_mode(value, default, aliases, name, allow_bool=False):
+	if value is None:
+		return default
+	if allow_bool and isinstance(value, bool):
+		value = "duration" if value else "uniform"
+	if isinstance(value, str):
+		key = value.strip().lower()
+		if key in aliases:
+			return aliases[key]
+		valid = ", ".join(sorted(set(aliases.values())))
+		raise ValueError(f"{name} must be one of: {valid}.")
+	raise ValueError(f"{name} must be a string.")
+
+
+def _normalize_weights(weights, label):
+	weights = np.asarray(weights, dtype=float).reshape(-1)
+	if np.any(~np.isfinite(weights)):
+		raise ValueError(f"{label} weights contain non-finite values.")
+	total = float(np.sum(weights))
+	if total <= 0:
+		raise ValueError(f"{label} weights must sum to a positive value.")
+	return weights / total
 
 
 def _seed_fixed_window_worker(worker_id):
@@ -231,6 +274,11 @@ class FixedWindowDataset(Dataset):
 			List of wav files.
 		roi_filenames : list of str
 			List of files containing animal vocalization times.
+		p : dict
+			Preprocessing parameters. Must include ``'window_length'`` and
+			``'get_spec'``. Optional sampling keys: ``file_weight_mode``
+			(``duration``, ``uniform``, ``roi_count``), ``file_weight_cap``
+			(float), and ``roi_weight_mode`` (``duration`` or ``uniform``).
 		transform : {``None``, function}, optional
 			Transformation to apply to each item. Defaults to ``None`` (no
 			transformation).
@@ -286,23 +334,57 @@ class FixedWindowDataset(Dataset):
 				"No ROIs are long enough for window_length=" + \
 					f"{window_length}. Check ROI files or window_length."
 			)
-		self.file_weights = np.array(
-			[np.sum(lengths) for lengths in self._roi_lengths],
-			dtype=float
+		file_weight_mode = _normalize_mode(
+			self.p.get("file_weight_mode"),
+			default="duration",
+			aliases=_FILE_WEIGHT_MODE_ALIASES,
+			name="file_weight_mode",
 		)
-		total_weight = np.sum(self.file_weights)
-		if total_weight <= 0:
-			raise ValueError("FixedWindowDataset has no positive ROI weights.")
-		self.file_weights /= total_weight
+		if file_weight_mode == "uniform":
+			file_weights = np.ones(len(self._roi_lengths), dtype=float)
+		elif file_weight_mode == "roi_count":
+			file_weights = np.array(
+				[len(lengths) for lengths in self._roi_lengths],
+				dtype=float,
+			)
+		else:
+			file_weights = np.array(
+				[np.sum(lengths) for lengths in self._roi_lengths],
+				dtype=float,
+			)
+		file_weight_cap = self.p.get("file_weight_cap", None)
+		if file_weight_cap is not None:
+			try:
+				file_weight_cap = float(file_weight_cap)
+			except (TypeError, ValueError) as exc:
+				raise ValueError(
+					"file_weight_cap must be a positive number."
+				) from exc
+			if file_weight_cap <= 0:
+				raise ValueError("file_weight_cap must be positive.")
+			file_weights = np.minimum(file_weights, file_weight_cap)
+		self.file_weights = _normalize_weights(file_weights, "File")
+		self.file_weight_mode = file_weight_mode
+		self.file_weight_cap = file_weight_cap
+		roi_weight_mode = _normalize_mode(
+			self.p.get("roi_weight_mode"),
+			default="duration",
+			aliases=_ROI_WEIGHT_MODE_ALIASES,
+			name="roi_weight_mode",
+			allow_bool=True,
+		)
+		self.roi_weight_mode = roi_weight_mode
 		self.roi_weights = []
 		for lengths in self._roi_lengths:
-			roi_total = np.sum(lengths)
-			if roi_total <= 0:
-				self.roi_weights.append(
-					np.ones(len(lengths)) / len(lengths)
-				)
+			if roi_weight_mode == "uniform":
+				roi_weights = np.ones(len(lengths), dtype=float)
 			else:
-				self.roi_weights.append(lengths / roi_total)
+				roi_total = float(np.sum(lengths))
+				if roi_total <= 0:
+					roi_weights = np.ones(len(lengths), dtype=float)
+				else:
+					roi_weights = np.array(lengths, dtype=float)
+			self.roi_weights.append(_normalize_weights(roi_weights, "ROI"))
 		self.transform = transform
 		self.spec_cache_dir = spec_cache_dir
 		self.spec_cache = spec_cache

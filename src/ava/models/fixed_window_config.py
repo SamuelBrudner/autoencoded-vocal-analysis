@@ -69,6 +69,9 @@ class FixedWindowPreprocessConfig:
 	mel: bool = True
 	time_stretch: bool = False
 	within_syll_normalize: bool = False
+	file_weight_mode: str = "duration"
+	file_weight_cap: Optional[float] = None
+	roi_weight_mode: str = "duration"
 	real_preprocess_params: tuple = (
 		"min_freq",
 		"max_freq",
@@ -95,6 +98,9 @@ class FixedWindowPreprocessConfig:
 			"mel": self.mel,
 			"time_stretch": self.time_stretch,
 			"within_syll_normalize": self.within_syll_normalize,
+			"file_weight_mode": self.file_weight_mode,
+			"file_weight_cap": self.file_weight_cap,
+			"roi_weight_mode": self.roi_weight_mode,
 			"real_preprocess_params": self.real_preprocess_params,
 			"int_preprocess_params": self.int_preprocess_params,
 			"binary_preprocess_params": self.binary_preprocess_params,
@@ -117,6 +123,9 @@ class FixedWindowPreprocessConfig:
 			"mel": self.mel,
 			"time_stretch": self.time_stretch,
 			"within_syll_normalize": self.within_syll_normalize,
+			"file_weight_mode": self.file_weight_mode,
+			"file_weight_cap": self.file_weight_cap,
+			"roi_weight_mode": self.roi_weight_mode,
 			"real_preprocess_params": list(self.real_preprocess_params),
 			"int_preprocess_params": list(self.int_preprocess_params),
 			"binary_preprocess_params": list(self.binary_preprocess_params),
