@@ -69,6 +69,10 @@ class FixedWindowPreprocessConfig:
 	mel: bool = True
 	time_stretch: bool = False
 	within_syll_normalize: bool = False
+	normalization_mode: str = "none"
+	normalization_method: str = "mean_std"
+	normalization_num_samples: int = 128
+	normalization_seed: int = 0
 	file_weight_mode: str = "duration"
 	file_weight_cap: Optional[float] = None
 	roi_weight_mode: str = "duration"
@@ -98,6 +102,10 @@ class FixedWindowPreprocessConfig:
 			"mel": self.mel,
 			"time_stretch": self.time_stretch,
 			"within_syll_normalize": self.within_syll_normalize,
+			"normalization_mode": self.normalization_mode,
+			"normalization_method": self.normalization_method,
+			"normalization_num_samples": self.normalization_num_samples,
+			"normalization_seed": self.normalization_seed,
 			"file_weight_mode": self.file_weight_mode,
 			"file_weight_cap": self.file_weight_cap,
 			"roi_weight_mode": self.roi_weight_mode,
@@ -123,6 +131,10 @@ class FixedWindowPreprocessConfig:
 			"mel": self.mel,
 			"time_stretch": self.time_stretch,
 			"within_syll_normalize": self.within_syll_normalize,
+			"normalization_mode": self.normalization_mode,
+			"normalization_method": self.normalization_method,
+			"normalization_num_samples": self.normalization_num_samples,
+			"normalization_seed": self.normalization_seed,
 			"file_weight_mode": self.file_weight_mode,
 			"file_weight_cap": self.file_weight_cap,
 			"roi_weight_mode": self.roi_weight_mode,

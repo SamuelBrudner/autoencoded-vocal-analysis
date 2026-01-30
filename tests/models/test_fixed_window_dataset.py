@@ -18,6 +18,11 @@ def _write_sine(path, fs=1000, duration=1.0, freq=10.0, amplitude=0.5):
 	wavfile.write(path, fs, audio)
 
 
+def _write_constant(path, fs=1000, duration=1.0, value=1.0):
+	audio = np.full(int(fs * duration), value, dtype=np.float32)
+	wavfile.write(path, fs, audio)
+
+
 def test_fixed_window_dataset_aligns_and_filters(tmp_path):
 	a_wav = tmp_path / "a.wav"
 	b_wav = tmp_path / "b.wav"
@@ -96,3 +101,83 @@ def test_fixed_window_dataset_rejects_low_energy_windows(tmp_path):
 
 	_, file_index, _, _ = dataset.__getitem__(0, seed=0, return_seg_info=True)
 	assert dataset.filenames[file_index] == str(loud_wav)
+
+
+def test_fixed_window_dataset_global_normalization(tmp_path):
+	audio_wav = tmp_path / "a.wav"
+	_write_constant(audio_wav, value=0.4)
+	roi = tmp_path / "a.txt"
+	np.savetxt(roi, np.array([[0.0, 0.5]]))
+
+	def _fake_get_spec(t1, t2, audio, p, fs=32000, target_times=None, **kwargs):
+		value = float(np.mean(audio))
+		spec = np.full((p["num_freq_bins"], p["num_time_bins"]), value,
+			dtype=np.float32)
+		return spec, True
+
+	dataset = FixedWindowDataset(
+		audio_filenames=[str(audio_wav)],
+		roi_filenames=[str(roi)],
+		p={
+			"window_length": 0.2,
+			"num_time_bins": 4,
+			"num_freq_bins": 3,
+			"get_spec": _fake_get_spec,
+			"normalization_mode": "global",
+			"normalization_method": "mean_std",
+			"normalization_num_samples": 1,
+			"normalization_seed": 0,
+		},
+	)
+
+	stats = dataset.normalization_stats
+	assert stats["mode"] == "global"
+	assert np.isclose(stats["center"], 0.4)
+
+	spec = dataset[0]
+	assert np.allclose(spec, 0.0)
+
+
+def test_fixed_window_dataset_per_file_normalization(tmp_path):
+	a_wav = tmp_path / "a.wav"
+	b_wav = tmp_path / "b.wav"
+	_write_constant(a_wav, value=0.1)
+	_write_constant(b_wav, value=0.6)
+
+	a_roi = tmp_path / "a.txt"
+	b_roi = tmp_path / "b.txt"
+	np.savetxt(a_roi, np.array([[0.0, 0.5]]))
+	np.savetxt(b_roi, np.array([[0.0, 0.5]]))
+
+	def _fake_get_spec(t1, t2, audio, p, fs=32000, target_times=None, **kwargs):
+		value = float(np.mean(audio))
+		spec = np.full((p["num_freq_bins"], p["num_time_bins"]), value,
+			dtype=np.float32)
+		return spec, True
+
+	dataset = FixedWindowDataset(
+		audio_filenames=[str(b_wav), str(a_wav)],
+		roi_filenames=[str(b_roi), str(a_roi)],
+		p={
+			"window_length": 0.2,
+			"num_time_bins": 3,
+			"num_freq_bins": 2,
+			"get_spec": _fake_get_spec,
+			"normalization_mode": "per_file",
+			"normalization_method": "mean_std",
+			"normalization_num_samples": 1,
+			"normalization_seed": 1,
+		},
+	)
+
+	stats = dataset.normalization_stats
+	expected = []
+	for filename in dataset.filenames:
+		if filename.endswith("a.wav"):
+			expected.append(0.1)
+		else:
+			expected.append(0.6)
+	assert np.allclose(stats["center"], np.array(expected))
+
+	spec, _, _, _ = dataset.__getitem__(0, seed=0, return_seg_info=True)
+	assert np.allclose(spec, 0.0)

@@ -66,6 +66,28 @@ _ROI_WEIGHT_MODE_ALIASES = {
 	"uniform": "uniform",
 	"equal": "uniform",
 }
+_NORMALIZATION_MODE_ALIASES = {
+	"none": "none",
+	"off": "none",
+	"disable": "none",
+	"global": "global",
+	"dataset": "global",
+	"per_file": "per_file",
+	"per-file": "per_file",
+	"file": "per_file",
+}
+_NORMALIZATION_METHOD_ALIASES = {
+	"mean_std": "mean_std",
+	"meanstd": "mean_std",
+	"mean": "mean_std",
+	"std": "mean_std",
+	"zscore": "mean_std",
+	"z_score": "mean_std",
+	"robust": "robust",
+	"median_iqr": "robust",
+	"median": "robust",
+	"iqr": "robust",
+}
 
 
 def _default_num_workers(max_workers=8):
@@ -85,6 +107,35 @@ def _normalize_mode(value, default, aliases, name, allow_bool=False):
 		valid = ", ".join(sorted(set(aliases.values())))
 		raise ValueError(f"{name} must be one of: {valid}.")
 	raise ValueError(f"{name} must be a string.")
+
+
+def _normalize_choice(value, default, aliases, name, allow_bool=False,
+	bool_map=None):
+	if value is None:
+		return default
+	if allow_bool and isinstance(value, bool):
+		if bool_map is None:
+			bool_map = {True: "global", False: "none"}
+		return bool_map[value]
+	if isinstance(value, str):
+		key = value.strip().lower()
+		if key in aliases:
+			return aliases[key]
+		valid = ", ".join(sorted(set(aliases.values())))
+		raise ValueError(f"{name} must be one of: {valid}.")
+	raise ValueError(f"{name} must be a string or boolean.")
+
+
+def _normalize_positive_int(value, default, name):
+	if value is None:
+		return int(default)
+	try:
+		value = int(value)
+	except (TypeError, ValueError) as exc:
+		raise ValueError(f"{name} must be a positive integer.") from exc
+	if value <= 0:
+		raise ValueError(f"{name} must be a positive integer.")
+	return value
 
 
 def _normalize_weights(weights, label):
@@ -250,11 +301,16 @@ def get_fixed_window_data_loaders(partition, p, batch_size=64, \
 		loader_kwargs["persistent_workers"] = persistent_workers
 		if prefetch_factor is not None:
 			loader_kwargs["prefetch_factor"] = prefetch_factor
+	normalization_stats = p.get("normalization_stats", None)
 	train_dataset = FixedWindowDataset(partition['train']['audio'], \
 			partition['train']['rois'], p, transform=numpy_to_tensor, \
 			min_spec_val=min_spec_val, min_audio_energy=min_audio_energy, \
 			spec_cache_dir=spec_cache_dir, spec_cache=spec_cache, \
-			audio_cache_size=audio_cache_size)
+			audio_cache_size=audio_cache_size, \
+			normalization_stats=normalization_stats)
+	if normalization_stats is None and \
+			train_dataset.normalization_mode == "global":
+		normalization_stats = train_dataset.normalization_stats
 	train_dataloader = DataLoader(train_dataset, batch_size=batch_size, \
 			shuffle=shuffle[0], **loader_kwargs)
 	if not partition['test']:
@@ -263,7 +319,8 @@ def get_fixed_window_data_loaders(partition, p, batch_size=64, \
 			partition['test']['rois'], p, transform=numpy_to_tensor, \
 			min_spec_val=min_spec_val, min_audio_energy=min_audio_energy, \
 			spec_cache_dir=spec_cache_dir, spec_cache=spec_cache, \
-			audio_cache_size=audio_cache_size)
+			audio_cache_size=audio_cache_size, \
+			normalization_stats=normalization_stats)
 	test_dataloader = DataLoader(test_dataset, batch_size=batch_size, \
 			shuffle=shuffle[1], **loader_kwargs)
 	return {'train':train_dataloader, 'test':test_dataloader}
@@ -274,7 +331,8 @@ class FixedWindowDataset(Dataset):
 
 	def __init__(self, audio_filenames, roi_filenames, p, transform=None,
 		dataset_length=2048, min_spec_val=None, min_audio_energy=None, \
-		spec_cache_dir=None, spec_cache=None, audio_cache_size=0):
+		spec_cache_dir=None, spec_cache=None, audio_cache_size=0, \
+		normalization_stats=None):
 		"""
 		Create a torch.utils.data.Dataset for chunks of animal vocalization.
 
@@ -289,6 +347,10 @@ class FixedWindowDataset(Dataset):
 			``'get_spec'``. Optional sampling keys: ``file_weight_mode``
 			(``duration``, ``uniform``, ``roi_count``), ``file_weight_cap``
 			(float), and ``roi_weight_mode`` (``duration`` or ``uniform``).
+			Optional normalization keys: ``normalization_mode`` (``none``,
+			``global``, ``per_file``), ``normalization_method`` (``mean_std``,
+			``robust``), ``normalization_num_samples`` (int), and
+			``normalization_seed`` (int).
 		transform : {``None``, function}, optional
 			Transformation to apply to each item. Defaults to ``None`` (no
 			transformation).
@@ -310,6 +372,8 @@ class FixedWindowDataset(Dataset):
 		audio_cache_size : int, optional
 			Maximum number of audio files to keep in an in-memory LRU cache.
 			Defaults to ``0`` (no audio caching).
+		normalization_stats : {dict, None}, optional
+			Optional normalization statistics to reuse across datasets.
 		"""
 		sorted_pairs = sorted(zip(audio_filenames, roi_filenames), \
 			key=lambda pair: pair[0])
@@ -421,6 +485,7 @@ class FixedWindowDataset(Dataset):
 		if self.spec_cache_dir:
 			os.makedirs(self.spec_cache_dir, exist_ok=True)
 		self._rng = np.random.RandomState()
+		self._configure_normalization(normalization_stats)
 
 
 	def seed(self, seed=None):
@@ -428,6 +493,183 @@ class FixedWindowDataset(Dataset):
 			self._rng = np.random.RandomState()
 		else:
 			self._rng = np.random.RandomState(int(seed))
+
+	def _configure_normalization(self, normalization_stats):
+		self.normalization_mode = _normalize_choice(
+			self.p.get("normalization_mode"),
+			default="none",
+			aliases=_NORMALIZATION_MODE_ALIASES,
+			name="normalization_mode",
+			allow_bool=True,
+		)
+		self.normalization_method = _normalize_choice(
+			self.p.get("normalization_method"),
+			default="mean_std",
+			aliases=_NORMALIZATION_METHOD_ALIASES,
+			name="normalization_method",
+		)
+		self.normalization_stats = None
+		self._norm_center = None
+		self._norm_scale = None
+		if self.normalization_mode == "none":
+			self.normalization_num_samples = None
+			self.normalization_seed = None
+			return
+		self.normalization_num_samples = _normalize_positive_int(
+			self.p.get("normalization_num_samples"),
+			default=128,
+			name="normalization_num_samples",
+		)
+		seed = self.p.get("normalization_seed", 0)
+		try:
+			self.normalization_seed = int(seed)
+		except (TypeError, ValueError) as exc:
+			raise ValueError("normalization_seed must be an integer.") from exc
+		if normalization_stats is None:
+			normalization_stats = self._compute_normalization_stats()
+		self._set_normalization_stats(normalization_stats)
+
+	def _set_normalization_stats(self, stats):
+		self.normalization_stats = None
+		self._norm_center = None
+		self._norm_scale = None
+		if stats is None:
+			return
+		if not isinstance(stats, dict):
+			raise ValueError("normalization_stats must be a dict.")
+		mode = stats.get("mode", self.normalization_mode)
+		method = stats.get("method", self.normalization_method)
+		if mode != self.normalization_mode:
+			raise ValueError(
+				"normalization_stats mode does not match normalization_mode."
+			)
+		if method != self.normalization_method:
+			raise ValueError(
+				"normalization_stats method does not match normalization_method."
+			)
+		center = stats.get("center", None)
+		scale = stats.get("scale", None)
+		if mode == "global":
+			center = float(center)
+			scale = float(scale)
+		elif mode == "per_file":
+			center = np.asarray(center, dtype=float).reshape(-1)
+			scale = np.asarray(scale, dtype=float).reshape(-1)
+			if center.shape[0] != len(self.filenames):
+				raise ValueError(
+					"normalization_stats center length does not match "
+					"number of files."
+				)
+			if scale.shape[0] != len(self.filenames):
+				raise ValueError(
+					"normalization_stats scale length does not match "
+					"number of files."
+				)
+		else:
+			raise ValueError("normalization_stats mode must be global or per_file.")
+		if np.any(~np.isfinite(scale)):
+			raise ValueError("normalization_stats scale contains non-finite values.")
+		if np.any(scale <= 0):
+			raise ValueError("normalization_stats scale must be positive.")
+		self.normalization_stats = {
+			"mode": mode,
+			"method": method,
+			"center": center,
+			"scale": scale,
+		}
+		self._norm_center = center
+		self._norm_scale = scale
+
+	def _compute_normalization_stats(self):
+		seed = self.normalization_seed
+		if self.normalization_mode == "global":
+			rng = np.random.RandomState(seed)
+			center, scale = self._compute_stats_for_samples(
+				rng,
+				self.normalization_num_samples,
+				file_index=None,
+			)
+			return {
+				"mode": "global",
+				"method": self.normalization_method,
+				"center": center,
+				"scale": scale,
+			}
+		if self.normalization_mode == "per_file":
+			centers = np.zeros(len(self.filenames), dtype=float)
+			scales = np.zeros(len(self.filenames), dtype=float)
+			for idx in range(len(self.filenames)):
+				rng = np.random.RandomState(seed + idx)
+				center, scale = self._compute_stats_for_samples(
+					rng,
+					self.normalization_num_samples,
+					file_index=idx,
+				)
+				centers[idx] = center
+				scales[idx] = scale
+			return {
+				"mode": "per_file",
+				"method": self.normalization_method,
+				"center": centers,
+				"scale": scales,
+			}
+		raise ValueError("normalization_mode must be none, global, or per_file.")
+
+	def _compute_stats_for_samples(self, rng, num_samples, file_index=None):
+		if self.normalization_method == "robust":
+			values = []
+			for _ in range(num_samples):
+				spec, _, _, _ = self._draw_window(
+					rng,
+					file_index=file_index,
+					apply_normalization=False,
+					max_attempts=100,
+				)
+				values.append(np.ravel(spec))
+			if not values:
+				raise ValueError("Failed to sample windows for normalization.")
+			values = np.concatenate(values, axis=0)
+			median = float(np.median(values))
+			q75, q25 = np.percentile(values, [75, 25])
+			scale = float(q75 - q25)
+			if not np.isfinite(scale) or scale <= 0:
+				scale = 1.0
+			return median, scale
+		total = 0.0
+		total_sq = 0.0
+		count = 0
+		for _ in range(num_samples):
+			spec, _, _, _ = self._draw_window(
+				rng,
+				file_index=file_index,
+				apply_normalization=False,
+				max_attempts=100,
+			)
+			values = np.asarray(spec, dtype=np.float64)
+			total += float(values.sum())
+			total_sq += float(np.square(values).sum())
+			count += values.size
+		if count == 0:
+			raise ValueError("Failed to sample windows for normalization.")
+		mean = total / count
+		var = total_sq / count - mean ** 2
+		if var < 0:
+			var = 0.0
+		std = float(np.sqrt(var))
+		if not np.isfinite(std) or std <= 0:
+			std = 1.0
+		return float(mean), std
+
+	def _apply_normalization(self, spec, file_index):
+		if self._norm_center is None:
+			return spec
+		if self.normalization_mode == "global":
+			center = self._norm_center
+			scale = self._norm_scale
+		else:
+			center = self._norm_center[file_index]
+			scale = self._norm_scale[file_index]
+		return (spec - center) / scale
 
 
 	def __len__(self):
@@ -568,6 +810,71 @@ class FixedWindowDataset(Dataset):
 					if os.path.exists(tmp_path):
 						os.remove(tmp_path)
 
+	def _draw_window(self, rng, shoulder=0.05, file_index=None, \
+		apply_normalization=True, max_attempts=None):
+		attempts = 0
+		fixed_file = file_index is not None
+		while True:
+			if max_attempts is not None and attempts >= max_attempts:
+				raise ValueError(
+					"Unable to sample a valid window for normalization."
+				)
+			attempts += 1
+			if fixed_file:
+				current_file_index = int(file_index)
+			else:
+				current_file_index = rng.choice(
+					len(self.filenames),
+					p=self.file_weights
+				)
+			load_filename = self.filenames[current_file_index]
+			roi_index = rng.choice(
+				len(self.roi_weights[current_file_index]),
+				p=self.roi_weights[current_file_index]
+			)
+			roi = self.rois[current_file_index][roi_index]
+			onset = roi[0] + (roi[1] - roi[0] - self.p['window_length']) \
+				* rng.rand()
+			offset = onset + self.p['window_length']
+			audio = None
+			if self.min_audio_energy is not None:
+				audio = self._get_audio(load_filename)
+				if self._window_energy(audio, onset, offset) \
+						< self.min_audio_energy:
+					continue
+			target_times = np.linspace(onset, offset, self.p['num_time_bins'])
+			cache_key = None
+			spec = None
+			if self.spec_cache_dir or self.spec_cache is not None:
+				cache_key = self._make_spec_cache_key(
+					load_filename,
+					onset,
+					offset,
+					shoulder
+				)
+				cached = self._spec_cache_get(cache_key)
+				if cached is not None:
+					spec = cached['spec']
+			if spec is None:
+				if audio is None:
+					audio = self._get_audio(load_filename)
+				spec, flag = self.p['get_spec'](max(0.0, onset-shoulder), \
+						offset+shoulder, audio, self.p, fs=self.fs, \
+						target_times=target_times)
+				if cache_key is not None:
+					amp = np.sum(spec, axis=0, keepdims=True).T
+					self._spec_cache_set(cache_key, spec, amp)
+			else:
+				flag = True
+			if not flag:
+				continue
+			if self.min_spec_val is not None and \
+					np.max(spec) < self.min_spec_val:
+				continue
+			if apply_normalization:
+				spec = self._apply_normalization(spec, current_file_index)
+			return spec, current_file_index, onset, offset
+
 
 	def __getitem__(self, index, seed=None, shoulder=0.05, \
 		return_seg_info=False):
@@ -597,63 +904,17 @@ class FixedWindowDataset(Dataset):
 			single_index = True
 		rng = self._rng if seed is None else np.random.RandomState(seed)
 		for i in index:
-			while True:
-				# First find the file, then the ROI.
-				file_index = rng.choice(len(self.filenames), \
-					p=self.file_weights)
-				load_filename = self.filenames[file_index]
-				roi_index = rng.choice(len(self.roi_weights[file_index]), \
-					p=self.roi_weights[file_index])
-				roi = self.rois[file_index][roi_index]
-				# Then choose a chunk of audio uniformly at random.
-				onset = roi[0] + (roi[1] - roi[0] - self.p['window_length']) \
-					* rng.rand()
-				offset = onset + self.p['window_length']
-				audio = None
-				if self.min_audio_energy is not None:
-					audio = self._get_audio(load_filename)
-					if self._window_energy(audio, onset, offset) \
-							< self.min_audio_energy:
-						continue
-				target_times = np.linspace(onset, offset, \
-						self.p['num_time_bins'])
-				# Then make a spectrogram.
-				cache_key = None
-				spec = None
-				if self.spec_cache_dir or self.spec_cache is not None:
-					cache_key = self._make_spec_cache_key(
-						load_filename,
-						onset,
-						offset,
-						shoulder
-					)
-					cached = self._spec_cache_get(cache_key)
-					if cached is not None:
-						spec = cached['spec']
-				if spec is None:
-					if audio is None:
-						audio = self._get_audio(load_filename)
-					spec, flag = self.p['get_spec'](max(0.0, onset-shoulder), \
-							offset+shoulder, audio, self.p, fs=self.fs, \
-							target_times=target_times)
-					if cache_key is not None:
-						amp = np.sum(spec, axis=0, keepdims=True).T
-						self._spec_cache_set(cache_key, spec, amp)
-				else:
-					flag = True
-				if not flag:
-					continue
-				# Remake the spectrogram if it's silent.
-				if self.min_spec_val is not None and \
-						np.max(spec) < self.min_spec_val:
-					continue
-				if self.transform:
-					spec = self.transform(spec)
-				specs.append(spec)
-				file_indices.append(file_index)
-				onsets.append(onset)
-				offsets.append(offset)
-				break
+			spec, file_index, onset, offset = self._draw_window(
+				rng,
+				shoulder=shoulder,
+				apply_normalization=True,
+			)
+			if self.transform:
+				spec = self.transform(spec)
+			specs.append(spec)
+			file_indices.append(file_index)
+			onsets.append(onset)
+			offsets.append(offset)
 		if return_seg_info:
 			if single_index:
 				return specs[0], file_indices[0], onsets[0], offsets[0]
