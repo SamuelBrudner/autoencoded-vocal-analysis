@@ -180,8 +180,9 @@ def get_window_partition(audio_dirs, roi_dirs, split=0.8, shuffle=True, \
 
 def get_fixed_window_data_loaders(partition, p, batch_size=64, \
 	shuffle=(True, False), num_workers=None, min_spec_val=None, \
-	spec_cache_dir=None, spec_cache=None, audio_cache_size=0, \
-	pin_memory=None, persistent_workers=None, prefetch_factor=2):
+	min_audio_energy=None, spec_cache_dir=None, spec_cache=None, \
+	audio_cache_size=0, pin_memory=None, persistent_workers=None, \
+	prefetch_factor=2):
 	"""
 	Get DataLoaders for training and testing: fixed-duration shotgun VAE
 
@@ -199,6 +200,13 @@ def get_fixed_window_data_loaders(partition, p, batch_size=64, \
 	num_workers : {int, None}, optional
 		Number of CPU workers to feed data to the network. Defaults to
 		``max(0, min(8, (os.cpu_count() or 1) - 1))`` when ``None``.
+	min_spec_val : {float, None}, optional
+		Used to disregard silence. If not `None`, spectrogram with a maximum
+		value less than `min_spec_val` will be disregarded.
+	min_audio_energy : {float, None}, optional
+		Minimum mean-squared energy (after DC offset removal) required for a
+		window to be considered. Windows below this threshold are resampled
+		before spectrogram computation.
 	spec_cache_dir : {str, None}, optional
 		Directory for an on-disk spectrogram/amplitude cache. Defaults to
 		``None`` (no on-disk cache).
@@ -244,16 +252,18 @@ def get_fixed_window_data_loaders(partition, p, batch_size=64, \
 			loader_kwargs["prefetch_factor"] = prefetch_factor
 	train_dataset = FixedWindowDataset(partition['train']['audio'], \
 			partition['train']['rois'], p, transform=numpy_to_tensor, \
-			min_spec_val=min_spec_val, spec_cache_dir=spec_cache_dir, \
-			spec_cache=spec_cache, audio_cache_size=audio_cache_size)
+			min_spec_val=min_spec_val, min_audio_energy=min_audio_energy, \
+			spec_cache_dir=spec_cache_dir, spec_cache=spec_cache, \
+			audio_cache_size=audio_cache_size)
 	train_dataloader = DataLoader(train_dataset, batch_size=batch_size, \
 			shuffle=shuffle[0], **loader_kwargs)
 	if not partition['test']:
 		return {'train':train_dataloader, 'test':None}
 	test_dataset = FixedWindowDataset(partition['test']['audio'], \
 			partition['test']['rois'], p, transform=numpy_to_tensor, \
-			min_spec_val=min_spec_val, spec_cache_dir=spec_cache_dir, \
-			spec_cache=spec_cache, audio_cache_size=audio_cache_size)
+			min_spec_val=min_spec_val, min_audio_energy=min_audio_energy, \
+			spec_cache_dir=spec_cache_dir, spec_cache=spec_cache, \
+			audio_cache_size=audio_cache_size)
 	test_dataloader = DataLoader(test_dataset, batch_size=batch_size, \
 			shuffle=shuffle[1], **loader_kwargs)
 	return {'train':train_dataloader, 'test':test_dataloader}
@@ -263,8 +273,8 @@ def get_fixed_window_data_loaders(partition, p, batch_size=64, \
 class FixedWindowDataset(Dataset):
 
 	def __init__(self, audio_filenames, roi_filenames, p, transform=None,
-		dataset_length=2048, min_spec_val=None, spec_cache_dir=None, \
-		spec_cache=None, audio_cache_size=0):
+		dataset_length=2048, min_spec_val=None, min_audio_energy=None, \
+		spec_cache_dir=None, spec_cache=None, audio_cache_size=0):
 		"""
 		Create a torch.utils.data.Dataset for chunks of animal vocalization.
 
@@ -287,6 +297,10 @@ class FixedWindowDataset(Dataset):
 		min_spec_val : {float, None}, optional
 			Used to disregard silence. If not `None`, spectrogram with a maximum
 			value less than `min_spec_val` will be disregarded.
+		min_audio_energy : {float, None}, optional
+			Minimum mean-squared energy (after DC offset removal) required for a
+			window to be considered. Windows below this threshold are resampled
+			before spectrogram computation.
 		spec_cache_dir : {str, None}, optional
 			Directory for an on-disk spectrogram/amplitude cache. Defaults to
 			``None`` (no on-disk cache).
@@ -304,6 +318,19 @@ class FixedWindowDataset(Dataset):
 		self.roi_filenames = [pair[1] for pair in sorted_pairs]
 		self.dataset_length = dataset_length
 		self.min_spec_val = min_spec_val
+		self.min_audio_energy = None
+		if min_audio_energy is not None:
+			try:
+				min_audio_energy = float(min_audio_energy)
+			except (TypeError, ValueError) as exc:
+				raise ValueError(
+					"min_audio_energy must be a non-negative number."
+				) from exc
+			if not np.isfinite(min_audio_energy) or min_audio_energy < 0:
+				raise ValueError(
+					"min_audio_energy must be a non-negative number."
+				)
+			self.min_audio_energy = min_audio_energy
 		self.p = p
 		window_length = self.p.get('window_length', None)
 		if window_length is None:
@@ -438,6 +465,19 @@ class FixedWindowDataset(Dataset):
 		return audio
 
 
+	def _window_energy(self, audio, onset, offset):
+		start = int(round(onset * self.fs))
+		stop = int(round(offset * self.fs))
+		if stop <= 0 or start >= len(audio):
+			return 0.0
+		segment = audio[max(0, start):min(len(audio), stop)]
+		if segment.size == 0:
+			return 0.0
+		segment = segment.astype(np.float32)
+		segment = segment - np.mean(segment)
+		return float(np.mean(np.square(segment)))
+
+
 	def _spec_cache_params(self):
 		spec_keys = [
 			'nperseg',
@@ -569,6 +609,12 @@ class FixedWindowDataset(Dataset):
 				onset = roi[0] + (roi[1] - roi[0] - self.p['window_length']) \
 					* rng.rand()
 				offset = onset + self.p['window_length']
+				audio = None
+				if self.min_audio_energy is not None:
+					audio = self._get_audio(load_filename)
+					if self._window_energy(audio, onset, offset) \
+							< self.min_audio_energy:
+						continue
 				target_times = np.linspace(onset, offset, \
 						self.p['num_time_bins'])
 				# Then make a spectrogram.
@@ -585,7 +631,8 @@ class FixedWindowDataset(Dataset):
 					if cached is not None:
 						spec = cached['spec']
 				if spec is None:
-					audio = self._get_audio(load_filename)
+					if audio is None:
+						audio = self._get_audio(load_filename)
 					spec, flag = self.p['get_spec'](max(0.0, onset-shoulder), \
 							offset+shoulder, audio, self.p, fs=self.fs, \
 							target_times=target_times)

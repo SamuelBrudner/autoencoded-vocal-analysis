@@ -157,6 +157,7 @@ class FixedWindowDataConfig:
 	shuffle_train: bool = True
 	shuffle_test: bool = False
 	min_spec_val: Optional[float] = None
+	min_audio_energy: Optional[float] = None
 	spec_cache_dir: Optional[str] = None
 	audio_cache_size: int = 0
 	pin_memory: Optional[bool] = None
@@ -169,6 +170,7 @@ class FixedWindowDataConfig:
 			"shuffle": (self.shuffle_train, self.shuffle_test),
 			"num_workers": self.num_workers,
 			"min_spec_val": self.min_spec_val,
+			"min_audio_energy": self.min_audio_energy,
 			"spec_cache_dir": self.spec_cache_dir,
 			"audio_cache_size": self.audio_cache_size,
 			"pin_memory": self.pin_memory,
@@ -183,6 +185,7 @@ class FixedWindowDataConfig:
 			"shuffle_train": self.shuffle_train,
 			"shuffle_test": self.shuffle_test,
 			"min_spec_val": self.min_spec_val,
+			"min_audio_energy": self.min_audio_energy,
 			"spec_cache_dir": self.spec_cache_dir,
 			"audio_cache_size": self.audio_cache_size,
 			"pin_memory": self.pin_memory,
