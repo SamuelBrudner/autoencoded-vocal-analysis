@@ -22,6 +22,37 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from ava.models.vae import VAE
 
 
+def _unwrap_batch(batch):
+	if torch.is_tensor(batch):
+		return batch
+	if isinstance(batch, dict):
+		for value in batch.values():
+			if torch.is_tensor(value):
+				return value
+		return next(iter(batch.values()))
+	if isinstance(batch, (list, tuple)) and batch:
+		for item in batch:
+			if torch.is_tensor(item):
+				return item
+		return batch[0]
+	return batch
+
+
+def _infer_input_shape(loaders: dict) -> tuple[int, int]:
+	loader = loaders.get("train")
+	if loader is None:
+		raise ValueError("Cannot infer input_shape without a train dataloader.")
+	batch = next(iter(loader))
+	batch = _unwrap_batch(batch)
+	if not hasattr(batch, "shape") or len(batch.shape) < 3:
+		raise ValueError("Training batches must have shape [batch, height, width].")
+	if batch.dim() == 4 and batch.shape[1] == 1:
+		return tuple(batch.shape[2:])
+	if batch.dim() == 3:
+		return tuple(batch.shape[1:])
+	raise ValueError("Training batches must have shape [batch, height, width].")
+
+
 class VAELightningModule(pl.LightningModule):
 	"""LightningModule wrapper for the VAE."""
 
@@ -29,7 +60,8 @@ class VAELightningModule(pl.LightningModule):
 		lr: float = 1e-3, z_dim: int = 32, model_precision: float = 10.0,
 		input_shape: Optional[tuple[int, int]] = None,
 		posterior_type: str = "diag", compile_model: bool = False,
-		compile_kwargs: Optional[dict] = None):
+		compile_kwargs: Optional[dict] = None, kl_beta: float = 1.0,
+		kl_warmup_epochs: int = 0):
 		super().__init__()
 		if vae is None:
 			vae_kwargs = dict(
@@ -52,6 +84,8 @@ class VAELightningModule(pl.LightningModule):
 		self._train_loss_count = 0
 		self._val_loss_sum = 0.0
 		self._val_loss_count = 0
+		self.kl_beta = kl_beta
+		self.kl_warmup_epochs = kl_warmup_epochs
 		self._compiled_loss_fn = None
 		if compile_model:
 			if not hasattr(torch, "compile"):
@@ -68,36 +102,45 @@ class VAELightningModule(pl.LightningModule):
 		return self.vae(x, return_latent_rec=return_latent_rec)
 
 	def _compute_loss_and_stats_impl(self, batch):
-		mu, u, d = self.vae.encode(batch)
-		latent_dist = self.vae._posterior_distribution(mu, u, d)
-		z = latent_dist.rsample()
-		x_rec = self.vae.decode(z)
+		recon, mu, logvar, z, u = self.vae(batch)
+		latent_dist = self.vae._posterior_distribution(mu, logvar, u)
 		x_flat = batch.view(batch.shape[0], -1)
-		elbo = -0.5 * (torch.sum(z ** 2) + self.vae.z_dim * math.log(2 * math.pi))
+		recon_flat = recon.view(batch.shape[0], -1)
 		pxz_term = -0.5 * x_flat.shape[1] * math.log(
 			2 * math.pi / self.vae.model_precision
 		)
-		l2s = torch.sum((x_flat - x_rec) ** 2, dim=1)
+		l2s = torch.sum((x_flat - recon_flat) ** 2, dim=1)
 		pxz_term = pxz_term - 0.5 * self.vae.model_precision * torch.sum(l2s)
-		elbo = elbo + pxz_term
-		elbo = elbo + torch.sum(latent_dist.entropy())
-		loss = -elbo
-		recon_mse = F.mse_loss(x_rec, x_flat, reduction="mean")
+		log_pz = -0.5 * (
+			torch.sum(z ** 2) + self.vae.z_dim * math.log(2 * math.pi)
+		)
+		entropy = torch.sum(latent_dist.entropy())
+		kl = -(log_pz + entropy)
+		kl_weight = batch.new_tensor(self._kl_weight())
+		loss = -(pxz_term + kl_weight * (log_pz + entropy))
+		recon_mse = F.mse_loss(recon_flat, x_flat, reduction="mean")
 		latent_mean_abs = mu.abs().mean()
-		latent_var_mean = self.vae._latent_variance_mean(u, d)
-		return loss, recon_mse, latent_mean_abs, latent_var_mean
+		latent_var_mean = self.vae._latent_variance_mean(u, logvar)
+		recon_nll = (-pxz_term) / batch.shape[0]
+		kl_mean = kl / batch.shape[0]
+		return loss, recon_mse, latent_mean_abs, latent_var_mean, recon_nll, kl_mean, kl_weight
 
 	def _compute_loss_and_stats(self, batch):
 		if self._compiled_loss_fn is None:
-			loss, recon_mse, latent_mean_abs, latent_var_mean = (
+			(loss, recon_mse, latent_mean_abs, latent_var_mean, recon_nll,
+				kl_mean, kl_weight) = (
 				self._compute_loss_and_stats_impl(batch)
 			)
 		else:
-			loss, recon_mse, latent_mean_abs, latent_var_mean = (
+			(loss, recon_mse, latent_mean_abs, latent_var_mean, recon_nll,
+				kl_mean, kl_weight) = (
 				self._compiled_loss_fn(batch)
 			)
 		stats = {
 			"recon_mse": recon_mse,
+			"recon_nll": recon_nll,
+			"kl": kl_mean,
+			"kl_weight": kl_weight,
 			"latent_mean_abs": latent_mean_abs,
 			"latent_var_mean": latent_var_mean,
 		}
@@ -113,6 +156,13 @@ class VAELightningModule(pl.LightningModule):
 				prog_bar=False,
 				batch_size=batch_size,
 			)
+
+	def _kl_weight(self) -> float:
+		if self.kl_warmup_epochs and self.kl_warmup_epochs > 0:
+			progress = min(1.0, self.current_epoch / self.kl_warmup_epochs)
+		else:
+			progress = 1.0
+		return float(self.kl_beta) * progress
 
 	def training_step(self, batch, batch_idx):
 		loss, stats = self._compute_loss_and_stats(batch)
@@ -361,10 +411,13 @@ def train_vae(loaders: dict, save_dir: str = "", lr: float = 1e-3,
 	extra_callbacks: Optional[list] = None,
 	input_shape: Optional[tuple[int, int]] = None,
 	posterior_type: str = "diag", compile_model: bool = False,
-	compile_kwargs: Optional[dict] = None):
+	compile_kwargs: Optional[dict] = None, kl_beta: float = 1.0,
+	kl_warmup_epochs: int = 0):
 	"""Train a VAE with Lightning while preserving legacy outputs."""
 	if "train" not in loaders or loaders["train"] is None:
 		raise ValueError("loaders must include a non-empty 'train' dataloader.")
+	if input_shape is None:
+		input_shape = _infer_input_shape(loaders)
 	module = VAELightningModule(
 		vae=vae,
 		save_dir=save_dir,
@@ -375,6 +428,8 @@ def train_vae(loaders: dict, save_dir: str = "", lr: float = 1e-3,
 		posterior_type=posterior_type,
 		compile_model=compile_model,
 		compile_kwargs=compile_kwargs,
+		kl_beta=kl_beta,
+		kl_warmup_epochs=kl_warmup_epochs,
 	)
 	vis_loader = loaders.get("test") or loaders["train"]
 	trainer = build_trainer(

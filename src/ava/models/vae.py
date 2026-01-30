@@ -26,12 +26,10 @@ try:
 	import torch
 	from torch.distributions import LowRankMultivariateNormal
 	import torch.nn as nn
-	import torch.nn.functional as F
 	from torch.optim import Adam
 except ImportError as exc:  # pragma: no cover - optional in some envs
 	torch = None
 	LowRankMultivariateNormal = None
-	F = None
 	Adam = None
 	_TORCH_IMPORT_ERROR = exc
 	nn = SimpleNamespace(Module=object)
@@ -119,8 +117,9 @@ class VAE(nn.Module):
 			to ``X_SHAPE``.
 		posterior_type : {"diag", "lowrank"}, optional
 			Posterior covariance structure. ``"diag"`` uses a diagonal Gaussian
-			for speed, while ``"lowrank"`` retains the legacy low-rank-plus-
-			diagonal posterior. Defaults to ``"diag"``.
+			parameterized by ``(mu, logvar)`` for speed, while ``"lowrank"``
+			retains the legacy low-rank-plus-diagonal posterior. Defaults to
+			``"diag"``.
 
 		Note
 		----
@@ -141,13 +140,6 @@ class VAE(nn.Module):
 		self.input_shape = self._normalize_input_shape(input_shape)
 		self.input_dim = int(np.prod(self.input_shape))
 		self.posterior_type = self._normalize_posterior_type(posterior_type)
-		self._conv_shapes = self._compute_downsample_shapes(self.input_shape)
-		self._conv_feature_shape = (32, self._conv_shapes[-1][0],
-			self._conv_shapes[-1][1])
-		self._conv_feature_dim = int(np.prod(self._conv_feature_shape))
-		self._decoder_output_padding = self._compute_output_paddings(
-			self._conv_shapes
-		)
 		assert device_name != "cuda" or torch.cuda.is_available()
 		if device_name == "auto":
 			device_name = "cuda" if torch.cuda.is_available() else "cpu"
@@ -191,6 +183,14 @@ class VAE(nn.Module):
 		if value in {"lowrank", "low_rank", "low-rank"}:
 			return "lowrank"
 		raise ValueError("posterior_type must be 'diag' or 'lowrank'.")
+
+
+	@staticmethod
+	def _make_norm(num_channels, max_groups=8):
+		groups = min(max_groups, num_channels)
+		while groups > 1 and num_channels % groups != 0:
+			groups -= 1
+		return nn.GroupNorm(groups, num_channels)
 
 
 	@staticmethod
@@ -240,6 +240,24 @@ class VAE(nn.Module):
 		}
 
 
+	def _infer_conv_shapes(self):
+		shapes = [self.input_shape]
+		with torch.no_grad():
+			x = torch.zeros(1, 1, *self.input_shape)
+			x = self._act(self.bn1(self.conv1(x)))
+			x = self._act(self.bn2(self.conv2(x)))
+			shapes.append((x.shape[2], x.shape[3]))
+			x = self._act(self.bn3(self.conv3(x)))
+			x = self._act(self.bn4(self.conv4(x)))
+			shapes.append((x.shape[2], x.shape[3]))
+			x = self._act(self.bn5(self.conv5(x)))
+			x = self._act(self.bn6(self.conv6(x)))
+			shapes.append((x.shape[2], x.shape[3]))
+			x = self._act(self.bn7(self.conv7(x)))
+		conv_feature_shape = (x.shape[1], x.shape[2], x.shape[3])
+		return shapes, conv_feature_shape
+
+
 	def _check_input(self, x):
 		if x.dim() != 3:
 			raise ValueError("Input must have shape [batch, height, width].")
@@ -250,77 +268,87 @@ class VAE(nn.Module):
 			)
 
 
-	def _posterior_distribution(self, mu, u, d):
+	def _posterior_distribution(self, mu, logvar, u):
 		if self.posterior_type == "diag":
-			scale = torch.sqrt(d)
+			scale = torch.exp(0.5 * logvar)
 			base_dist = torch.distributions.Normal(mu, scale)
 			return torch.distributions.Independent(base_dist, 1)
 		if self.posterior_type == "lowrank":
 			if u is None:
 				raise ValueError("Low-rank posterior requires u.")
+			d = torch.exp(logvar)
 			return LowRankMultivariateNormal(mu, u, d)
 		raise ValueError(f"Unknown posterior_type '{self.posterior_type}'.")
 
 
-	def _latent_variance_mean(self, u, d):
+	def _latent_variance_mean(self, u, logvar):
 		if self.posterior_type == "diag":
-			return d.mean()
-		return (u.squeeze(-1) ** 2 + d).mean()
+			return torch.exp(logvar).mean()
+		return (u.squeeze(-1) ** 2 + torch.exp(logvar)).mean()
 
 
 	def _build_network(self):
 		"""Define all the network layers."""
-		# Encoder
-		self.conv1 = nn.Conv2d(1, 8, 3,1,padding=1)
-		self.conv2 = nn.Conv2d(8, 8, 3,2,padding=1)
-		self.conv3 = nn.Conv2d(8, 16,3,1,padding=1)
-		self.conv4 = nn.Conv2d(16,16,3,2,padding=1)
-		self.conv5 = nn.Conv2d(16,24,3,1,padding=1)
-		self.conv6 = nn.Conv2d(24,24,3,2,padding=1)
-		self.conv7 = nn.Conv2d(24,32,3,1,padding=1)
-		self.bn1 = nn.BatchNorm2d(1)
-		self.bn2 = nn.BatchNorm2d(8)
-		self.bn3 = nn.BatchNorm2d(8)
-		self.bn4 = nn.BatchNorm2d(16)
-		self.bn5 = nn.BatchNorm2d(16)
-		self.bn6 = nn.BatchNorm2d(24)
-		self.bn7 = nn.BatchNorm2d(24)
-		self.fc1 = nn.Linear(self._conv_feature_dim,1024)
-		self.fc2 = nn.Linear(1024,256)
-		self.fc31 = nn.Linear(256,64)
-		self.fc32 = nn.Linear(256,64)
-		self.fc33 = nn.Linear(256,64)
-		self.fc41 = nn.Linear(64,self.z_dim)
-		self.fc42 = nn.Linear(64,self.z_dim)
-		self.fc43 = nn.Linear(64,self.z_dim)
-		# Decoder
-		self.fc5 = nn.Linear(self.z_dim,64)
-		self.fc6 = nn.Linear(64,256)
-		self.fc7 = nn.Linear(256,1024)
-		self.fc8 = nn.Linear(1024,self._conv_feature_dim)
-		self.convt1 = nn.ConvTranspose2d(32,24,3,1,padding=1)
+		self._act = nn.SiLU()
+		# Encoder (Conv-Norm-Act)
+		self.conv1 = nn.Conv2d(1, 8, 3, 1, padding=1)
+		self.bn1 = self._make_norm(8)
+		self.conv2 = nn.Conv2d(8, 8, 3, 2, padding=1)
+		self.bn2 = self._make_norm(8)
+		self.conv3 = nn.Conv2d(8, 16, 3, 1, padding=1)
+		self.bn3 = self._make_norm(16)
+		self.conv4 = nn.Conv2d(16, 16, 3, 2, padding=1)
+		self.bn4 = self._make_norm(16)
+		self.conv5 = nn.Conv2d(16, 24, 3, 1, padding=1)
+		self.bn5 = self._make_norm(24)
+		self.conv6 = nn.Conv2d(24, 24, 3, 2, padding=1)
+		self.bn6 = self._make_norm(24)
+		self.conv7 = nn.Conv2d(24, 32, 3, 1, padding=1)
+		self.bn7 = self._make_norm(32)
+
+		self._conv_shapes, self._conv_feature_shape = self._infer_conv_shapes()
+		self._conv_feature_dim = int(np.prod(self._conv_feature_shape))
+		self._decoder_output_padding = self._compute_output_paddings(
+			self._conv_shapes
+		)
+
+		self.fc1 = nn.Linear(self._conv_feature_dim, 1024)
+		self.fc2 = nn.Linear(1024, 256)
+		self.fc31 = nn.Linear(256, 64)
+		self.fc32 = nn.Linear(256, 64)
+		self.fc33 = nn.Linear(256, 64)
+		self.fc41 = nn.Linear(64, self.z_dim)
+		self.fc42 = nn.Linear(64, self.z_dim)
+		self.fc43 = nn.Linear(64, self.z_dim)
+
+		# Decoder (Act-Norm-ConvTranspose mirrors encoder)
+		self.fc5 = nn.Linear(self.z_dim, 64)
+		self.fc6 = nn.Linear(64, 256)
+		self.fc7 = nn.Linear(256, 1024)
+		self.fc8 = nn.Linear(1024, self._conv_feature_dim)
+		self.convt1 = nn.ConvTranspose2d(32, 24, 3, 1, padding=1)
 		self.convt2 = nn.ConvTranspose2d(
-			24,24,3,2,padding=1,
+			24, 24, 3, 2, padding=1,
 			output_padding=self._decoder_output_padding["convt2"]
 		)
-		self.convt3 = nn.ConvTranspose2d(24,16,3,1,padding=1)
+		self.convt3 = nn.ConvTranspose2d(24, 16, 3, 1, padding=1)
 		self.convt4 = nn.ConvTranspose2d(
-			16,16,3,2,padding=1,
+			16, 16, 3, 2, padding=1,
 			output_padding=self._decoder_output_padding["convt4"]
 		)
-		self.convt5 = nn.ConvTranspose2d(16,8,3,1,padding=1)
+		self.convt5 = nn.ConvTranspose2d(16, 8, 3, 1, padding=1)
 		self.convt6 = nn.ConvTranspose2d(
-			8,8,3,2,padding=1,
+			8, 8, 3, 2, padding=1,
 			output_padding=self._decoder_output_padding["convt6"]
 		)
-		self.convt7 = nn.ConvTranspose2d(8,1,3,1,padding=1)
-		self.bn8 = nn.BatchNorm2d(32)
-		self.bn9 = nn.BatchNorm2d(24)
-		self.bn10 = nn.BatchNorm2d(24)
-		self.bn11 = nn.BatchNorm2d(16)
-		self.bn12 = nn.BatchNorm2d(16)
-		self.bn13 = nn.BatchNorm2d(8)
-		self.bn14 = nn.BatchNorm2d(8)
+		self.convt7 = nn.ConvTranspose2d(8, 1, 3, 1, padding=1)
+		self.bn8 = self._make_norm(24)
+		self.bn9 = self._make_norm(24)
+		self.bn10 = self._make_norm(16)
+		self.bn11 = self._make_norm(16)
+		self.bn12 = self._make_norm(8)
+		self.bn13 = self._make_norm(8)
+		self.bn14 = nn.Identity()
 
 
 	def _get_layers(self):
@@ -346,7 +374,7 @@ class VAE(nn.Module):
 		Compute :math:`q(z|x)`.
 
 		.. math:: q(z|x) = \mathcal{N}(\mu, \Sigma)
-		.. math:: \Sigma = u u^{T} + \mathtt{diag}(d)
+		.. math:: \Sigma = u u^{T} + \mathtt{diag}(\exp(\log \sigma^2))
 
 		where :math:`\mu`, :math:`u`, and :math:`d` are deterministic functions
 		of `x` and :math:`\Sigma` denotes a covariance matrix.
@@ -361,36 +389,35 @@ class VAE(nn.Module):
 		-------
 		mu : torch.Tensor
 			Posterior mean, with shape ``[batch_size, self.z_dim]``
-		u : torch.Tensor
+		logvar : torch.Tensor
+			Posterior log-variance, with shape ``[batch_size, self.z_dim]``
+		u : torch.Tensor or None
 			Posterior covariance factor, as defined above. Shape:
 			``[batch_size, self.z_dim, 1]``. For diagonal posteriors, this is
-			returned as zeros.
-		d : torch.Tensor
-			Posterior diagonal factor, as defined above. Shape:
-			``[batch_size, self.z_dim]``
+			returned as ``None``.
 		"""
 		self._check_input(x)
 		x = x.unsqueeze(1)
-		x = F.relu(self.conv1(self.bn1(x)))
-		x = F.relu(self.conv2(self.bn2(x)))
-		x = F.relu(self.conv3(self.bn3(x)))
-		x = F.relu(self.conv4(self.bn4(x)))
-		x = F.relu(self.conv5(self.bn5(x)))
-		x = F.relu(self.conv6(self.bn6(x)))
-		x = F.relu(self.conv7(self.bn7(x)))
+		x = self._act(self.bn1(self.conv1(x)))
+		x = self._act(self.bn2(self.conv2(x)))
+		x = self._act(self.bn3(self.conv3(x)))
+		x = self._act(self.bn4(self.conv4(x)))
+		x = self._act(self.bn5(self.conv5(x)))
+		x = self._act(self.bn6(self.conv6(x)))
+		x = self._act(self.bn7(self.conv7(x)))
 		x = x.view(x.shape[0], -1)
-		x = F.relu(self.fc1(x))
-		x = F.relu(self.fc2(x))
-		mu = F.relu(self.fc31(x))
+		x = self._act(self.fc1(x))
+		x = self._act(self.fc2(x))
+		mu = self._act(self.fc31(x))
 		mu = self.fc41(mu)
 		if self.posterior_type == "lowrank":
-			u = F.relu(self.fc32(x))
+			u = self._act(self.fc32(x))
 			u = self.fc42(u).unsqueeze(-1) # Last dimension is rank \Sigma = 1.
 		else:
-			u = mu.new_zeros((mu.shape[0], self.z_dim, 1))
-		d = F.relu(self.fc33(x))
-		d = torch.exp(self.fc43(d)) # d must be positive.
-		return mu, u, d
+			u = None
+		logvar = self._act(self.fc33(x))
+		logvar = self.fc43(logvar)
+		return mu, logvar, u
 
 
 	def decode(self, z):
@@ -415,40 +442,24 @@ class VAE(nn.Module):
 			Batch of means mu, described above. Shape: ``[batch_size,
 			self.input_dim]``
 		"""
-		z = F.relu(self.fc5(z))
-		z = F.relu(self.fc6(z))
-		z = F.relu(self.fc7(z))
-		z = F.relu(self.fc8(z))
+		z = self._act(self.fc5(z))
+		z = self._act(self.fc6(z))
+		z = self._act(self.fc7(z))
+		z = self._act(self.fc8(z))
 		z = z.view(-1, *self._conv_feature_shape)
-		z = F.relu(self.convt1(self.bn8(z)))
-		z = F.relu(self.convt2(self.bn9(z)))
-		z = F.relu(self.convt3(self.bn10(z)))
-		z = F.relu(self.convt4(self.bn11(z)))
-		z = F.relu(self.convt5(self.bn12(z)))
-		z = F.relu(self.convt6(self.bn13(z)))
-		z = self.convt7(self.bn14(z))
+		z = self._act(self.bn8(self.convt1(z)))
+		z = self._act(self.bn9(self.convt2(z)))
+		z = self._act(self.bn10(self.convt3(z)))
+		z = self._act(self.bn11(self.convt4(z)))
+		z = self._act(self.bn12(self.convt5(z)))
+		z = self._act(self.bn13(self.convt6(z)))
+		z = self.convt7(z)
 		return z.view(-1, self.input_dim)
 
 
 	def forward(self, x, return_latent_rec=False):
 		"""
-		Send `x` round trip and compute a loss.
-
-		In more detail: Given `x`, compute :math:`q(z|x)` and sample:
-		:math:`\hat{z} \sim q(z|x)` . Then compute :math:`\log p(x|\hat{z})`,
-		the log-likelihood of `x`, the input, given :math:`\hat{z}`, the latent
-		sample. We will also need the likelihood of :math:`\hat{z}` under the
-		model's prior: :math:`p(\hat{z})`, and the entropy of the latent
-		conditional distribution, :math:`\mathbb{H}[q(z|x)]` . ELBO can then be
-		estimated as:
-
-		.. math:: \\frac{1}{N} \sum_{i=1}^N \mathbb{E}_{\hat{z} \sim q(z|x_i)}
-			\log p(x_i,\hat{z}) + \mathbb{H}[q(z|x_i)]
-
-		where :math:`N` denotes the number of samples from the data distribution
-		and the expectation is estimated using a single latent sample,
-		:math:`\hat{z}`. In practice, the outer expectation is estimated using
-		minibatches.
+		Send `x` round trip and return reconstructions plus latent statistics.
 
 		Parameters
 		----------
@@ -457,38 +468,50 @@ class VAE(nn.Module):
 			Shape: ``[batch_size, height, width]`` where ``(height, width)``
 			matches ``self.input_shape``.
 		return_latent_rec : bool, optional
-			Whether to return latent samples and reconstructions. Defaults to
-			``False``.
+			Whether to return latent samples and reconstructions as numpy arrays.
+			Defaults to ``False``.
 
 		Returns
 		-------
-		loss : torch.Tensor
-			Negative ELBO times the batch size. Shape: ``[]``
-		latent : numpy.ndarray, if `return_latent_rec`
-			Latent samples. Shape: ``[batch_size, self.z_dim]``
-		reconstructions : numpy.ndarray, if `return_latent_rec`
-			Reconstructed means. Shape: ``[batch_size, height, width]``
+		reconstructions : torch.Tensor
+			Reconstructed means. Shape: ``[batch_size, height, width]``.
+		mu : torch.Tensor
+			Posterior mean. Shape: ``[batch_size, self.z_dim]``.
+		logvar : torch.Tensor
+			Posterior log-variance. Shape: ``[batch_size, self.z_dim]``.
+		z : torch.Tensor
+			Latent samples. Shape: ``[batch_size, self.z_dim]``.
+		u : torch.Tensor or None
+			Low-rank covariance factor when ``posterior_type="lowrank"``.
 		"""
-		mu, u, d = self.encode(x)
-		latent_dist = self._posterior_distribution(mu, u, d)
+		mu, logvar, u = self.encode(x)
+		latent_dist = self._posterior_distribution(mu, logvar, u)
 		z = latent_dist.rsample()
-		x_rec = self.decode(z)
-		# E_{q(z|x)} p(z)
-		elbo = -0.5 * (torch.sum(torch.pow(z,2)) + self.z_dim * np.log(2*np.pi))
-		# E_{q(z|x)} p(x|z)
-		pxz_term = -0.5 * self.input_dim * (
-			np.log(2*np.pi/self.model_precision)
-		)
-		x_flat = x.view(x.shape[0], -1)
-		l2s = torch.sum(torch.pow(x_flat - x_rec, 2), dim=1)
-		pxz_term = pxz_term - 0.5 * self.model_precision * torch.sum(l2s)
-		elbo = elbo + pxz_term
-		# H[q(z|x)]
-		elbo = elbo + torch.sum(latent_dist.entropy())
+		x_rec = self.decode(z).view(-1, *self.input_shape)
 		if return_latent_rec:
-			return -elbo, z.detach().cpu().numpy(), \
-				x_rec.view(-1, *self.input_shape).detach().cpu().numpy()
-		return -elbo
+			return (
+				z.detach().cpu().numpy(),
+				x_rec.detach().cpu().numpy(),
+			)
+		return x_rec, mu, logvar, z, u
+
+
+	def _compute_loss(self, x, beta=1.0):
+		"""Compute the negative ELBO for legacy training loops."""
+		recon, mu, logvar, z, u = self.forward(x)
+		latent_dist = self._posterior_distribution(mu, logvar, u)
+		x_flat = x.view(x.shape[0], -1)
+		recon_flat = recon.view(x.shape[0], -1)
+		pxz_term = -0.5 * x_flat.shape[1] * (
+			np.log(2 * np.pi / self.model_precision)
+		)
+		l2s = torch.sum(torch.pow(x_flat - recon_flat, 2), dim=1)
+		pxz_term = pxz_term - 0.5 * self.model_precision * torch.sum(l2s)
+		log_pz = -0.5 * (
+			torch.sum(torch.pow(z, 2)) + self.z_dim * np.log(2 * np.pi)
+		)
+		entropy = torch.sum(latent_dist.entropy())
+		return -(pxz_term + beta * (log_pz + entropy))
 
 
 	def train_epoch(self, train_loader):
@@ -511,7 +534,7 @@ class VAE(nn.Module):
 		for batch_idx, data in enumerate(train_loader):
 			self.optimizer.zero_grad()
 			data = data.to(self.device)
-			loss = self.forward(data)
+			loss = self._compute_loss(data)
 			train_loss += loss.item()
 			loss.backward()
 			self.optimizer.step()
@@ -542,7 +565,7 @@ class VAE(nn.Module):
 		with torch.no_grad():
 			for i, data in enumerate(test_loader):
 				data = data.to(self.device)
-				loss = self.forward(data)
+				loss = self._compute_loss(data)
 				test_loss += loss.item()
 		test_loss /= len(test_loader.dataset)
 		print('Test loss: {:.4f}'.format(test_loss))
@@ -685,7 +708,7 @@ class VAE(nn.Module):
 		specs = torch.stack(loader.dataset[indices]).to(self.device)
 		# Get resonstructions.
 		with torch.no_grad():
-			_, _, rec_specs = self.forward(specs, return_latent_rec=True)
+			_, rec_specs = self.forward(specs, return_latent_rec=True)
 		specs = specs.detach().cpu().numpy()
 		all_specs = np.stack([specs, rec_specs])
 		# Plot.

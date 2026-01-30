@@ -47,12 +47,22 @@ def test_lightning_metrics_match_legacy_forward():
 	_set_seed(23)
 	lightning_loss, stats = module._compute_loss_and_stats(batch)
 	_set_seed(23)
-	legacy_loss = vae.forward(batch)
+	recon, _, _, _, _ = vae.forward(batch)
 
-	assert torch.allclose(lightning_loss, legacy_loss, rtol=1e-4, atol=1e-4)
+	assert recon.shape == batch.shape
 	assert torch.isfinite(stats["recon_mse"]).item()
+	assert torch.isfinite(stats["recon_nll"]).item()
+	assert torch.isfinite(stats["kl"]).item()
+	assert torch.isfinite(stats["kl_weight"]).item()
 	assert torch.isfinite(stats["latent_mean_abs"]).item()
 	assert torch.isfinite(stats["latent_var_mean"]).item()
+	expected = stats["recon_nll"] + stats["kl_weight"] * stats["kl"]
+	assert torch.allclose(
+		lightning_loss / batch.shape[0],
+		expected,
+		rtol=1e-4,
+		atol=1e-4,
+	)
 
 
 def test_vae_dynamic_input_shape_roundtrip():
@@ -60,9 +70,10 @@ def test_vae_dynamic_input_shape_roundtrip():
 	input_shape = (63, 81)
 	batch = torch.randn(3, *input_shape)
 	vae = VAE(save_dir="", device_name="cpu", input_shape=input_shape)
-	loss, _, recon = vae.forward(batch, return_latent_rec=True)
+	latent, recon = vae.forward(batch, return_latent_rec=True)
 
-	assert torch.isfinite(loss).item()
+	assert np.isfinite(recon).all()
+	assert latent.shape == (batch.shape[0], vae.z_dim)
 	assert recon.shape == (batch.shape[0], *input_shape)
 
 

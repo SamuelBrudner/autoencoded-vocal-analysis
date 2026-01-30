@@ -206,6 +206,8 @@ class FixedWindowTrainConfig:
 	vis_filename: str = "reconstruction.pdf"
 	input_shape: Optional[tuple] = None
 	posterior_type: str = "diag"
+	kl_beta: float = 1.0
+	kl_warmup_epochs: int = 0
 	compile_model: bool = False
 	compile_kwargs: Optional[dict] = None
 	trainer_kwargs: dict = field(default_factory=dict)
@@ -227,6 +229,8 @@ class FixedWindowTrainConfig:
 			"stopping_kwargs": self.stopping_kwargs,
 			"input_shape": self.input_shape,
 			"posterior_type": self.posterior_type,
+			"kl_beta": self.kl_beta,
+			"kl_warmup_epochs": self.kl_warmup_epochs,
 			"compile_model": self.compile_model,
 			"compile_kwargs": self.compile_kwargs,
 		}
@@ -245,6 +249,8 @@ class FixedWindowTrainConfig:
 			"vis_filename": self.vis_filename,
 			"input_shape": list(self.input_shape) if self.input_shape else None,
 			"posterior_type": self.posterior_type,
+			"kl_beta": self.kl_beta,
+			"kl_warmup_epochs": self.kl_warmup_epochs,
 			"compile_model": self.compile_model,
 			"compile_kwargs": self.compile_kwargs,
 			"trainer_kwargs": self.trainer_kwargs,
