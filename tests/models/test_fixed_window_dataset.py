@@ -181,3 +181,51 @@ def test_fixed_window_dataset_per_file_normalization(tmp_path):
 
 	spec, _, _, _ = dataset.__getitem__(0, seed=0, return_seg_info=True)
 	assert np.allclose(spec, 0.0)
+
+
+def test_fixed_window_dataset_deterministic_sampling_logs(tmp_path):
+	audio_wav = tmp_path / "a.wav"
+	_write_constant(audio_wav, value=0.3)
+	roi = tmp_path / "a.txt"
+	np.savetxt(roi, np.array([[0.0, 0.6]]))
+
+	def _fake_get_spec(t1, t2, audio, p, fs=32000, target_times=None, **kwargs):
+		spec = np.ones((p["num_freq_bins"], p["num_time_bins"]), dtype=np.float32)
+		return spec, True
+
+	dataset = FixedWindowDataset(
+		audio_filenames=[str(audio_wav)],
+		roi_filenames=[str(roi)],
+		p={
+			"window_length": 0.2,
+			"num_time_bins": 4,
+			"num_freq_bins": 3,
+			"get_spec": _fake_get_spec,
+			"sampling_seed": 123,
+			"log_window_indices": True,
+		},
+	)
+
+	dataset.set_epoch(0)
+	_, file_idx0, onset0, offset0 = dataset.__getitem__(
+		0, return_seg_info=True
+	)
+	_, file_idx1, onset1, offset1 = dataset.__getitem__(
+		0, return_seg_info=True
+	)
+	assert file_idx0 == file_idx1
+	assert np.isclose(onset0, onset1)
+	assert np.isclose(offset0, offset1)
+	log_epoch0 = dataset.get_window_log(0)
+	assert log_epoch0
+	seed0 = log_epoch0[-1]["seed"]
+
+	dataset.set_epoch(1)
+	_, _, onset2, offset2 = dataset.__getitem__(0, return_seg_info=True)
+	_, _, onset3, offset3 = dataset.__getitem__(0, return_seg_info=True)
+	assert np.isclose(onset2, onset3)
+	assert np.isclose(offset2, offset3)
+	log_epoch1 = dataset.get_window_log(1)
+	assert log_epoch1
+	seed1 = log_epoch1[-1]["seed"]
+	assert seed0 != seed1

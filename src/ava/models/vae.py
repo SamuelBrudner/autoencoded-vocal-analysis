@@ -513,6 +513,21 @@ class VAE(nn.Module):
 		entropy = torch.sum(latent_dist.entropy())
 		return -(pxz_term + beta * (log_pz + entropy))
 
+	def _set_dataset_epoch(self, dataset, epoch):
+		if hasattr(dataset, "set_epoch"):
+			dataset.set_epoch(epoch)
+			return
+		nested = getattr(dataset, "dataset", None)
+		if nested is not None:
+			self._set_dataset_epoch(nested, epoch)
+
+	def _set_loader_epoch(self, loader, epoch):
+		if loader is None:
+			return
+		dataset = getattr(loader, "dataset", None)
+		if dataset is None:
+			return
+		self._set_dataset_epoch(dataset, epoch)
 
 	def train_epoch(self, train_loader):
 		"""
@@ -600,6 +615,8 @@ class VAE(nn.Module):
 		print("="*40)
 		# For some number of epochs...
 		for epoch in range(self.epoch, self.epoch+epochs):
+			self._set_loader_epoch(loaders.get('train'), epoch)
+			self._set_loader_epoch(loaders.get('test'), epoch)
 			# Run through the training data and record a loss.
 			loss = self.train_epoch(loaders['train'])
 			self.loss['train'][epoch] = loss

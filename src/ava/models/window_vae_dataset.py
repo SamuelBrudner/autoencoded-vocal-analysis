@@ -25,6 +25,7 @@ import hashlib
 import json
 import tempfile
 import h5py
+import multiprocessing
 import numpy as np
 import os
 from scipy.interpolate import interp1d
@@ -136,6 +137,14 @@ def _normalize_positive_int(value, default, name):
 	if value <= 0:
 		raise ValueError(f"{name} must be a positive integer.")
 	return value
+
+
+def _normalize_bool(value, default, name):
+	if value is None:
+		return default
+	if isinstance(value, bool):
+		return value
+	raise ValueError(f"{name} must be a boolean.")
 
 
 def _normalize_weights(weights, label):
@@ -346,7 +355,8 @@ class FixedWindowDataset(Dataset):
 			Preprocessing parameters. Must include ``'window_length'`` and
 			``'get_spec'``. Optional sampling keys: ``file_weight_mode``
 			(``duration``, ``uniform``, ``roi_count``), ``file_weight_cap``
-			(float), and ``roi_weight_mode`` (``duration`` or ``uniform``).
+			(float), ``roi_weight_mode`` (``duration`` or ``uniform``),
+			``sampling_seed`` (int), and ``log_window_indices`` (bool).
 			Optional normalization keys: ``normalization_mode`` (``none``,
 			``global``, ``per_file``), ``normalization_method`` (``mean_std``,
 			``robust``), ``normalization_num_samples`` (int), and
@@ -485,6 +495,24 @@ class FixedWindowDataset(Dataset):
 		if self.spec_cache_dir:
 			os.makedirs(self.spec_cache_dir, exist_ok=True)
 		self._rng = np.random.RandomState()
+		sampling_seed = self.p.get("sampling_seed", None)
+		if sampling_seed is not None:
+			try:
+				sampling_seed = int(sampling_seed)
+			except (TypeError, ValueError) as exc:
+				raise ValueError("sampling_seed must be an integer.") from exc
+		self._sampling_seed = sampling_seed
+		self._log_window_indices = _normalize_bool(
+			self.p.get("log_window_indices"),
+			default=self._sampling_seed is not None,
+			name="log_window_indices",
+		)
+		self.window_log = {}
+		if self._sampling_seed is not None or self._log_window_indices:
+			self._epoch = multiprocessing.Value("i", 0)
+		else:
+			self._epoch = 0
+		self.set_epoch(0)
 		self._configure_normalization(normalization_stats)
 
 
@@ -493,6 +521,50 @@ class FixedWindowDataset(Dataset):
 			self._rng = np.random.RandomState()
 		else:
 			self._rng = np.random.RandomState(int(seed))
+
+	def set_epoch(self, epoch):
+		try:
+			epoch = int(epoch)
+		except (TypeError, ValueError) as exc:
+			raise ValueError("epoch must be an integer.") from exc
+		if epoch < 0:
+			raise ValueError("epoch must be non-negative.")
+		if hasattr(self._epoch, "value"):
+			self._epoch.value = epoch
+		else:
+			self._epoch = epoch
+		if self._log_window_indices:
+			self.window_log.setdefault(epoch, [])
+
+	def _get_epoch(self):
+		if hasattr(self._epoch, "value"):
+			return int(self._epoch.value)
+		return int(self._epoch)
+
+	def _make_window_seed(self, epoch, index):
+		payload = f"{self._sampling_seed}:{epoch}:{int(index)}"
+		digest = hashlib.sha256(payload.encode("utf-8")).digest()
+		return int.from_bytes(digest[:4], "little")
+
+	def _record_window(self, epoch, dataset_index, file_index, roi_index, \
+		onset, offset, seed=None):
+		if not self._log_window_indices:
+			return
+		entry = {
+			"dataset_index": int(dataset_index),
+			"file_index": int(file_index),
+			"roi_index": int(roi_index),
+			"onset": float(onset),
+			"offset": float(offset),
+		}
+		if seed is not None:
+			entry["seed"] = int(seed)
+		self.window_log.setdefault(int(epoch), []).append(entry)
+
+	def get_window_log(self, epoch=None):
+		if epoch is None:
+			return self.window_log
+		return self.window_log.get(int(epoch), [])
 
 	def _configure_normalization(self, normalization_stats):
 		self.normalization_mode = _normalize_choice(
@@ -811,7 +883,8 @@ class FixedWindowDataset(Dataset):
 						os.remove(tmp_path)
 
 	def _draw_window(self, rng, shoulder=0.05, file_index=None, \
-		apply_normalization=True, max_attempts=None):
+		apply_normalization=True, max_attempts=None, \
+		return_roi_index=False):
 		attempts = 0
 		fixed_file = file_index is not None
 		while True:
@@ -873,6 +946,8 @@ class FixedWindowDataset(Dataset):
 				continue
 			if apply_normalization:
 				spec = self._apply_normalization(spec, current_file_index)
+			if return_roi_index:
+				return spec, current_file_index, onset, offset, roi_index
 			return spec, current_file_index, onset, offset
 
 
@@ -885,6 +960,9 @@ class FixedWindowDataset(Dataset):
 		----------
 		index :
 		seed :
+			If provided, use a deterministic RNG for this call. When
+			``sampling_seed`` is set in ``p``, sampling is deterministic per
+			index and epoch (see ``set_epoch``).
 		shoulder :
 		return_seg_info :
 
@@ -902,13 +980,42 @@ class FixedWindowDataset(Dataset):
 		except TypeError:
 			index = [index]
 			single_index = True
-		rng = self._rng if seed is None else np.random.RandomState(seed)
+		epoch = self._get_epoch()
+		base_rng = None
+		if seed is not None:
+			base_rng = np.random.RandomState(seed)
 		for i in index:
-			spec, file_index, onset, offset = self._draw_window(
-				rng,
-				shoulder=shoulder,
-				apply_normalization=True,
-			)
+			if seed is not None:
+				rng = base_rng
+				window_seed = None
+			elif self._sampling_seed is not None:
+				window_seed = self._make_window_seed(epoch, i)
+				rng = np.random.RandomState(window_seed)
+			else:
+				rng = self._rng
+				window_seed = None
+			if self._log_window_indices:
+				spec, file_index, onset, offset, roi_index = self._draw_window(
+					rng,
+					shoulder=shoulder,
+					apply_normalization=True,
+					return_roi_index=True,
+				)
+				self._record_window(
+					epoch,
+					i,
+					file_index,
+					roi_index,
+					onset,
+					offset,
+					seed=window_seed,
+				)
+			else:
+				spec, file_index, onset, offset = self._draw_window(
+					rng,
+					shoulder=shoulder,
+					apply_normalization=True,
+				)
 			if self.transform:
 				spec = self.transform(spec)
 			specs.append(spec)

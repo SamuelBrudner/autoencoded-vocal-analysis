@@ -76,6 +76,8 @@ class FixedWindowPreprocessConfig:
 	file_weight_mode: str = "duration"
 	file_weight_cap: Optional[float] = None
 	roi_weight_mode: str = "duration"
+	sampling_seed: Optional[int] = None
+	log_window_indices: bool = False
 	real_preprocess_params: tuple = (
 		"min_freq",
 		"max_freq",
@@ -109,6 +111,8 @@ class FixedWindowPreprocessConfig:
 			"file_weight_mode": self.file_weight_mode,
 			"file_weight_cap": self.file_weight_cap,
 			"roi_weight_mode": self.roi_weight_mode,
+			"sampling_seed": self.sampling_seed,
+			"log_window_indices": self.log_window_indices,
 			"real_preprocess_params": self.real_preprocess_params,
 			"int_preprocess_params": self.int_preprocess_params,
 			"binary_preprocess_params": self.binary_preprocess_params,
@@ -138,6 +142,8 @@ class FixedWindowPreprocessConfig:
 			"file_weight_mode": self.file_weight_mode,
 			"file_weight_cap": self.file_weight_cap,
 			"roi_weight_mode": self.roi_weight_mode,
+			"sampling_seed": self.sampling_seed,
+			"log_window_indices": self.log_window_indices,
 			"real_preprocess_params": list(self.real_preprocess_params),
 			"int_preprocess_params": list(self.int_preprocess_params),
 			"binary_preprocess_params": list(self.binary_preprocess_params),
