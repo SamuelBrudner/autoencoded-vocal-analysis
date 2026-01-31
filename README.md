@@ -9,6 +9,8 @@ See our article for details:
 
 See `examples/` for usage.
 
+Birdsong workflow plan: `docs/birdsong_training_plan.md`.
+
 See [readthedocs](https://autoencoded-vocal-analysis.readthedocs.io/en/latest/index.html)
 for documentation and a tutorial.
 

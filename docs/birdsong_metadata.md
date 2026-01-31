@@ -2,6 +2,8 @@
 
 This metadata database indexes every file under `/Volumes/samsung_ssd/data/birdsong` so we can slice the dataset flexibly (by regime, tutor start day, bird ID, dph, session, or recording time) without moving raw audio.
 
+Related: `docs/birdsong_training_plan.md` (staged plan from local validation to full-scale training).
+
 ## Outputs
 - `data/metadata/birdsong/birdsong_files.parquet` (file-level metadata)
 - `data/metadata/birdsong/birdsong_files_summary.json` (row counts and basic stats)
