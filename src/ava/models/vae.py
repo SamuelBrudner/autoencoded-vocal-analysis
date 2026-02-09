@@ -76,10 +76,9 @@ class VAE(nn.Module):
 	posterior_type : {"diag", "lowrank"}, optional
 		Posterior covariance structure.
 	conv_arch : {"plain", "residual"}, optional
-		Decoder convolutional architecture. The encoder always uses residual
-		blocks, while ``"plain"`` uses the legacy upsample + Conv-Norm-Act
-		decoder and ``"residual"`` adds ResNet-style skip connections in the
-		decoder.
+		Decoder convolutional architecture. The decoder now uses residual
+		blocks; ``"plain"`` is retained as a legacy alias for backward
+		compatibility.
 
 	Notes
 	-----
@@ -137,8 +136,9 @@ class VAE(nn.Module):
 			retains the legacy low-rank-plus-diagonal posterior. Defaults to
 			``"diag"``.
 		conv_arch : {"plain", "residual"}, optional
-			Decoder convolutional architecture. The encoder always uses residual
-			blocks. Defaults to ``"plain"``.
+			Decoder convolutional architecture. Residual blocks are used in the
+			decoder; ``"plain"`` is accepted as a legacy alias. Defaults to
+			``"plain"``.
 		build_optimizer : bool, optional
 			Whether to construct the Adam optimizer during initialization.
 			Defaults to ``True``.
@@ -246,13 +246,13 @@ class VAE(nn.Module):
 	@staticmethod
 	def _normalize_conv_arch(conv_arch):
 		if conv_arch is None:
-			return "plain"
+			return "residual"
 		value = str(conv_arch).strip().lower()
 		if value in {"plain", "legacy", "conv"}:
-			return "plain"
+			return "residual"
 		if value in {"residual", "resnet", "res"}:
 			return "residual"
-		raise ValueError("conv_arch must be 'plain' or 'residual'.")
+		raise ValueError("conv_arch must be 'residual' (legacy 'plain' accepted).")
 
 
 	@staticmethod
@@ -370,33 +370,17 @@ class VAE(nn.Module):
 		self.fc42 = nn.Linear(64, self.z_dim)
 		self.fc43 = nn.Linear(64, self.z_dim)
 
-		# Decoder (Upsample + Conv mirrors encoder)
+		# Decoder (residual upsample blocks mirror encoder)
 		self.fc5 = nn.Linear(self.z_dim, 64)
 		self.fc6 = nn.Linear(64, 256)
 		self.fc7 = nn.Linear(256, 1024)
 		self.fc8 = nn.Linear(1024, self._conv_feature_dim)
-		if self.conv_arch == "plain":
-			self.convt1 = nn.Conv2d(32, 24, 3, 1, padding=1)
-			self.convt2 = nn.Conv2d(24, 24, 3, 1, padding=1)
-			self.convt3 = nn.Conv2d(24, 16, 3, 1, padding=1)
-			self.convt4 = nn.Conv2d(16, 16, 3, 1, padding=1)
-			self.convt5 = nn.Conv2d(16, 8, 3, 1, padding=1)
-			self.convt6 = nn.Conv2d(8, 8, 3, 1, padding=1)
-			self.convt7 = nn.Conv2d(8, 1, 3, 1, padding=1)
-			self.bn8 = self._make_norm(24)
-			self.bn9 = self._make_norm(24)
-			self.bn10 = self._make_norm(16)
-			self.bn11 = self._make_norm(16)
-			self.bn12 = self._make_norm(8)
-			self.bn13 = self._make_norm(8)
-			self.bn14 = nn.Identity()
-		else:
-			self.dec_blocks = nn.ModuleList([
-				ResBlockUp2D(32, 24, norm_factory=self._make_norm),
-				ResBlockUp2D(24, 16, norm_factory=self._make_norm),
-				ResBlockUp2D(16, 8, norm_factory=self._make_norm),
-			])
-			self.dec_out = nn.Conv2d(8, 1, 3, 1, padding=1)
+		self.dec_blocks = nn.ModuleList([
+			ResBlockUp2D(32, 24, norm_factory=self._make_norm),
+			ResBlockUp2D(24, 16, norm_factory=self._make_norm),
+			ResBlockUp2D(16, 8, norm_factory=self._make_norm),
+		])
+		self.dec_out = nn.Conv2d(8, 1, 3, 1, padding=1)
 
 
 	def _get_layers(self):
@@ -408,21 +392,10 @@ class VAE(nn.Module):
 			'fc6': self.fc6, 'fc7': self.fc7, 'fc8': self.fc8,
 			'enc_blocks': self.enc_blocks, 'enc_out': self.enc_out,
 		}
-		if self.conv_arch == "plain":
-			layers.update({
-				'bn8': self.bn8, 'bn9': self.bn9,
-				'bn10': self.bn10, 'bn11': self.bn11, 'bn12': self.bn12,
-				'bn13': self.bn13, 'bn14': self.bn14,
-				'convt1': self.convt1,
-				'convt2': self.convt2, 'convt3': self.convt3,
-				'convt4': self.convt4, 'convt5': self.convt5,
-				'convt6': self.convt6, 'convt7': self.convt7,
-			})
-		else:
-			layers.update({
-				'dec_blocks': self.dec_blocks,
-				'dec_out': self.dec_out,
-			})
+		layers.update({
+			'dec_blocks': self.dec_blocks,
+			'dec_out': self.dec_out,
+		})
 		return layers
 
 
@@ -502,21 +475,9 @@ class VAE(nn.Module):
 		z = self._act(self.fc7(z))
 		z = self._act(self.fc8(z))
 		z = z.view(-1, *self._conv_feature_shape)
-		if self.conv_arch == "plain":
-			z = self._act(self.bn8(self.convt1(z)))
-			z = self._upsample_to(z, self._decoder_upsample_shapes[0])
-			z = self._act(self.bn9(self.convt2(z)))
-			z = self._act(self.bn10(self.convt3(z)))
-			z = self._upsample_to(z, self._decoder_upsample_shapes[1])
-			z = self._act(self.bn11(self.convt4(z)))
-			z = self._act(self.bn12(self.convt5(z)))
-			z = self._upsample_to(z, self._decoder_upsample_shapes[2])
-			z = self._act(self.bn13(self.convt6(z)))
-			z = self.convt7(z)
-		else:
-			for block, size in zip(self.dec_blocks, self._decoder_upsample_shapes):
-				z = block(z, size)
-			z = self.dec_out(z)
+		for block, size in zip(self.dec_blocks, self._decoder_upsample_shapes):
+			z = block(z, size)
+		z = self.dec_out(z)
 		return z.view(-1, self.input_dim)
 
 
@@ -751,6 +712,12 @@ class VAE(nn.Module):
 					f"model input_shape {self.input_shape}."
 				)
 		checkpoint_arch = checkpoint.get('conv_arch', 'plain')
+		if checkpoint_arch in {"plain", "legacy", "conv"}:
+			raise ValueError(
+				"Checkpoint decoder uses the legacy conv stack which is "
+				"incompatible with the residual-block decoder. Retrain or "
+				"export a compatible checkpoint."
+			)
 		if checkpoint_arch != self.conv_arch:
 			raise ValueError(
 				"Checkpoint conv_arch "
@@ -761,6 +728,12 @@ class VAE(nn.Module):
 			raise ValueError(
 				"Checkpoint encoder uses the legacy conv stack which is "
 				"incompatible with the residual-block encoder. Retrain or "
+				"export a compatible checkpoint."
+			)
+		if "dec_blocks" not in checkpoint:
+			raise ValueError(
+				"Checkpoint decoder uses the legacy conv stack which is "
+				"incompatible with the residual-block decoder. Retrain or "
 				"export a compatible checkpoint."
 			)
 		checkpoint_learned = checkpoint.get("learn_observation_scale")
