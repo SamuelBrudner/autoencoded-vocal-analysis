@@ -266,6 +266,7 @@ class FixedWindowTrainConfig:
 	lr: float = 1e-3
 	z_dim: int = 32
 	model_precision: float = 10.0
+	learn_observation_scale: bool = False
 	epochs: int = 100
 	test_freq: Optional[int] = 2
 	save_freq: Optional[int] = 10
@@ -288,6 +289,7 @@ class FixedWindowTrainConfig:
 			"lr": self.lr,
 			"z_dim": self.z_dim,
 			"model_precision": self.model_precision,
+			"learn_observation_scale": self.learn_observation_scale,
 			"epochs": self.epochs,
 			"test_freq": self.test_freq,
 			"save_freq": self.save_freq,
@@ -311,6 +313,7 @@ class FixedWindowTrainConfig:
 			"lr": self.lr,
 			"z_dim": self.z_dim,
 			"model_precision": self.model_precision,
+			"learn_observation_scale": self.learn_observation_scale,
 			"epochs": self.epochs,
 			"test_freq": self.test_freq,
 			"save_freq": self.save_freq,

@@ -58,6 +58,7 @@ class VAELightningModule(pl.LightningModule):
 
 	def __init__(self, vae: Optional[VAE] = None, save_dir: str = "",
 		lr: float = 1e-3, z_dim: int = 32, model_precision: float = 10.0,
+		learn_observation_scale: bool = False,
 		input_shape: Optional[tuple[int, int]] = None,
 		posterior_type: str = "diag", conv_arch: str = "plain",
 		compile_model: bool = False,
@@ -70,6 +71,7 @@ class VAELightningModule(pl.LightningModule):
 				lr=lr,
 				z_dim=z_dim,
 				model_precision=model_precision,
+				learn_observation_scale=learn_observation_scale,
 				device_name="cpu",
 				posterior_type=posterior_type,
 				conv_arch=conv_arch,
@@ -108,11 +110,12 @@ class VAELightningModule(pl.LightningModule):
 		latent_dist = self.vae._posterior_distribution(mu, logvar, u)
 		x_flat = batch.view(batch.shape[0], -1)
 		recon_flat = recon.view(batch.shape[0], -1)
-		pxz_term = -0.5 * x_flat.shape[1] * math.log(
-			2 * math.pi / self.vae.model_precision
-		)
+		log_precision = self.vae.log_precision
+		precision = torch.exp(log_precision)
+		log_two_pi = math.log(2 * math.pi)
+		pxz_term = -0.5 * x_flat.shape[1] * (log_two_pi - log_precision)
 		l2s = torch.sum((x_flat - recon_flat) ** 2, dim=1)
-		pxz_term = pxz_term - 0.5 * self.vae.model_precision * torch.sum(l2s)
+		pxz_term = pxz_term - 0.5 * precision * torch.sum(l2s)
 		log_pz = -0.5 * (
 			torch.sum(z ** 2) + self.vae.z_dim * math.log(2 * math.pi)
 		)
@@ -405,7 +408,8 @@ def build_trainer(save_dir: str = "", epochs: int = 100,
 
 
 def train_vae(loaders: dict, save_dir: str = "", lr: float = 1e-3,
-	z_dim: int = 32, model_precision: float = 10.0, epochs: int = 100,
+	z_dim: int = 32, model_precision: float = 10.0,
+	learn_observation_scale: bool = False, epochs: int = 100,
 	test_freq: Optional[int] = 2, save_freq: Optional[int] = 10,
 	vis_freq: Optional[int] = 1, num_specs: int = 5, gap=(2, 6),
 	vis_filename: str = "reconstruction.pdf", trainer_kwargs: Optional[dict] = None,
@@ -427,6 +431,7 @@ def train_vae(loaders: dict, save_dir: str = "", lr: float = 1e-3,
 		lr=lr,
 		z_dim=z_dim,
 		model_precision=model_precision,
+		learn_observation_scale=learn_observation_scale,
 		input_shape=input_shape,
 		posterior_type=posterior_type,
 		conv_arch=conv_arch,

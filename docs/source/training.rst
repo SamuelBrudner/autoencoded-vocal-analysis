@@ -71,6 +71,9 @@ positive values will make the VAE behave more like a deterministic autoencoder,
 encouraging better reconstructions. Small positive values produce
 better-behaved latents, but with poorer reconstructions.
 The default value is 10.  
+If you want the observation scale to be learned instead, pass
+:code:`learn_observation_scale=True`. In that case, :code:`model_precision`
+sets the initial value.
 
 
 Shotgun VAE Training

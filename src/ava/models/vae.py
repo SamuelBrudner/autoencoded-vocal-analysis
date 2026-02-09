@@ -18,6 +18,7 @@ VAE References
 __date__ = "November 2018 - November 2019"
 
 
+import math
 import numpy as np
 import os
 from types import SimpleNamespace
@@ -112,7 +113,10 @@ class VAE(nn.Module):
 	z_dim : int, optional
 		Latent dimension. Defaults to ``32``.
 	model_precision : float, optional
-		Precision of the observation model. Defaults to ``10.0``.
+		Initial precision of the observation model. Defaults to ``10.0``.
+	learn_observation_scale : bool, optional
+		Whether to learn the observation precision instead of keeping it fixed.
+		Defaults to ``False``.
 	device_name : {'cpu', 'cuda', 'auto'}, optional
 		Name of device to train the model on. When ``'auto'`` is passed,
 		``'cuda'`` is chosen if ``torch.cuda.is_available()``, otherwise
@@ -149,8 +153,9 @@ class VAE(nn.Module):
 	"""
 
 	def __init__(self, save_dir='', lr=1e-3, z_dim=32, model_precision=10.0,
-		device_name="auto", input_shape=X_SHAPE, posterior_type="diag",
-		conv_arch="plain", build_optimizer=True):
+		learn_observation_scale=False, device_name="auto",
+		input_shape=X_SHAPE, posterior_type="diag", conv_arch="plain",
+		build_optimizer=True):
 		"""Construct a VAE.
 
 		Parameters
@@ -163,8 +168,11 @@ class VAE(nn.Module):
 		z_dim : int, optional
 			Dimension of the latent space. Defaults to 32.
 		model_precision : float, optional
-			Precision of the noise model, p(x|z) = N(mu(z), \Lambda) where
-			\Lambda = model_precision * I. Defaults to 10.0.
+			Initial precision of the noise model, p(x|z) = N(mu(z), \Lambda)
+			where \Lambda = model_precision * I. Defaults to 10.0.
+		learn_observation_scale : bool, optional
+			Whether to learn the observation precision instead of keeping it
+			fixed. Defaults to ``False``.
 		device_name: str, optional
 			Name of device to train the model on. Valid options are ["cpu",
 			"cuda", "auto"]. "auto" will choose "cuda" if it is available.
@@ -198,7 +206,18 @@ class VAE(nn.Module):
 		self.save_dir = save_dir
 		self.lr = lr
 		self.z_dim = z_dim
-		self.model_precision = model_precision
+		self.learn_observation_scale = bool(learn_observation_scale)
+		model_precision = self._coerce_positive_float(
+			model_precision, "model_precision"
+		)
+		log_precision = math.log(model_precision)
+		log_precision_tensor = torch.tensor(
+			log_precision, dtype=torch.get_default_dtype()
+		)
+		if self.learn_observation_scale:
+			self.log_precision = nn.Parameter(log_precision_tensor)
+		else:
+			self.register_buffer("log_precision", log_precision_tensor)
 		self.input_shape = self._normalize_input_shape(input_shape)
 		self.input_dim = int(np.prod(self.input_shape))
 		self.posterior_type = self._normalize_posterior_type(posterior_type)
@@ -221,6 +240,28 @@ class VAE(nn.Module):
 	@property
 	def device(self):
 		return next(self.parameters()).device
+
+
+	@property
+	def model_precision(self):
+		"""Return the current observation precision as a float."""
+		return float(torch.exp(self.log_precision).detach().cpu())
+
+
+	@model_precision.setter
+	def model_precision(self, value):
+		value = self._coerce_positive_float(value, "model_precision")
+		log_precision = math.log(value)
+		if not hasattr(self, "log_precision"):
+			raise AttributeError("log_precision has not been initialized.")
+		with torch.no_grad():
+			self.log_precision.copy_(
+				self.log_precision.new_tensor(log_precision)
+			)
+
+
+	def _precision_tensor(self):
+		return torch.exp(self.log_precision)
 
 
 	@staticmethod
@@ -260,6 +301,17 @@ class VAE(nn.Module):
 		if value in {"residual", "resnet", "res"}:
 			return "residual"
 		raise ValueError("conv_arch must be 'plain' or 'residual'.")
+
+
+	@staticmethod
+	def _coerce_positive_float(value, name):
+		try:
+			value = float(value)
+		except (TypeError, ValueError) as exc:
+			raise ValueError(f"{name} must be a positive float.") from exc
+		if not math.isfinite(value) or value <= 0:
+			raise ValueError(f"{name} must be a positive float.")
+		return value
 
 
 	@staticmethod
@@ -521,7 +573,9 @@ class VAE(nn.Module):
 		.. math:: \Lambda = \mathtt{model\_precision} \cdot I
 
 		where :math:`\mu` is a deterministic function of `z`, :math:`\Lambda` is
-		a precision matrix, and :math:`I` is the identity matrix.
+		a precision matrix, and :math:`I` is the identity matrix. When
+		``learn_observation_scale=True``, :math:`\mathtt{model\_precision}` is
+		learned during training.
 
 		Parameters
 		----------
@@ -602,11 +656,14 @@ class VAE(nn.Module):
 		latent_dist = self._posterior_distribution(mu, logvar, u)
 		x_flat = x.view(x.shape[0], -1)
 		recon_flat = recon.view(x.shape[0], -1)
+		log_precision = self.log_precision
+		precision = self._precision_tensor()
+		log_two_pi = math.log(2 * math.pi)
 		pxz_term = -0.5 * x_flat.shape[1] * (
-			np.log(2 * np.pi / self.model_precision)
+			log_two_pi - log_precision
 		)
 		l2s = torch.sum(torch.pow(x_flat - recon_flat, 2), dim=1)
-		pxz_term = pxz_term - 0.5 * self.model_precision * torch.sum(l2s)
+		pxz_term = pxz_term - 0.5 * precision * torch.sum(l2s)
 		log_pz = -0.5 * (
 			torch.sum(torch.pow(z, 2)) + self.z_dim * np.log(2 * np.pi)
 		)
@@ -751,6 +808,9 @@ class VAE(nn.Module):
 		state['lr'] = self.lr
 		state['save_dir'] = self.save_dir
 		state['conv_arch'] = self.conv_arch
+		state['model_precision'] = self.model_precision
+		state['log_precision'] = float(self.log_precision.detach().cpu())
+		state['learn_observation_scale'] = self.learn_observation_scale
 		state['decoder_type'] = "upsample"
 		filename = os.path.join(self.save_dir, filename)
 		torch.save(state, filename)
@@ -788,6 +848,14 @@ class VAE(nn.Module):
 				f"{checkpoint_arch!r} does not match model conv_arch "
 				f"{self.conv_arch!r}."
 			)
+		checkpoint_learned = checkpoint.get("learn_observation_scale")
+		if (checkpoint_learned is not None
+				and checkpoint_learned != self.learn_observation_scale):
+			raise ValueError(
+				"Checkpoint learn_observation_scale "
+				f"{checkpoint_learned!r} does not match model setting "
+				f"{self.learn_observation_scale!r}."
+			)
 		checkpoint_decoder = checkpoint.get("decoder_type", "convtranspose")
 		if checkpoint_decoder != "upsample":
 			raise ValueError(
@@ -800,6 +868,13 @@ class VAE(nn.Module):
 			self.posterior_type = checkpoint['posterior_type']
 		else:
 			self.posterior_type = "lowrank"
+		if "log_precision" in checkpoint:
+			with torch.no_grad():
+				self.log_precision.copy_(
+					self.log_precision.new_tensor(checkpoint["log_precision"])
+				)
+		elif "model_precision" in checkpoint:
+			self.model_precision = checkpoint["model_precision"]
 		layers = self._get_layers()
 		for layer_name in layers:
 			layer = layers[layer_name]

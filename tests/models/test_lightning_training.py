@@ -77,6 +77,21 @@ def test_vae_dynamic_input_shape_roundtrip():
 	assert recon.shape == (batch.shape[0], *input_shape)
 
 
+def test_learned_observation_scale_has_grad():
+	_set_seed(13)
+	batch = torch.randn(2, 128, 128)
+	vae = VAE(
+		save_dir="",
+		device_name="cpu",
+		learn_observation_scale=True,
+		build_optimizer=False,
+	)
+	loss = vae._compute_loss(batch)
+	loss.backward()
+
+	assert vae.log_precision.grad is not None
+
+
 def test_lightning_checkpoint_loads_legacy(tmp_path):
 	_set_seed(101)
 	data = torch.randn(6, 128, 128)
