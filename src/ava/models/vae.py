@@ -40,6 +40,7 @@ else:
 	_TORCH_IMPORT_ERROR = None
 
 from ava.plotting.grid_plot import grid_plot
+from ava.models.blocks import ResBlock2D, ResBlockUp2D
 
 
 DEFAULT_INPUT_SHAPE = (128, 128)
@@ -48,57 +49,6 @@ X_SHAPE = DEFAULT_INPUT_SHAPE
 """Legacy alias for the default processed spectrogram shape."""
 X_DIM = int(np.prod(X_SHAPE))
 """Legacy default spectrogram dimension: ``freq_bins * time_bins``."""
-
-
-class ResBlock2D(nn.Module):
-	"""Residual block with Conv-Norm-Act + skip."""
-
-	def __init__(self, in_channels, out_channels, stride=1,
-		norm_factory=None):
-		super().__init__()
-		if norm_factory is None:
-			raise ValueError("norm_factory is required for ResBlock2D.")
-		self.conv1 = nn.Conv2d(in_channels, out_channels, 3, 1, padding=1)
-		self.norm1 = norm_factory(out_channels)
-		self.conv2 = nn.Conv2d(out_channels, out_channels, 3, stride, padding=1)
-		self.norm2 = norm_factory(out_channels)
-		self.act = nn.SiLU()
-		if stride != 1 or in_channels != out_channels:
-			self.skip = nn.Conv2d(in_channels, out_channels, 1, stride=stride)
-		else:
-			self.skip = nn.Identity()
-
-	def forward(self, x):
-		residual = self.skip(x)
-		out = self.act(self.norm1(self.conv1(x)))
-		out = self.norm2(self.conv2(out))
-		return self.act(out + residual)
-
-
-class ResBlockUp2D(nn.Module):
-	"""Residual block with Upsample-Conv-Norm-Act + skip."""
-
-	def __init__(self, in_channels, out_channels, norm_factory=None):
-		super().__init__()
-		if norm_factory is None:
-			raise ValueError("norm_factory is required for ResBlockUp2D.")
-		self.conv1 = nn.Conv2d(in_channels, out_channels, 3, 1, padding=1)
-		self.norm1 = norm_factory(out_channels)
-		self.conv2 = nn.Conv2d(out_channels, out_channels, 3, 1, padding=1)
-		self.norm2 = norm_factory(out_channels)
-		self.act = nn.SiLU()
-		if in_channels != out_channels:
-			self.skip = nn.Conv2d(in_channels, out_channels, 1, 1, padding=0)
-		else:
-			self.skip = nn.Identity()
-
-	def forward(self, x, size):
-		upsampled = F.interpolate(x, size=size, mode="nearest")
-		residual = self.skip(upsampled)
-		out = self.act(self.norm1(self.conv1(upsampled)))
-		out = self.norm2(self.conv2(out))
-		return self.act(out + residual)
-
 
 
 class VAE(nn.Module):
