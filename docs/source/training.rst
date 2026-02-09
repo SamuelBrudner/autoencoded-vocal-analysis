@@ -67,6 +67,21 @@ You may also want to continue training a previously saved model:
 
 
 
+
+Checkpoint Compatibility (Decoder Type)
+#######################################
+
+Recent releases default to the upsample-based decoder. Older checkpoints were
+saved with the legacy ConvTranspose2d decoder. The decoder type is stored in
+the checkpoint and must match the model you instantiate.
+
+If you see a decoder mismatch error while calling :code:`load_state`, build the
+VAE with :code:`decoder_type="convtranspose"` (or set
+:code:`training.decoder_type: convtranspose` in fixed-window configs) to load
+legacy checkpoints. There is no weight-migration between decoder types, so
+switching decoders requires retraining or exporting a new checkpoint with the
+target decoder.
+
 Another VAE parameter worth knowing about is :code:`model_precision`, which
 controls the reconstruction/regularization tradeoff of the model. Very large
 positive values will make the VAE behave more like a deterministic autoencoder,
