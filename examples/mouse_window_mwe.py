@@ -59,7 +59,14 @@ if num_workers is None:
 	num_workers = min(7, (os.cpu_count() or 1) - 1)
 	num_workers = max(num_workers, 0)
 loader_kwargs["num_workers"] = num_workers
-loaders = get_fixed_shotgun_data_loaders(partition, params, **loader_kwargs)
+use_pairs = train_config.invariance_weight > 0
+loaders = get_fixed_shotgun_data_loaders(
+	partition,
+	params,
+	return_pair=use_pairs,
+	pair_with_original=use_pairs,
+	**loader_kwargs,
+)
 loaders['test'] = loaders['train']
 train_kwargs = train_config.to_train_kwargs()
 model, trainer = train_vae(loaders, save_dir=root, **train_kwargs)

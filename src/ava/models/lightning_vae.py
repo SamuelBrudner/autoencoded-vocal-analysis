@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import math
 import os
-from typing import Optional
+from typing import Optional, Union
 
 import torch
 import torch.nn.functional as F
@@ -38,6 +38,23 @@ def _unwrap_batch(batch):
 	return batch
 
 
+def _extract_pair(batch):
+	if isinstance(batch, dict):
+		base = batch.get("x")
+		aug = batch.get("x_aug")
+		if torch.is_tensor(base) and torch.is_tensor(aug):
+			if base.shape == aug.shape:
+				return base, aug
+			raise ValueError("Paired tensors must have matching shapes.")
+	if isinstance(batch, (list, tuple)) and len(batch) == 2:
+		base, aug = batch
+		if torch.is_tensor(base) and torch.is_tensor(aug):
+			if base.shape == aug.shape:
+				return base, aug
+			raise ValueError("Paired tensors must have matching shapes.")
+	return None, None
+
+
 def _infer_input_shape(loaders: dict) -> tuple[int, int]:
 	loader = loaders.get("train")
 	if loader is None:
@@ -63,7 +80,11 @@ class VAELightningModule(pl.LightningModule):
 		posterior_type: str = "diag", conv_arch: str = "plain",
 		compile_model: bool = False,
 		compile_kwargs: Optional[dict] = None, kl_beta: float = 1.0,
-		kl_warmup_epochs: int = 0):
+		kl_warmup_epochs: int = 0,
+		invariance_weight: float = 0.0,
+		invariance_warmup_epochs: int = 0,
+		invariance_loss: str = "mse",
+		invariance_stop_grad: Optional[Union[str, bool]] = "none"):
 		super().__init__()
 		if vae is None:
 			vae_kwargs = dict(
@@ -90,6 +111,14 @@ class VAELightningModule(pl.LightningModule):
 		self._val_loss_count = 0
 		self.kl_beta = kl_beta
 		self.kl_warmup_epochs = kl_warmup_epochs
+		self.invariance_weight = float(invariance_weight)
+		self.invariance_warmup_epochs = int(invariance_warmup_epochs)
+		self.invariance_loss = self._normalize_invariance_loss(invariance_loss)
+		self.invariance_stop_grad = self._normalize_stop_grad(invariance_stop_grad)
+		if self.invariance_weight < 0:
+			raise ValueError("invariance_weight must be non-negative.")
+		if self.invariance_warmup_epochs < 0:
+			raise ValueError("invariance_warmup_epochs must be non-negative.")
 		self._compiled_loss_fn = None
 		if compile_model:
 			if not hasattr(torch, "compile"):
@@ -105,7 +134,7 @@ class VAELightningModule(pl.LightningModule):
 	def forward(self, x, return_latent_rec: bool = False):
 		return self.vae(x, return_latent_rec=return_latent_rec)
 
-	def _compute_loss_and_stats_impl(self, batch):
+	def _compute_loss_and_stats_impl(self, batch, return_mu: bool = False):
 		recon, mu, logvar, z, u = self.vae(batch)
 		latent_dist = self.vae._posterior_distribution(mu, logvar, u)
 		x_flat = batch.view(batch.shape[0], -1)
@@ -128,19 +157,43 @@ class VAELightningModule(pl.LightningModule):
 		latent_var_mean = self.vae._latent_variance_mean(u, logvar)
 		recon_nll = (-pxz_term) / batch.shape[0]
 		kl_mean = kl / batch.shape[0]
+		if return_mu:
+			return (
+				loss,
+				recon_mse,
+				latent_mean_abs,
+				latent_var_mean,
+				recon_nll,
+				kl_mean,
+				kl_weight,
+				mu,
+			)
 		return loss, recon_mse, latent_mean_abs, latent_var_mean, recon_nll, kl_mean, kl_weight
 
 	def _compute_loss_and_stats(self, batch):
-		if self._compiled_loss_fn is None:
+		base, aug = self._split_batch(batch)
+		if aug is None and self.invariance_weight > 0:
+			raise ValueError(
+				"invariance_weight > 0 requires paired batches with x and x_aug."
+			)
+		if aug is None and self._compiled_loss_fn is not None:
 			(loss, recon_mse, latent_mean_abs, latent_var_mean, recon_nll,
 				kl_mean, kl_weight) = (
-				self._compute_loss_and_stats_impl(batch)
+				self._compiled_loss_fn(base)
 			)
+			mu_base = None
 		else:
-			(loss, recon_mse, latent_mean_abs, latent_var_mean, recon_nll,
-				kl_mean, kl_weight) = (
-				self._compiled_loss_fn(batch)
-			)
+			if aug is None:
+				(loss, recon_mse, latent_mean_abs, latent_var_mean, recon_nll,
+					kl_mean, kl_weight) = (
+					self._compute_loss_and_stats_impl(base)
+				)
+				mu_base = None
+			else:
+				(loss, recon_mse, latent_mean_abs, latent_var_mean, recon_nll,
+					kl_mean, kl_weight, mu_base) = (
+					self._compute_loss_and_stats_impl(base, return_mu=True)
+				)
 		stats = {
 			"recon_mse": recon_mse,
 			"recon_nll": recon_nll,
@@ -149,6 +202,16 @@ class VAELightningModule(pl.LightningModule):
 			"latent_mean_abs": latent_mean_abs,
 			"latent_var_mean": latent_var_mean,
 		}
+		if aug is not None:
+			if mu_base is None:
+				mu_base, _, _ = self.vae.encode(base)
+			loss, inv_stats = self._apply_invariance_loss(
+				loss,
+				mu_base,
+				aug,
+				base.shape[0],
+			)
+			stats.update(inv_stats)
 		return loss, stats
 
 	def _log_stats(self, stats, stage: str, batch_size: int):
@@ -169,9 +232,93 @@ class VAELightningModule(pl.LightningModule):
 			progress = 1.0
 		return float(self.kl_beta) * progress
 
+	def _invariance_weight(self) -> float:
+		if self.invariance_warmup_epochs and self.invariance_warmup_epochs > 0:
+			progress = min(1.0, self.current_epoch / self.invariance_warmup_epochs)
+		else:
+			progress = 1.0
+		return float(self.invariance_weight) * progress
+
+	def _split_batch(self, batch):
+		base, aug = _extract_pair(batch)
+		if base is not None:
+			return base, aug
+		return _unwrap_batch(batch), None
+
+	def _normalize_invariance_loss(self, loss_name: str) -> str:
+		if loss_name is None:
+			return "mse"
+		if not isinstance(loss_name, str):
+			raise ValueError("invariance_loss must be a string.")
+		loss_name = loss_name.strip().lower()
+		if loss_name in ("mse", "l2"):
+			return "mse"
+		if loss_name in ("cosine", "cos", "cosine_distance"):
+			return "cosine"
+		raise ValueError("invariance_loss must be 'mse' or 'cosine'.")
+
+	def _normalize_stop_grad(self, stop_grad: Optional[Union[str, bool]]) -> str:
+		if isinstance(stop_grad, bool):
+			return "aug" if stop_grad else "none"
+		if stop_grad is None:
+			return "none"
+		if not isinstance(stop_grad, str):
+			raise ValueError("invariance_stop_grad must be a string or bool.")
+		stop_grad = stop_grad.strip().lower()
+		if stop_grad in ("none", "off", "false", "no"):
+			return "none"
+		if stop_grad in ("aug", "x_aug", "augmentation"):
+			return "aug"
+		if stop_grad in ("base", "x", "original"):
+			return "base"
+		raise ValueError(
+			"invariance_stop_grad must be 'none', 'base', or 'aug'."
+		)
+
+	def _apply_invariance_loss(self, loss, mu_base, aug, batch_size: int):
+		mu_aug, _, _ = self.vae.encode(aug)
+		mu_base_detached = mu_base
+		mu_aug_detached = mu_aug
+		if self.invariance_stop_grad == "base":
+			mu_base_detached = mu_base.detach()
+		elif self.invariance_stop_grad == "aug":
+			mu_aug_detached = mu_aug.detach()
+		if self.invariance_loss == "mse":
+			inv_loss = F.mse_loss(
+				mu_base_detached,
+				mu_aug_detached,
+				reduction="mean",
+			)
+		else:
+			cosine_sim = F.cosine_similarity(
+				mu_base_detached,
+				mu_aug_detached,
+				dim=1,
+			)
+			inv_loss = (1.0 - cosine_sim).mean()
+		inv_weight = loss.new_tensor(self._invariance_weight())
+		if inv_weight.item() > 0:
+			loss = loss + inv_weight * inv_loss * batch_size
+		mu_delta = (mu_base - mu_aug).detach()
+		inv_l2 = torch.norm(mu_delta, dim=1).mean()
+		inv_cosine = F.cosine_similarity(
+			mu_base.detach(),
+			mu_aug.detach(),
+			dim=1,
+		).mean()
+		stats = {
+			"invariance_loss": inv_loss,
+			"invariance_weight": inv_weight,
+			"invariance_mu_l2": inv_l2,
+			"invariance_mu_cosine": inv_cosine,
+		}
+		if inv_weight.item() == 0:
+			return loss, stats
+		return loss, stats
+
 	def training_step(self, batch, batch_idx):
 		loss, stats = self._compute_loss_and_stats(batch)
-		batch_size = batch.shape[0]
+		batch_size = self._split_batch(batch)[0].shape[0]
 		self._train_loss_sum += loss.detach().item()
 		self._train_loss_count += batch_size
 		self.log(
@@ -187,7 +334,7 @@ class VAELightningModule(pl.LightningModule):
 
 	def validation_step(self, batch, batch_idx):
 		loss, stats = self._compute_loss_and_stats(batch)
-		batch_size = batch.shape[0]
+		batch_size = self._split_batch(batch)[0].shape[0]
 		self._val_loss_sum += loss.detach().item()
 		self._val_loss_count += batch_size
 		self.log(
@@ -419,7 +566,11 @@ def train_vae(loaders: dict, save_dir: str = "", lr: float = 1e-3,
 	posterior_type: str = "diag", conv_arch: str = "plain",
 	compile_model: bool = False,
 	compile_kwargs: Optional[dict] = None, kl_beta: float = 1.0,
-	kl_warmup_epochs: int = 0):
+	kl_warmup_epochs: int = 0,
+	invariance_weight: float = 0.0,
+	invariance_warmup_epochs: int = 0,
+	invariance_loss: str = "mse",
+	invariance_stop_grad: Optional[Union[str, bool]] = "none"):
 	"""Train a VAE with Lightning while preserving legacy outputs."""
 	if "train" not in loaders or loaders["train"] is None:
 		raise ValueError("loaders must include a non-empty 'train' dataloader.")
@@ -439,6 +590,10 @@ def train_vae(loaders: dict, save_dir: str = "", lr: float = 1e-3,
 		compile_kwargs=compile_kwargs,
 		kl_beta=kl_beta,
 		kl_warmup_epochs=kl_warmup_epochs,
+		invariance_weight=invariance_weight,
+		invariance_warmup_epochs=invariance_warmup_epochs,
+		invariance_loss=invariance_loss,
+		invariance_stop_grad=invariance_stop_grad,
 	)
 	vis_loader = loaders.get("test") or loaders["train"]
 	trainer = build_trainer(

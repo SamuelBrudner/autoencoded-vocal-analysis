@@ -279,6 +279,10 @@ class FixedWindowTrainConfig:
 	conv_arch: str = "plain"
 	kl_beta: float = 1.0
 	kl_warmup_epochs: int = 0
+	invariance_weight: float = 0.0
+	invariance_warmup_epochs: int = 0
+	invariance_loss: str = "mse"
+	invariance_stop_grad: str = "none"
 	compile_model: bool = False
 	compile_kwargs: Optional[dict] = None
 	trainer_kwargs: dict = field(default_factory=dict)
@@ -304,6 +308,10 @@ class FixedWindowTrainConfig:
 			"conv_arch": self.conv_arch,
 			"kl_beta": self.kl_beta,
 			"kl_warmup_epochs": self.kl_warmup_epochs,
+			"invariance_weight": self.invariance_weight,
+			"invariance_warmup_epochs": self.invariance_warmup_epochs,
+			"invariance_loss": self.invariance_loss,
+			"invariance_stop_grad": self.invariance_stop_grad,
 			"compile_model": self.compile_model,
 			"compile_kwargs": self.compile_kwargs,
 		}
@@ -326,6 +334,10 @@ class FixedWindowTrainConfig:
 			"conv_arch": self.conv_arch,
 			"kl_beta": self.kl_beta,
 			"kl_warmup_epochs": self.kl_warmup_epochs,
+			"invariance_weight": self.invariance_weight,
+			"invariance_warmup_epochs": self.invariance_warmup_epochs,
+			"invariance_loss": self.invariance_loss,
+			"invariance_stop_grad": self.invariance_stop_grad,
 			"compile_model": self.compile_model,
 			"compile_kwargs": self.compile_kwargs,
 			"trainer_kwargs": self.trainer_kwargs,

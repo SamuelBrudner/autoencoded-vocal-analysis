@@ -152,10 +152,13 @@ def main() -> None:
     if args.spec_cache_dir is not None:
         loader_kwargs["spec_cache_dir"] = args.spec_cache_dir.as_posix()
 
+    use_pairs = train_config.invariance_weight > 0
     loaders = get_fixed_shotgun_data_loaders(
         partition,
         params,
         augmentations=config.augmentations,
+        return_pair=use_pairs,
+        pair_with_original=use_pairs,
         **loader_kwargs,
     )
 
