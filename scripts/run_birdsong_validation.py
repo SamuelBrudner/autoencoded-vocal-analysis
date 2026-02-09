@@ -174,6 +174,8 @@ def main() -> None:
     model, trainer = train_vae(
         loaders,
         save_dir=args.save_dir.as_posix(),
+        config_path=args.config.as_posix(),
+        manifest_path=args.manifest.as_posix(),
         **train_kwargs,
     )
 

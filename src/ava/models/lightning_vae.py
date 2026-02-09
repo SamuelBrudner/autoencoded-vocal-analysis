@@ -24,6 +24,7 @@ except ImportError as exc:  # pragma: no cover - only hit when optional dep miss
 from pytorch_lightning.loggers import TensorBoardLogger
 
 from ava.models.vae import VAE
+from ava.models.run_metadata import write_run_metadata
 
 
 def _unwrap_batch(batch):
@@ -577,7 +578,10 @@ def train_vae(loaders: dict, save_dir: str = "", lr: float = 1e-3,
 	invariance_weight: float = 0.0,
 	invariance_warmup_epochs: int = 0,
 	invariance_loss: str = "mse",
-	invariance_stop_grad: Optional[Union[str, bool]] = "none"):
+	invariance_stop_grad: Optional[Union[str, bool]] = "none",
+	config_path: Optional[str] = None,
+	manifest_path: Optional[str] = None,
+	dataset_root: Optional[str] = None):
 	"""Train a VAE with Lightning while preserving legacy outputs."""
 	if "train" not in loaders or loaders["train"] is None:
 		raise ValueError("loaders must include a non-empty 'train' dataloader.")
@@ -602,6 +606,12 @@ def train_vae(loaders: dict, save_dir: str = "", lr: float = 1e-3,
 		invariance_warmup_epochs=invariance_warmup_epochs,
 		invariance_loss=invariance_loss,
 		invariance_stop_grad=invariance_stop_grad,
+	)
+	write_run_metadata(
+		save_dir=module.save_dir,
+		config_path=config_path,
+		manifest_path=manifest_path,
+		dataset_root=dataset_root,
 	)
 	vis_loader = loaders.get("test") or loaders["train"]
 	trainer = build_trainer(
