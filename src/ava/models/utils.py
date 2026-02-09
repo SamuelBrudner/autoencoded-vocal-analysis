@@ -443,7 +443,12 @@ def _get_txts_from_dir(dir):
 
 def numpy_to_tensor(x):
 	"""Transform a numpy array into a torch.FloatTensor."""
-	return torch.from_numpy(x).type(torch.FloatTensor)
+	try:
+		return torch.from_numpy(x).type(torch.FloatTensor)
+	except RuntimeError as exc:
+		if "Numpy is not available" not in str(exc):
+			raise
+		return torch.tensor(np.asarray(x).tolist(), dtype=torch.float32)
 
 
 def _is_hdf5_file(filename):

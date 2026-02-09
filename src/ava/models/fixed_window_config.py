@@ -223,6 +223,45 @@ class FixedWindowDataConfig:
 
 
 @dataclass
+class FixedWindowAugmentationConfig:
+	enabled: bool = False
+	seed: Optional[int] = None
+	amplitude_scale: tuple = (0.9, 1.1)
+	noise_std: float = 0.0
+	time_shift_max_bins: int = 0
+	freq_shift_max_bins: int = 0
+	time_mask_max_bins: int = 0
+	time_mask_count: int = 0
+	freq_mask_max_bins: int = 0
+	freq_mask_count: int = 0
+
+	def to_dict(self) -> dict:
+		return {
+			"enabled": self.enabled,
+			"seed": self.seed,
+			"amplitude_scale": list(self.amplitude_scale),
+			"noise_std": self.noise_std,
+			"time_shift_max_bins": self.time_shift_max_bins,
+			"freq_shift_max_bins": self.freq_shift_max_bins,
+			"time_mask_max_bins": self.time_mask_max_bins,
+			"time_mask_count": self.time_mask_count,
+			"freq_mask_max_bins": self.freq_mask_max_bins,
+			"freq_mask_count": self.freq_mask_count,
+		}
+
+	@classmethod
+	def from_dict(cls, data: dict) -> "FixedWindowAugmentationConfig":
+		data = dict(data or {})
+		_validate_keys(data, cls)
+		if "amplitude_scale" in data:
+			data["amplitude_scale"] = _ensure_tuple(
+				data.get("amplitude_scale"),
+				default=cls.amplitude_scale,
+			)
+		return cls(**data)
+
+
+@dataclass
 class FixedWindowTrainConfig:
 	lr: float = 1e-3
 	z_dim: int = 32
@@ -301,12 +340,16 @@ class FixedWindowTrainConfig:
 @dataclass
 class FixedWindowExperimentConfig:
 	preprocess: FixedWindowPreprocessConfig
+	augmentations: FixedWindowAugmentationConfig = field(
+		default_factory=FixedWindowAugmentationConfig
+	)
 	data: FixedWindowDataConfig = field(default_factory=FixedWindowDataConfig)
 	training: FixedWindowTrainConfig = field(default_factory=FixedWindowTrainConfig)
 
 	def to_dict(self) -> dict:
 		return {
 			"preprocess": self.preprocess.to_dict(),
+			"augmentations": self.augmentations.to_dict(),
 			"data": self.data.to_dict(),
 			"training": self.training.to_dict(),
 		}
@@ -323,6 +366,9 @@ class FixedWindowExperimentConfig:
 		_validate_keys(data, cls)
 		return cls(
 			preprocess=FixedWindowPreprocessConfig.from_dict(data["preprocess"]),
+			augmentations=FixedWindowAugmentationConfig.from_dict(
+				data.get("augmentations")
+			),
 			data=FixedWindowDataConfig.from_dict(data.get("data")),
 			training=FixedWindowTrainConfig.from_dict(data.get("training")),
 		)
