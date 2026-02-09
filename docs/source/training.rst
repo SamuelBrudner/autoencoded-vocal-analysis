@@ -113,6 +113,57 @@ should have the same format as syllable segments, but should cover longer
 periods of vocalization.
 
 
+Latent Invariance Evaluation
+############################
+
+AVA includes a CLI for evaluating latent invariance and self-retrieval on
+paired views:
+
+.. code:: bash
+
+	python scripts/evaluate_latent_metrics.py \
+		--config path/to/fixed_window_config.yaml \
+		--checkpoint path/to/checkpoint_100.tar \
+		--audio-dir /path/to/wavs \
+		--roi-dir /path/to/rois \
+		--split test \
+		--max-samples 20000 \
+		--batch-size 64 \
+		--device cpu
+
+The output JSON includes:
+
+- :code:`latent_invariance.mean`, :code:`median`, :code:`std`,
+  :code:`p05`, :code:`p95`: L2 distances between paired latent means
+  (lower means stronger invariance).
+- :code:`self_retrieval.top1`, :code:`top5`, :code:`mean_rank`,
+  :code:`median_rank`: how often each augmented view retrieves its paired
+  base view by nearest neighbor (higher top-k and lower ranks are better).
+- :code:`num_pairs`: number of paired windows evaluated.
+
+Topology readiness heuristic: invariance distances should be stable across
+runs and small relative to the latent scale, while self-retrieval top-1/top-5
+should be high and mean rank should stay near 1. If invariance distances
+collapse to ~0 while reconstructions degrade, reduce augmentation strength or
+increase reconstruction weight.
+
+Recommended baseline augmentation config for birdsong:
+
+.. code:: yaml
+
+	augmentations:
+	  enabled: true
+	  seed: 123
+	  amplitude_scale: [0.9, 1.1]
+	  noise_std: 0.02
+	  time_shift_max_bins: 2
+	  freq_shift_max_bins: 2
+	  time_mask_max_bins: 4
+	  time_mask_count: 1
+	  freq_mask_max_bins: 3
+	  freq_mask_count: 1
+
+
 Warped Shotgun VAE Training
 ###########################
 

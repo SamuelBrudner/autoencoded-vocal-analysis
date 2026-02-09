@@ -56,6 +56,7 @@ def load_vae_from_checkpoint(
 		learn_observation_scale=learn_observation_scale,
 		model_precision=model_precision,
 		device_name=device,
+		build_optimizer=False,
 	)
 	model.load_state(checkpoint_path)
 	model.eval()
@@ -91,8 +92,16 @@ def collect_latent_pairs(
 			aug = aug.to(device)
 			mu_base, _, _ = model.encode(base)
 			mu_aug, _, _ = model.encode(aug)
-			mu_base = mu_base.detach().cpu().numpy()
-			mu_aug = mu_aug.detach().cpu().numpy()
+			mu_base = mu_base.detach().cpu()
+			mu_aug = mu_aug.detach().cpu()
+			try:
+				mu_base = mu_base.numpy()
+				mu_aug = mu_aug.numpy()
+			except RuntimeError as exc:
+				if "Numpy is not available" not in str(exc):
+					raise
+				mu_base = np.asarray(mu_base.tolist(), dtype=np.float32)
+				mu_aug = np.asarray(mu_aug.tolist(), dtype=np.float32)
 			if max_samples is not None and seen + len(mu_base) > max_samples:
 				keep = max_samples - seen
 				if keep <= 0:

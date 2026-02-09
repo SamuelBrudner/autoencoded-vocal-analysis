@@ -767,8 +767,11 @@ class VAE(nn.Module):
 		for layer_name in layers:
 			layer = layers[layer_name]
 			layer.load_state_dict(checkpoint[layer_name])
-		self._ensure_optimizer()
-		self.optimizer.load_state_dict(checkpoint['optimizer_state'])
+		optimizer_state = checkpoint.get("optimizer_state")
+		if self.optimizer is None and optimizer_state is not None:
+			self._ensure_optimizer()
+		if self.optimizer is not None and optimizer_state is not None:
+			self.optimizer.load_state_dict(optimizer_state)
 		self.loss = checkpoint['loss']
 		self.epoch = checkpoint['epoch']
 

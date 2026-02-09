@@ -346,7 +346,7 @@ def get_fixed_window_data_loaders(partition, p, batch_size=64, \
 		normalization_stats = train_dataset.normalization_stats
 	train_dataloader = DataLoader(train_dataset, batch_size=batch_size, \
 			shuffle=shuffle[0], **loader_kwargs)
-	if not partition['test']:
+	if not partition['test'] or len(partition['test'].get('audio', [])) == 0:
 		return {'train':train_dataloader, 'test':None}
 	test_augmentations = augmentations if augmentations_eval else None
 	test_dataset = FixedWindowDataset(partition['test']['audio'], \
