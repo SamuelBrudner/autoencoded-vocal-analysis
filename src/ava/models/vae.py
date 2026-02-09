@@ -26,6 +26,7 @@ try:
 	import torch
 	from torch.distributions import LowRankMultivariateNormal
 	import torch.nn as nn
+	import torch.nn.functional as F
 	from torch.optim import Adam
 except ImportError as exc:  # pragma: no cover - optional in some envs
 	torch = None
@@ -33,6 +34,7 @@ except ImportError as exc:  # pragma: no cover - optional in some envs
 	Adam = None
 	_TORCH_IMPORT_ERROR = exc
 	nn = SimpleNamespace(Module=object)
+	F = None
 else:
 	_TORCH_IMPORT_ERROR = None
 
@@ -72,35 +74,27 @@ class ResBlock2D(nn.Module):
 		return self.act(out + residual)
 
 
-class ResBlockTranspose2D(nn.Module):
-	"""Residual block with ConvTranspose-Norm-Act + skip."""
+class ResBlockUp2D(nn.Module):
+	"""Residual block with Upsample-Conv-Norm-Act + skip."""
 
-	def __init__(self, in_channels, out_channels, stride=1,
-		output_padding=0, norm_factory=None):
+	def __init__(self, in_channels, out_channels, norm_factory=None):
 		super().__init__()
 		if norm_factory is None:
-			raise ValueError("norm_factory is required for ResBlockTranspose2D.")
-		self.conv1 = nn.ConvTranspose2d(
-			in_channels, out_channels, 3, 1, padding=1
-		)
+			raise ValueError("norm_factory is required for ResBlockUp2D.")
+		self.conv1 = nn.Conv2d(in_channels, out_channels, 3, 1, padding=1)
 		self.norm1 = norm_factory(out_channels)
-		self.conv2 = nn.ConvTranspose2d(
-			out_channels, out_channels, 3, stride, padding=1,
-			output_padding=output_padding
-		)
+		self.conv2 = nn.Conv2d(out_channels, out_channels, 3, 1, padding=1)
 		self.norm2 = norm_factory(out_channels)
 		self.act = nn.SiLU()
-		if stride != 1 or in_channels != out_channels:
-			self.skip = nn.ConvTranspose2d(
-				in_channels, out_channels, 1, stride,
-				output_padding=output_padding
-			)
+		if in_channels != out_channels:
+			self.skip = nn.Conv2d(in_channels, out_channels, 1, 1, padding=0)
 		else:
 			self.skip = nn.Identity()
 
-	def forward(self, x):
-		residual = self.skip(x)
-		out = self.act(self.norm1(self.conv1(x)))
+	def forward(self, x, size):
+		upsampled = F.interpolate(x, size=size, mode="nearest")
+		residual = self.skip(upsampled)
+		out = self.act(self.norm1(self.conv1(upsampled)))
 		out = self.norm2(self.conv2(out))
 		return self.act(out + residual)
 
@@ -150,8 +144,8 @@ class VAE(nn.Module):
 
 	The convolutional stack downsamples the input three times with stride-2
 	convolutions. The expected spectrogram shape is configurable via
-	``input_shape``, which drives the linear layer sizes and decoder
-	output_padding so reconstructions match the input dimensions.
+	``input_shape``, which drives the linear layer sizes and decoder upsampling
+	so reconstructions match the input dimensions.
 	"""
 
 	def __init__(self, save_dir='', lr=1e-3, z_dim=32, model_precision=10.0,
@@ -292,37 +286,6 @@ class VAE(nn.Module):
 		return shapes
 
 
-	@staticmethod
-	def _output_padding_for(target_size, input_size):
-		padding = target_size - (2 * input_size - 1)
-		if padding not in (0, 1):
-			raise ValueError(
-				"Input shape cannot be reconstructed with current decoder."
-			)
-		return padding
-
-
-	@classmethod
-	def _compute_output_paddings(cls, shapes):
-		pad_stage_2 = (
-			cls._output_padding_for(shapes[2][0], shapes[3][0]),
-			cls._output_padding_for(shapes[2][1], shapes[3][1]),
-		)
-		pad_stage_4 = (
-			cls._output_padding_for(shapes[1][0], shapes[2][0]),
-			cls._output_padding_for(shapes[1][1], shapes[2][1]),
-		)
-		pad_stage_6 = (
-			cls._output_padding_for(shapes[0][0], shapes[1][0]),
-			cls._output_padding_for(shapes[0][1], shapes[1][1]),
-		)
-		return {
-			"convt2": pad_stage_2,
-			"convt4": pad_stage_4,
-			"convt6": pad_stage_6,
-		}
-
-
 	def _infer_conv_shapes(self):
 		shapes = [self.input_shape]
 		with torch.no_grad():
@@ -381,6 +344,11 @@ class VAE(nn.Module):
 			self.optimizer = Adam(self.parameters(), lr=self.lr)
 
 
+	@staticmethod
+	def _upsample_to(x, size):
+		return F.interpolate(x, size=size, mode="nearest")
+
+
 	def _build_network(self):
 		"""Define all the network layers."""
 		self._act = nn.SiLU()
@@ -414,8 +382,8 @@ class VAE(nn.Module):
 
 		self._conv_shapes, self._conv_feature_shape = self._infer_conv_shapes()
 		self._conv_feature_dim = int(np.prod(self._conv_feature_shape))
-		self._decoder_output_padding = self._compute_output_paddings(
-			self._conv_shapes
+		self._decoder_upsample_shapes = list(
+			reversed(self._conv_shapes[:-1])
 		)
 
 		self.fc1 = nn.Linear(self._conv_feature_dim, 1024)
@@ -427,28 +395,19 @@ class VAE(nn.Module):
 		self.fc42 = nn.Linear(64, self.z_dim)
 		self.fc43 = nn.Linear(64, self.z_dim)
 
-		# Decoder (Act-Norm-ConvTranspose mirrors encoder)
+		# Decoder (Upsample + Conv mirrors encoder)
 		self.fc5 = nn.Linear(self.z_dim, 64)
 		self.fc6 = nn.Linear(64, 256)
 		self.fc7 = nn.Linear(256, 1024)
 		self.fc8 = nn.Linear(1024, self._conv_feature_dim)
 		if self.conv_arch == "plain":
-			self.convt1 = nn.ConvTranspose2d(32, 24, 3, 1, padding=1)
-			self.convt2 = nn.ConvTranspose2d(
-				24, 24, 3, 2, padding=1,
-				output_padding=self._decoder_output_padding["convt2"]
-			)
-			self.convt3 = nn.ConvTranspose2d(24, 16, 3, 1, padding=1)
-			self.convt4 = nn.ConvTranspose2d(
-				16, 16, 3, 2, padding=1,
-				output_padding=self._decoder_output_padding["convt4"]
-			)
-			self.convt5 = nn.ConvTranspose2d(16, 8, 3, 1, padding=1)
-			self.convt6 = nn.ConvTranspose2d(
-				8, 8, 3, 2, padding=1,
-				output_padding=self._decoder_output_padding["convt6"]
-			)
-			self.convt7 = nn.ConvTranspose2d(8, 1, 3, 1, padding=1)
+			self.convt1 = nn.Conv2d(32, 24, 3, 1, padding=1)
+			self.convt2 = nn.Conv2d(24, 24, 3, 1, padding=1)
+			self.convt3 = nn.Conv2d(24, 16, 3, 1, padding=1)
+			self.convt4 = nn.Conv2d(16, 16, 3, 1, padding=1)
+			self.convt5 = nn.Conv2d(16, 8, 3, 1, padding=1)
+			self.convt6 = nn.Conv2d(8, 8, 3, 1, padding=1)
+			self.convt7 = nn.Conv2d(8, 1, 3, 1, padding=1)
 			self.bn8 = self._make_norm(24)
 			self.bn9 = self._make_norm(24)
 			self.bn10 = self._make_norm(16)
@@ -458,23 +417,11 @@ class VAE(nn.Module):
 			self.bn14 = nn.Identity()
 		else:
 			self.dec_blocks = nn.ModuleList([
-				ResBlockTranspose2D(
-					32, 24, stride=2,
-					output_padding=self._decoder_output_padding["convt2"],
-					norm_factory=self._make_norm,
-				),
-				ResBlockTranspose2D(
-					24, 16, stride=2,
-					output_padding=self._decoder_output_padding["convt4"],
-					norm_factory=self._make_norm,
-				),
-				ResBlockTranspose2D(
-					16, 8, stride=2,
-					output_padding=self._decoder_output_padding["convt6"],
-					norm_factory=self._make_norm,
-				),
+				ResBlockUp2D(32, 24, norm_factory=self._make_norm),
+				ResBlockUp2D(24, 16, norm_factory=self._make_norm),
+				ResBlockUp2D(16, 8, norm_factory=self._make_norm),
 			])
-			self.dec_out = nn.ConvTranspose2d(8, 1, 3, 1, padding=1)
+			self.dec_out = nn.Conv2d(8, 1, 3, 1, padding=1)
 
 
 	def _get_layers(self):
@@ -594,15 +541,18 @@ class VAE(nn.Module):
 		z = z.view(-1, *self._conv_feature_shape)
 		if self.conv_arch == "plain":
 			z = self._act(self.bn8(self.convt1(z)))
+			z = self._upsample_to(z, self._decoder_upsample_shapes[0])
 			z = self._act(self.bn9(self.convt2(z)))
 			z = self._act(self.bn10(self.convt3(z)))
+			z = self._upsample_to(z, self._decoder_upsample_shapes[1])
 			z = self._act(self.bn11(self.convt4(z)))
 			z = self._act(self.bn12(self.convt5(z)))
+			z = self._upsample_to(z, self._decoder_upsample_shapes[2])
 			z = self._act(self.bn13(self.convt6(z)))
 			z = self.convt7(z)
 		else:
-			for block in self.dec_blocks:
-				z = block(z)
+			for block, size in zip(self.dec_blocks, self._decoder_upsample_shapes):
+				z = block(z, size)
 			z = self.dec_out(z)
 		return z.view(-1, self.input_dim)
 
@@ -801,6 +751,7 @@ class VAE(nn.Module):
 		state['lr'] = self.lr
 		state['save_dir'] = self.save_dir
 		state['conv_arch'] = self.conv_arch
+		state['decoder_type'] = "upsample"
 		filename = os.path.join(self.save_dir, filename)
 		torch.save(state, filename)
 
@@ -836,6 +787,14 @@ class VAE(nn.Module):
 				"Checkpoint conv_arch "
 				f"{checkpoint_arch!r} does not match model conv_arch "
 				f"{self.conv_arch!r}."
+			)
+		checkpoint_decoder = checkpoint.get("decoder_type", "convtranspose")
+		if checkpoint_decoder != "upsample":
+			raise ValueError(
+				"Checkpoint decoder_type "
+				f"{checkpoint_decoder!r} is incompatible with the current "
+				"upsample decoder. Please retrain or export a compatible "
+				"checkpoint."
 			)
 		if 'posterior_type' in checkpoint:
 			self.posterior_type = checkpoint['posterior_type']
