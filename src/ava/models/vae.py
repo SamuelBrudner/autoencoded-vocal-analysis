@@ -76,9 +76,10 @@ class VAE(nn.Module):
 	posterior_type : {"diag", "lowrank"}, optional
 		Posterior covariance structure.
 	conv_arch : {"plain", "residual"}, optional
-		Convolutional stack architecture. ``"plain"`` uses the legacy
-		Conv-Norm-Act blocks; ``"residual"`` adds ResNet-style skip
-		connections.
+		Decoder convolutional architecture. The encoder always uses residual
+		blocks, while ``"plain"`` uses the legacy upsample + Conv-Norm-Act
+		decoder and ``"residual"`` adds ResNet-style skip connections in the
+		decoder.
 
 	Notes
 	-----
@@ -136,7 +137,8 @@ class VAE(nn.Module):
 			retains the legacy low-rank-plus-diagonal posterior. Defaults to
 			``"diag"``.
 		conv_arch : {"plain", "residual"}, optional
-			Convolutional stack architecture. Defaults to ``"plain"``.
+			Decoder convolutional architecture. The encoder always uses residual
+			blocks. Defaults to ``"plain"``.
 		build_optimizer : bool, optional
 			Whether to construct the Adam optimizer during initialization.
 			Defaults to ``True``.
@@ -292,22 +294,10 @@ class VAE(nn.Module):
 		shapes = [self.input_shape]
 		with torch.no_grad():
 			x = torch.zeros(1, 1, *self.input_shape)
-			if self.conv_arch == "plain":
-				x = self._act(self.bn1(self.conv1(x)))
-				x = self._act(self.bn2(self.conv2(x)))
+			for block in self.enc_blocks:
+				x = block(x)
 				shapes.append((x.shape[2], x.shape[3]))
-				x = self._act(self.bn3(self.conv3(x)))
-				x = self._act(self.bn4(self.conv4(x)))
-				shapes.append((x.shape[2], x.shape[3]))
-				x = self._act(self.bn5(self.conv5(x)))
-				x = self._act(self.bn6(self.conv6(x)))
-				shapes.append((x.shape[2], x.shape[3]))
-				x = self._act(self.bn7(self.conv7(x)))
-			else:
-				for block in self.enc_blocks:
-					x = block(x)
-					shapes.append((x.shape[2], x.shape[3]))
-				x = self.enc_out(x)
+			x = self.enc_out(x)
 		conv_feature_shape = (x.shape[1], x.shape[2], x.shape[3])
 		return shapes, conv_feature_shape
 
@@ -354,33 +344,16 @@ class VAE(nn.Module):
 	def _build_network(self):
 		"""Define all the network layers."""
 		self._act = nn.SiLU()
-		if self.conv_arch == "plain":
-			# Encoder (Conv-Norm-Act)
-			self.conv1 = nn.Conv2d(1, 8, 3, 1, padding=1)
-			self.bn1 = self._make_norm(8)
-			self.conv2 = nn.Conv2d(8, 8, 3, 2, padding=1)
-			self.bn2 = self._make_norm(8)
-			self.conv3 = nn.Conv2d(8, 16, 3, 1, padding=1)
-			self.bn3 = self._make_norm(16)
-			self.conv4 = nn.Conv2d(16, 16, 3, 2, padding=1)
-			self.bn4 = self._make_norm(16)
-			self.conv5 = nn.Conv2d(16, 24, 3, 1, padding=1)
-			self.bn5 = self._make_norm(24)
-			self.conv6 = nn.Conv2d(24, 24, 3, 2, padding=1)
-			self.bn6 = self._make_norm(24)
-			self.conv7 = nn.Conv2d(24, 32, 3, 1, padding=1)
-			self.bn7 = self._make_norm(32)
-		else:
-			self.enc_blocks = nn.ModuleList([
-				ResBlock2D(1, 8, stride=2, norm_factory=self._make_norm),
-				ResBlock2D(8, 16, stride=2, norm_factory=self._make_norm),
-				ResBlock2D(16, 24, stride=2, norm_factory=self._make_norm),
-			])
-			self.enc_out = nn.Sequential(
-				nn.Conv2d(24, 32, 3, 1, padding=1),
-				self._make_norm(32),
-				nn.SiLU(),
-			)
+		self.enc_blocks = nn.ModuleList([
+			ResBlock2D(1, 8, stride=2, norm_factory=self._make_norm),
+			ResBlock2D(8, 16, stride=2, norm_factory=self._make_norm),
+			ResBlock2D(16, 24, stride=2, norm_factory=self._make_norm),
+		])
+		self.enc_out = nn.Sequential(
+			nn.Conv2d(24, 32, 3, 1, padding=1),
+			self._make_norm(32),
+			nn.SiLU(),
+		)
 
 		self._conv_shapes, self._conv_feature_shape = self._infer_conv_shapes()
 		self._conv_feature_dim = int(np.prod(self._conv_feature_shape))
@@ -433,25 +406,20 @@ class VAE(nn.Module):
 			'fc32': self.fc32, 'fc33': self.fc33, 'fc41': self.fc41,
 			'fc42': self.fc42, 'fc43': self.fc43, 'fc5': self.fc5,
 			'fc6': self.fc6, 'fc7': self.fc7, 'fc8': self.fc8,
+			'enc_blocks': self.enc_blocks, 'enc_out': self.enc_out,
 		}
 		if self.conv_arch == "plain":
 			layers.update({
-				'bn1': self.bn1, 'bn2': self.bn2, 'bn3': self.bn3,
-				'bn4': self.bn4, 'bn5': self.bn5, 'bn6': self.bn6,
-				'bn7': self.bn7, 'bn8': self.bn8, 'bn9': self.bn9,
+				'bn8': self.bn8, 'bn9': self.bn9,
 				'bn10': self.bn10, 'bn11': self.bn11, 'bn12': self.bn12,
 				'bn13': self.bn13, 'bn14': self.bn14,
-				'conv1': self.conv1, 'conv2': self.conv2, 'conv3': self.conv3,
-				'conv4': self.conv4, 'conv5': self.conv5, 'conv6': self.conv6,
-				'conv7': self.conv7, 'convt1': self.convt1,
+				'convt1': self.convt1,
 				'convt2': self.convt2, 'convt3': self.convt3,
 				'convt4': self.convt4, 'convt5': self.convt5,
 				'convt6': self.convt6, 'convt7': self.convt7,
 			})
 		else:
 			layers.update({
-				'enc_blocks': self.enc_blocks,
-				'enc_out': self.enc_out,
 				'dec_blocks': self.dec_blocks,
 				'dec_out': self.dec_out,
 			})
@@ -487,18 +455,9 @@ class VAE(nn.Module):
 		"""
 		self._check_input(x)
 		x = x.unsqueeze(1)
-		if self.conv_arch == "plain":
-			x = self._act(self.bn1(self.conv1(x)))
-			x = self._act(self.bn2(self.conv2(x)))
-			x = self._act(self.bn3(self.conv3(x)))
-			x = self._act(self.bn4(self.conv4(x)))
-			x = self._act(self.bn5(self.conv5(x)))
-			x = self._act(self.bn6(self.conv6(x)))
-			x = self._act(self.bn7(self.conv7(x)))
-		else:
-			for block in self.enc_blocks:
-				x = block(x)
-			x = self.enc_out(x)
+		for block in self.enc_blocks:
+			x = block(x)
+		x = self.enc_out(x)
 		x = x.view(x.shape[0], -1)
 		x = self._act(self.fc1(x))
 		x = self._act(self.fc2(x))
@@ -797,6 +756,12 @@ class VAE(nn.Module):
 				"Checkpoint conv_arch "
 				f"{checkpoint_arch!r} does not match model conv_arch "
 				f"{self.conv_arch!r}."
+			)
+		if "enc_blocks" not in checkpoint:
+			raise ValueError(
+				"Checkpoint encoder uses the legacy conv stack which is "
+				"incompatible with the residual-block encoder. Retrain or "
+				"export a compatible checkpoint."
 			)
 		checkpoint_learned = checkpoint.get("learn_observation_scale")
 		if (checkpoint_learned is not None
