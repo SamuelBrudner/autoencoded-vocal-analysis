@@ -42,9 +42,11 @@ This should periodically save the model, print train and test loss, and write
 a file in :code:`save_dir` called :code:`reconstruction.pdf` which displays
 several spectrograms and their reconstructions.
 
-If you want residual blocks in the convolutional stack, pass
-:code:`conv_arch="residual"` to :code:`train_vae` or :class:`ava.models.vae.VAE`.
-The legacy architecture is available via :code:`conv_arch="plain"`.
+Residual blocks are the current default. To be explicit, pass
+:code:`conv_arch="residual"` to :code:`train_vae` or :class:`ava.models.vae.VAE`,
+or set :code:`training.conv_arch: residual` in fixed-window configs. The legacy
+label :code:`plain` is still accepted as an alias for backward compatibility
+(it uses the residual blocks).
 
 You may also want to continue training a previously saved model:
 

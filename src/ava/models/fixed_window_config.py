@@ -276,7 +276,7 @@ class FixedWindowTrainConfig:
 	vis_filename: str = "reconstruction.pdf"
 	input_shape: Optional[tuple] = None
 	posterior_type: str = "diag"
-	conv_arch: str = "plain"
+	conv_arch: str = "residual"
 	kl_beta: float = 1.0
 	kl_warmup_epochs: int = 0
 	invariance_weight: float = 0.0
