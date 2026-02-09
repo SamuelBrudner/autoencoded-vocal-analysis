@@ -35,6 +35,7 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 import warnings
 
+from ava.models.augmentations import SpectrogramAugmenter
 from ava.models.utils import numpy_to_tensor, _get_wavs_from_dir, \
 		_get_specs_and_amplitude_traces
 
@@ -242,7 +243,8 @@ def get_fixed_window_data_loaders(partition, p, batch_size=64, \
 	shuffle=(True, False), num_workers=None, min_spec_val=None, \
 	min_audio_energy=None, spec_cache_dir=None, spec_cache=None, \
 	audio_cache_size=0, pin_memory=None, persistent_workers=None, \
-	prefetch_factor=2):
+	prefetch_factor=2, augmentations=None, augmentations_eval=False, \
+	return_pair=False, pair_format="tuple", pair_with_original=False):
 	"""
 	Get DataLoaders for training and testing: fixed-duration shotgun VAE
 
@@ -285,6 +287,21 @@ def get_fixed_window_data_loaders(partition, p, batch_size=64, \
 	prefetch_factor : int, optional
 		Number of batches to prefetch per worker. Defaults to ``2`` when
 		``num_workers > 0``.
+	augmentations : {dict, bool, FixedWindowAugmentationConfig, None}, optional
+		Spectrogram augmentations to apply. Applied to the training loader by
+		default. Defaults to ``None`` (no augmentations).
+	augmentations_eval : bool, optional
+		Whether to apply augmentations to the evaluation loader. Defaults to
+		``False``.
+	return_pair : bool, optional
+		Whether to return paired views (``(x, x_aug)`` or ``{"x", "x_aug"}``).
+		Defaults to ``False``.
+	pair_format : {"tuple", "dict"}, optional
+		Output format for paired views. Defaults to ``"tuple"``.
+	pair_with_original : bool, optional
+		If ``True``, paired views are ``(x, x_aug)`` where ``x`` is the
+		unaltered spectrogram. If ``False``, both views are augmented.
+		Defaults to ``False``.
 
 	Returns
 	-------
@@ -301,6 +318,11 @@ def get_fixed_window_data_loaders(partition, p, batch_size=64, \
 		persistent_workers = num_workers > 0
 	if num_workers == 0:
 		persistent_workers = False
+	augmentations_eval = _normalize_bool(
+		augmentations_eval,
+		default=False,
+		name="augmentations_eval",
+	)
 	loader_kwargs = {
 		"num_workers": num_workers,
 		"pin_memory": pin_memory,
@@ -316,7 +338,9 @@ def get_fixed_window_data_loaders(partition, p, batch_size=64, \
 			min_spec_val=min_spec_val, min_audio_energy=min_audio_energy, \
 			spec_cache_dir=spec_cache_dir, spec_cache=spec_cache, \
 			audio_cache_size=audio_cache_size, \
-			normalization_stats=normalization_stats)
+			normalization_stats=normalization_stats, \
+			augmentations=augmentations, return_pair=return_pair, \
+			pair_format=pair_format, pair_with_original=pair_with_original)
 	if normalization_stats is None and \
 			train_dataset.normalization_mode == "global":
 		normalization_stats = train_dataset.normalization_stats
@@ -324,12 +348,15 @@ def get_fixed_window_data_loaders(partition, p, batch_size=64, \
 			shuffle=shuffle[0], **loader_kwargs)
 	if not partition['test']:
 		return {'train':train_dataloader, 'test':None}
+	test_augmentations = augmentations if augmentations_eval else None
 	test_dataset = FixedWindowDataset(partition['test']['audio'], \
 			partition['test']['rois'], p, transform=numpy_to_tensor, \
 			min_spec_val=min_spec_val, min_audio_energy=min_audio_energy, \
 			spec_cache_dir=spec_cache_dir, spec_cache=spec_cache, \
 			audio_cache_size=audio_cache_size, \
-			normalization_stats=normalization_stats)
+			normalization_stats=normalization_stats, \
+			augmentations=test_augmentations, return_pair=return_pair, \
+			pair_format=pair_format, pair_with_original=pair_with_original)
 	test_dataloader = DataLoader(test_dataset, batch_size=batch_size, \
 			shuffle=shuffle[1], **loader_kwargs)
 	return {'train':train_dataloader, 'test':test_dataloader}
@@ -341,7 +368,8 @@ class FixedWindowDataset(Dataset):
 	def __init__(self, audio_filenames, roi_filenames, p, transform=None,
 		dataset_length=2048, min_spec_val=None, min_audio_energy=None, \
 		spec_cache_dir=None, spec_cache=None, audio_cache_size=0, \
-		normalization_stats=None):
+		normalization_stats=None, augmentations=None, return_pair=False, \
+		pair_format="tuple", pair_with_original=False):
 		"""
 		Create a torch.utils.data.Dataset for chunks of animal vocalization.
 
@@ -384,6 +412,18 @@ class FixedWindowDataset(Dataset):
 			Defaults to ``0`` (no audio caching).
 		normalization_stats : {dict, None}, optional
 			Optional normalization statistics to reuse across datasets.
+		augmentations : {dict, bool, FixedWindowAugmentationConfig, None}, optional
+			Spectrogram augmentations to apply. Defaults to ``None`` (no
+			augmentations).
+		return_pair : bool, optional
+			Whether to return paired views (``(x, x_aug)`` or ``{"x", "x_aug"}``).
+			Defaults to ``False``.
+		pair_format : {"tuple", "dict"}, optional
+			Output format for paired views. Defaults to ``"tuple"``.
+		pair_with_original : bool, optional
+			If ``True``, paired views are ``(x, x_aug)`` where ``x`` is the
+			unaltered spectrogram. If ``False``, both views are augmented.
+			Defaults to ``False``.
 		"""
 		sorted_pairs = sorted(zip(audio_filenames, roi_filenames), \
 			key=lambda pair: pair[0])
@@ -514,13 +554,22 @@ class FixedWindowDataset(Dataset):
 			self._epoch = 0
 		self.set_epoch(0)
 		self._configure_normalization(normalization_stats)
+		self._configure_augmentations(
+			augmentations,
+			return_pair=return_pair,
+			pair_format=pair_format,
+			pair_with_original=pair_with_original,
+		)
 
 
 	def seed(self, seed=None):
 		if seed is None:
 			self._rng = np.random.RandomState()
+			self._seed_augmentations(None)
 		else:
-			self._rng = np.random.RandomState(int(seed))
+			seed = int(seed)
+			self._rng = np.random.RandomState(seed)
+			self._seed_augmentations(seed)
 
 	def set_epoch(self, epoch):
 		try:
@@ -742,6 +791,67 @@ class FixedWindowDataset(Dataset):
 			center = self._norm_center[file_index]
 			scale = self._norm_scale[file_index]
 		return (spec - center) / scale
+
+	def _configure_augmentations(self, augmentations, return_pair, pair_format,
+		pair_with_original):
+		self._augmenter = SpectrogramAugmenter(augmentations)
+		self._augmentations_enabled = bool(self._augmenter.config.enabled)
+		self._return_pair = _normalize_bool(
+			return_pair,
+			default=False,
+			name="return_pair",
+		)
+		self._pair_with_original = _normalize_bool(
+			pair_with_original,
+			default=False,
+			name="pair_with_original",
+		)
+		if pair_format is None:
+			pair_format = "tuple"
+		if not isinstance(pair_format, str):
+			raise ValueError("pair_format must be a string.")
+		pair_format = pair_format.strip().lower()
+		if pair_format not in ("tuple", "dict"):
+			raise ValueError("pair_format must be 'tuple' or 'dict'.")
+		self._pair_format = pair_format
+		self._augment_seed = None
+		self._augment_generator = None
+		self._seed_augmentations(None)
+
+	def _seed_augmentations(self, seed):
+		self._augment_generator = None
+		self._augment_seed = None
+		if not self._augmentations_enabled:
+			return
+		base_seed = self._augmenter.config.seed
+		if seed is not None:
+			seed = int(seed)
+			if base_seed is None:
+				base_seed = seed
+			else:
+				base_seed = (int(base_seed) + seed) % 2**32
+		if base_seed is None:
+			return
+		self._augment_seed = int(base_seed)
+		generator = torch.Generator()
+		generator.manual_seed(self._augment_seed)
+		self._augment_generator = generator
+
+	def _ensure_tensor(self, spec):
+		if torch.is_tensor(spec):
+			return spec
+		return torch.as_tensor(spec, dtype=torch.float32)
+
+	def _apply_augmentations(self, spec):
+		if not self._augmentations_enabled:
+			return spec
+		spec = self._ensure_tensor(spec)
+		return self._augmenter(spec, generator=self._augment_generator)
+
+	def _format_pair(self, base, aug):
+		if self._pair_format == "dict":
+			return {"x": base, "x_aug": aug}
+		return (base, aug)
 
 
 	def __len__(self):
@@ -1018,6 +1128,18 @@ class FixedWindowDataset(Dataset):
 				)
 			if self.transform:
 				spec = self.transform(spec)
+			if self._augmentations_enabled and not torch.is_tensor(spec):
+				spec = self._ensure_tensor(spec)
+			if self._return_pair:
+				if self._pair_with_original:
+					base = spec
+					aug = self._apply_augmentations(spec)
+				else:
+					base = self._apply_augmentations(spec)
+					aug = self._apply_augmentations(spec)
+				spec = self._format_pair(base, aug)
+			else:
+				spec = self._apply_augmentations(spec)
 			specs.append(spec)
 			file_indices.append(file_index)
 			onsets.append(onset)

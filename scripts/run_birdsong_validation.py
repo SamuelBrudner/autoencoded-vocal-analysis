@@ -152,7 +152,12 @@ def main() -> None:
     if args.spec_cache_dir is not None:
         loader_kwargs["spec_cache_dir"] = args.spec_cache_dir.as_posix()
 
-    loaders = get_fixed_shotgun_data_loaders(partition, params, **loader_kwargs)
+    loaders = get_fixed_shotgun_data_loaders(
+        partition,
+        params,
+        augmentations=config.augmentations,
+        **loader_kwargs,
+    )
 
     train_kwargs = train_config.to_train_kwargs()
     if args.epochs is not None:
