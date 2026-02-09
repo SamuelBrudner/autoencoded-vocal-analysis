@@ -57,6 +57,7 @@ training:
     - 6
   vis_filename: reconstruction.pdf
   posterior_type: diag
+  conv_arch: residual
   kl_beta: 1.0
   kl_warmup_epochs: 10
   compile_model: false

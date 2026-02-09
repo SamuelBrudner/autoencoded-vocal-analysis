@@ -59,7 +59,8 @@ class VAELightningModule(pl.LightningModule):
 	def __init__(self, vae: Optional[VAE] = None, save_dir: str = "",
 		lr: float = 1e-3, z_dim: int = 32, model_precision: float = 10.0,
 		input_shape: Optional[tuple[int, int]] = None,
-		posterior_type: str = "diag", compile_model: bool = False,
+		posterior_type: str = "diag", conv_arch: str = "plain",
+		compile_model: bool = False,
 		compile_kwargs: Optional[dict] = None, kl_beta: float = 1.0,
 		kl_warmup_epochs: int = 0):
 		super().__init__()
@@ -71,6 +72,7 @@ class VAELightningModule(pl.LightningModule):
 				model_precision=model_precision,
 				device_name="cpu",
 				posterior_type=posterior_type,
+				conv_arch=conv_arch,
 			)
 			if input_shape is not None:
 				vae_kwargs["input_shape"] = input_shape
@@ -410,7 +412,8 @@ def train_vae(loaders: dict, save_dir: str = "", lr: float = 1e-3,
 	vae: Optional[VAE] = None, stopping_kwargs: Optional[dict] = None,
 	extra_callbacks: Optional[list] = None,
 	input_shape: Optional[tuple[int, int]] = None,
-	posterior_type: str = "diag", compile_model: bool = False,
+	posterior_type: str = "diag", conv_arch: str = "plain",
+	compile_model: bool = False,
 	compile_kwargs: Optional[dict] = None, kl_beta: float = 1.0,
 	kl_warmup_epochs: int = 0):
 	"""Train a VAE with Lightning while preserving legacy outputs."""
@@ -426,6 +429,7 @@ def train_vae(loaders: dict, save_dir: str = "", lr: float = 1e-3,
 		model_precision=model_precision,
 		input_shape=input_shape,
 		posterior_type=posterior_type,
+		conv_arch=conv_arch,
 		compile_model=compile_model,
 		compile_kwargs=compile_kwargs,
 		kl_beta=kl_beta,

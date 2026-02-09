@@ -47,6 +47,64 @@ X_DIM = int(np.prod(X_SHAPE))
 """Legacy default spectrogram dimension: ``freq_bins * time_bins``."""
 
 
+class ResBlock2D(nn.Module):
+	"""Residual block with Conv-Norm-Act + skip."""
+
+	def __init__(self, in_channels, out_channels, stride=1,
+		norm_factory=None):
+		super().__init__()
+		if norm_factory is None:
+			raise ValueError("norm_factory is required for ResBlock2D.")
+		self.conv1 = nn.Conv2d(in_channels, out_channels, 3, 1, padding=1)
+		self.norm1 = norm_factory(out_channels)
+		self.conv2 = nn.Conv2d(out_channels, out_channels, 3, stride, padding=1)
+		self.norm2 = norm_factory(out_channels)
+		self.act = nn.SiLU()
+		if stride != 1 or in_channels != out_channels:
+			self.skip = nn.Conv2d(in_channels, out_channels, 1, stride=stride)
+		else:
+			self.skip = nn.Identity()
+
+	def forward(self, x):
+		residual = self.skip(x)
+		out = self.act(self.norm1(self.conv1(x)))
+		out = self.norm2(self.conv2(out))
+		return self.act(out + residual)
+
+
+class ResBlockTranspose2D(nn.Module):
+	"""Residual block with ConvTranspose-Norm-Act + skip."""
+
+	def __init__(self, in_channels, out_channels, stride=1,
+		output_padding=0, norm_factory=None):
+		super().__init__()
+		if norm_factory is None:
+			raise ValueError("norm_factory is required for ResBlockTranspose2D.")
+		self.conv1 = nn.ConvTranspose2d(
+			in_channels, out_channels, 3, 1, padding=1
+		)
+		self.norm1 = norm_factory(out_channels)
+		self.conv2 = nn.ConvTranspose2d(
+			out_channels, out_channels, 3, stride, padding=1,
+			output_padding=output_padding
+		)
+		self.norm2 = norm_factory(out_channels)
+		self.act = nn.SiLU()
+		if stride != 1 or in_channels != out_channels:
+			self.skip = nn.ConvTranspose2d(
+				in_channels, out_channels, 1, stride,
+				output_padding=output_padding
+			)
+		else:
+			self.skip = nn.Identity()
+
+	def forward(self, x):
+		residual = self.skip(x)
+		out = self.act(self.norm1(self.conv1(x)))
+		out = self.norm2(self.conv2(out))
+		return self.act(out + residual)
+
+
 
 class VAE(nn.Module):
 	"""Variational Autoencoder class for single-channel images.
@@ -69,6 +127,10 @@ class VAE(nn.Module):
 		Expected spectrogram shape as ``(freq_bins, time_bins)``.
 	posterior_type : {"diag", "lowrank"}, optional
 		Posterior covariance structure.
+	conv_arch : {"plain", "residual"}, optional
+		Convolutional stack architecture. ``"plain"`` uses the legacy
+		Conv-Norm-Act blocks; ``"residual"`` adds ResNet-style skip
+		connections.
 
 	Notes
 	-----
@@ -93,7 +155,8 @@ class VAE(nn.Module):
 	"""
 
 	def __init__(self, save_dir='', lr=1e-3, z_dim=32, model_precision=10.0,
-		device_name="auto", input_shape=X_SHAPE, posterior_type="diag"):
+		device_name="auto", input_shape=X_SHAPE, posterior_type="diag",
+		conv_arch="plain", build_optimizer=True):
 		"""Construct a VAE.
 
 		Parameters
@@ -120,6 +183,11 @@ class VAE(nn.Module):
 			parameterized by ``(mu, logvar)`` for speed, while ``"lowrank"``
 			retains the legacy low-rank-plus-diagonal posterior. Defaults to
 			``"diag"``.
+		conv_arch : {"plain", "residual"}, optional
+			Convolutional stack architecture. Defaults to ``"plain"``.
+		build_optimizer : bool, optional
+			Whether to construct the Adam optimizer during initialization.
+			Defaults to ``True``.
 
 		Note
 		----
@@ -140,6 +208,7 @@ class VAE(nn.Module):
 		self.input_shape = self._normalize_input_shape(input_shape)
 		self.input_dim = int(np.prod(self.input_shape))
 		self.posterior_type = self._normalize_posterior_type(posterior_type)
+		self.conv_arch = self._normalize_conv_arch(conv_arch)
 		assert device_name != "cuda" or torch.cuda.is_available()
 		if device_name == "auto":
 			device_name = "cuda" if torch.cuda.is_available() else "cpu"
@@ -147,7 +216,9 @@ class VAE(nn.Module):
 		if self.save_dir != '' and not os.path.exists(self.save_dir):
 			os.makedirs(self.save_dir)
 		self._build_network()
-		self.optimizer = Adam(self.parameters(), lr=self.lr)
+		self.optimizer = None
+		if build_optimizer:
+			self._ensure_optimizer()
 		self.epoch = 0
 		self.loss = {'train':{}, 'test':{}}
 		self.to(self._requested_device)
@@ -183,6 +254,18 @@ class VAE(nn.Module):
 		if value in {"lowrank", "low_rank", "low-rank"}:
 			return "lowrank"
 		raise ValueError("posterior_type must be 'diag' or 'lowrank'.")
+
+
+	@staticmethod
+	def _normalize_conv_arch(conv_arch):
+		if conv_arch is None:
+			return "plain"
+		value = str(conv_arch).strip().lower()
+		if value in {"plain", "legacy", "conv"}:
+			return "plain"
+		if value in {"residual", "resnet", "res"}:
+			return "residual"
+		raise ValueError("conv_arch must be 'plain' or 'residual'.")
 
 
 	@staticmethod
@@ -244,16 +327,22 @@ class VAE(nn.Module):
 		shapes = [self.input_shape]
 		with torch.no_grad():
 			x = torch.zeros(1, 1, *self.input_shape)
-			x = self._act(self.bn1(self.conv1(x)))
-			x = self._act(self.bn2(self.conv2(x)))
-			shapes.append((x.shape[2], x.shape[3]))
-			x = self._act(self.bn3(self.conv3(x)))
-			x = self._act(self.bn4(self.conv4(x)))
-			shapes.append((x.shape[2], x.shape[3]))
-			x = self._act(self.bn5(self.conv5(x)))
-			x = self._act(self.bn6(self.conv6(x)))
-			shapes.append((x.shape[2], x.shape[3]))
-			x = self._act(self.bn7(self.conv7(x)))
+			if self.conv_arch == "plain":
+				x = self._act(self.bn1(self.conv1(x)))
+				x = self._act(self.bn2(self.conv2(x)))
+				shapes.append((x.shape[2], x.shape[3]))
+				x = self._act(self.bn3(self.conv3(x)))
+				x = self._act(self.bn4(self.conv4(x)))
+				shapes.append((x.shape[2], x.shape[3]))
+				x = self._act(self.bn5(self.conv5(x)))
+				x = self._act(self.bn6(self.conv6(x)))
+				shapes.append((x.shape[2], x.shape[3]))
+				x = self._act(self.bn7(self.conv7(x)))
+			else:
+				for block in self.enc_blocks:
+					x = block(x)
+					shapes.append((x.shape[2], x.shape[3]))
+				x = self.enc_out(x)
 		conv_feature_shape = (x.shape[1], x.shape[2], x.shape[3])
 		return shapes, conv_feature_shape
 
@@ -287,24 +376,41 @@ class VAE(nn.Module):
 		return (u.squeeze(-1) ** 2 + torch.exp(logvar)).mean()
 
 
+	def _ensure_optimizer(self):
+		if self.optimizer is None:
+			self.optimizer = Adam(self.parameters(), lr=self.lr)
+
+
 	def _build_network(self):
 		"""Define all the network layers."""
 		self._act = nn.SiLU()
-		# Encoder (Conv-Norm-Act)
-		self.conv1 = nn.Conv2d(1, 8, 3, 1, padding=1)
-		self.bn1 = self._make_norm(8)
-		self.conv2 = nn.Conv2d(8, 8, 3, 2, padding=1)
-		self.bn2 = self._make_norm(8)
-		self.conv3 = nn.Conv2d(8, 16, 3, 1, padding=1)
-		self.bn3 = self._make_norm(16)
-		self.conv4 = nn.Conv2d(16, 16, 3, 2, padding=1)
-		self.bn4 = self._make_norm(16)
-		self.conv5 = nn.Conv2d(16, 24, 3, 1, padding=1)
-		self.bn5 = self._make_norm(24)
-		self.conv6 = nn.Conv2d(24, 24, 3, 2, padding=1)
-		self.bn6 = self._make_norm(24)
-		self.conv7 = nn.Conv2d(24, 32, 3, 1, padding=1)
-		self.bn7 = self._make_norm(32)
+		if self.conv_arch == "plain":
+			# Encoder (Conv-Norm-Act)
+			self.conv1 = nn.Conv2d(1, 8, 3, 1, padding=1)
+			self.bn1 = self._make_norm(8)
+			self.conv2 = nn.Conv2d(8, 8, 3, 2, padding=1)
+			self.bn2 = self._make_norm(8)
+			self.conv3 = nn.Conv2d(8, 16, 3, 1, padding=1)
+			self.bn3 = self._make_norm(16)
+			self.conv4 = nn.Conv2d(16, 16, 3, 2, padding=1)
+			self.bn4 = self._make_norm(16)
+			self.conv5 = nn.Conv2d(16, 24, 3, 1, padding=1)
+			self.bn5 = self._make_norm(24)
+			self.conv6 = nn.Conv2d(24, 24, 3, 2, padding=1)
+			self.bn6 = self._make_norm(24)
+			self.conv7 = nn.Conv2d(24, 32, 3, 1, padding=1)
+			self.bn7 = self._make_norm(32)
+		else:
+			self.enc_blocks = nn.ModuleList([
+				ResBlock2D(1, 8, stride=2, norm_factory=self._make_norm),
+				ResBlock2D(8, 16, stride=2, norm_factory=self._make_norm),
+				ResBlock2D(16, 24, stride=2, norm_factory=self._make_norm),
+			])
+			self.enc_out = nn.Sequential(
+				nn.Conv2d(24, 32, 3, 1, padding=1),
+				self._make_norm(32),
+				nn.SiLU(),
+			)
 
 		self._conv_shapes, self._conv_feature_shape = self._infer_conv_shapes()
 		self._conv_feature_dim = int(np.prod(self._conv_feature_shape))
@@ -326,47 +432,81 @@ class VAE(nn.Module):
 		self.fc6 = nn.Linear(64, 256)
 		self.fc7 = nn.Linear(256, 1024)
 		self.fc8 = nn.Linear(1024, self._conv_feature_dim)
-		self.convt1 = nn.ConvTranspose2d(32, 24, 3, 1, padding=1)
-		self.convt2 = nn.ConvTranspose2d(
-			24, 24, 3, 2, padding=1,
-			output_padding=self._decoder_output_padding["convt2"]
-		)
-		self.convt3 = nn.ConvTranspose2d(24, 16, 3, 1, padding=1)
-		self.convt4 = nn.ConvTranspose2d(
-			16, 16, 3, 2, padding=1,
-			output_padding=self._decoder_output_padding["convt4"]
-		)
-		self.convt5 = nn.ConvTranspose2d(16, 8, 3, 1, padding=1)
-		self.convt6 = nn.ConvTranspose2d(
-			8, 8, 3, 2, padding=1,
-			output_padding=self._decoder_output_padding["convt6"]
-		)
-		self.convt7 = nn.ConvTranspose2d(8, 1, 3, 1, padding=1)
-		self.bn8 = self._make_norm(24)
-		self.bn9 = self._make_norm(24)
-		self.bn10 = self._make_norm(16)
-		self.bn11 = self._make_norm(16)
-		self.bn12 = self._make_norm(8)
-		self.bn13 = self._make_norm(8)
-		self.bn14 = nn.Identity()
+		if self.conv_arch == "plain":
+			self.convt1 = nn.ConvTranspose2d(32, 24, 3, 1, padding=1)
+			self.convt2 = nn.ConvTranspose2d(
+				24, 24, 3, 2, padding=1,
+				output_padding=self._decoder_output_padding["convt2"]
+			)
+			self.convt3 = nn.ConvTranspose2d(24, 16, 3, 1, padding=1)
+			self.convt4 = nn.ConvTranspose2d(
+				16, 16, 3, 2, padding=1,
+				output_padding=self._decoder_output_padding["convt4"]
+			)
+			self.convt5 = nn.ConvTranspose2d(16, 8, 3, 1, padding=1)
+			self.convt6 = nn.ConvTranspose2d(
+				8, 8, 3, 2, padding=1,
+				output_padding=self._decoder_output_padding["convt6"]
+			)
+			self.convt7 = nn.ConvTranspose2d(8, 1, 3, 1, padding=1)
+			self.bn8 = self._make_norm(24)
+			self.bn9 = self._make_norm(24)
+			self.bn10 = self._make_norm(16)
+			self.bn11 = self._make_norm(16)
+			self.bn12 = self._make_norm(8)
+			self.bn13 = self._make_norm(8)
+			self.bn14 = nn.Identity()
+		else:
+			self.dec_blocks = nn.ModuleList([
+				ResBlockTranspose2D(
+					32, 24, stride=2,
+					output_padding=self._decoder_output_padding["convt2"],
+					norm_factory=self._make_norm,
+				),
+				ResBlockTranspose2D(
+					24, 16, stride=2,
+					output_padding=self._decoder_output_padding["convt4"],
+					norm_factory=self._make_norm,
+				),
+				ResBlockTranspose2D(
+					16, 8, stride=2,
+					output_padding=self._decoder_output_padding["convt6"],
+					norm_factory=self._make_norm,
+				),
+			])
+			self.dec_out = nn.ConvTranspose2d(8, 1, 3, 1, padding=1)
 
 
 	def _get_layers(self):
 		"""Return a dictionary mapping names to network layers."""
-		return {'fc1':self.fc1, 'fc2':self.fc2, 'fc31':self.fc31,
-				'fc32':self.fc32, 'fc33':self.fc33, 'fc41':self.fc41,
-				'fc42':self.fc42, 'fc43':self.fc43, 'fc5':self.fc5,
-				'fc6':self.fc6, 'fc7':self.fc7, 'fc8':self.fc8, 'bn1':self.bn1,
-				'bn2':self.bn2, 'bn3':self.bn3, 'bn4':self.bn4, 'bn5':self.bn5,
-				'bn6':self.bn6, 'bn7':self.bn7, 'bn8':self.bn8, 'bn9':self.bn9,
-				'bn10':self.bn10, 'bn11':self.bn11, 'bn12':self.bn12,
-				'bn13':self.bn13, 'bn14':self.bn14, 'conv1':self.conv1,
-				'conv2':self.conv2, 'conv3':self.conv3, 'conv4':self.conv4,
-				'conv5':self.conv5, 'conv6':self.conv6, 'conv7':self.conv7,
-				'convt1':self.convt1, 'convt2':self.convt2,
-				'convt3':self.convt3, 'convt4':self.convt4,
-				'convt5':self.convt5, 'convt6':self.convt6,
-				'convt7':self.convt7}
+		layers = {
+			'fc1': self.fc1, 'fc2': self.fc2, 'fc31': self.fc31,
+			'fc32': self.fc32, 'fc33': self.fc33, 'fc41': self.fc41,
+			'fc42': self.fc42, 'fc43': self.fc43, 'fc5': self.fc5,
+			'fc6': self.fc6, 'fc7': self.fc7, 'fc8': self.fc8,
+		}
+		if self.conv_arch == "plain":
+			layers.update({
+				'bn1': self.bn1, 'bn2': self.bn2, 'bn3': self.bn3,
+				'bn4': self.bn4, 'bn5': self.bn5, 'bn6': self.bn6,
+				'bn7': self.bn7, 'bn8': self.bn8, 'bn9': self.bn9,
+				'bn10': self.bn10, 'bn11': self.bn11, 'bn12': self.bn12,
+				'bn13': self.bn13, 'bn14': self.bn14,
+				'conv1': self.conv1, 'conv2': self.conv2, 'conv3': self.conv3,
+				'conv4': self.conv4, 'conv5': self.conv5, 'conv6': self.conv6,
+				'conv7': self.conv7, 'convt1': self.convt1,
+				'convt2': self.convt2, 'convt3': self.convt3,
+				'convt4': self.convt4, 'convt5': self.convt5,
+				'convt6': self.convt6, 'convt7': self.convt7,
+			})
+		else:
+			layers.update({
+				'enc_blocks': self.enc_blocks,
+				'enc_out': self.enc_out,
+				'dec_blocks': self.dec_blocks,
+				'dec_out': self.dec_out,
+			})
+		return layers
 
 
 	def encode(self, x):
@@ -398,13 +538,18 @@ class VAE(nn.Module):
 		"""
 		self._check_input(x)
 		x = x.unsqueeze(1)
-		x = self._act(self.bn1(self.conv1(x)))
-		x = self._act(self.bn2(self.conv2(x)))
-		x = self._act(self.bn3(self.conv3(x)))
-		x = self._act(self.bn4(self.conv4(x)))
-		x = self._act(self.bn5(self.conv5(x)))
-		x = self._act(self.bn6(self.conv6(x)))
-		x = self._act(self.bn7(self.conv7(x)))
+		if self.conv_arch == "plain":
+			x = self._act(self.bn1(self.conv1(x)))
+			x = self._act(self.bn2(self.conv2(x)))
+			x = self._act(self.bn3(self.conv3(x)))
+			x = self._act(self.bn4(self.conv4(x)))
+			x = self._act(self.bn5(self.conv5(x)))
+			x = self._act(self.bn6(self.conv6(x)))
+			x = self._act(self.bn7(self.conv7(x)))
+		else:
+			for block in self.enc_blocks:
+				x = block(x)
+			x = self.enc_out(x)
 		x = x.view(x.shape[0], -1)
 		x = self._act(self.fc1(x))
 		x = self._act(self.fc2(x))
@@ -447,13 +592,18 @@ class VAE(nn.Module):
 		z = self._act(self.fc7(z))
 		z = self._act(self.fc8(z))
 		z = z.view(-1, *self._conv_feature_shape)
-		z = self._act(self.bn8(self.convt1(z)))
-		z = self._act(self.bn9(self.convt2(z)))
-		z = self._act(self.bn10(self.convt3(z)))
-		z = self._act(self.bn11(self.convt4(z)))
-		z = self._act(self.bn12(self.convt5(z)))
-		z = self._act(self.bn13(self.convt6(z)))
-		z = self.convt7(z)
+		if self.conv_arch == "plain":
+			z = self._act(self.bn8(self.convt1(z)))
+			z = self._act(self.bn9(self.convt2(z)))
+			z = self._act(self.bn10(self.convt3(z)))
+			z = self._act(self.bn11(self.convt4(z)))
+			z = self._act(self.bn12(self.convt5(z)))
+			z = self._act(self.bn13(self.convt6(z)))
+			z = self.convt7(z)
+		else:
+			for block in self.dec_blocks:
+				z = block(z)
+			z = self.dec_out(z)
 		return z.view(-1, self.input_dim)
 
 
@@ -545,6 +695,7 @@ class VAE(nn.Module):
 			`train_loader`.
 		"""
 		self.train()
+		self._ensure_optimizer()
 		train_loss = 0.0
 		for batch_idx, data in enumerate(train_loader):
 			self.optimizer.zero_grad()
@@ -640,6 +791,7 @@ class VAE(nn.Module):
 		state = {}
 		for layer_name in layers:
 			state[layer_name] = layers[layer_name].state_dict()
+		self._ensure_optimizer()
 		state['optimizer_state'] = self.optimizer.state_dict()
 		state['loss'] = self.loss
 		state['z_dim'] = self.z_dim
@@ -648,6 +800,7 @@ class VAE(nn.Module):
 		state['epoch'] = self.epoch
 		state['lr'] = self.lr
 		state['save_dir'] = self.save_dir
+		state['conv_arch'] = self.conv_arch
 		filename = os.path.join(self.save_dir, filename)
 		torch.save(state, filename)
 
@@ -677,6 +830,13 @@ class VAE(nn.Module):
 					f"{tuple(checkpoint['input_shape'])} does not match "
 					f"model input_shape {self.input_shape}."
 				)
+		checkpoint_arch = checkpoint.get('conv_arch', 'plain')
+		if checkpoint_arch != self.conv_arch:
+			raise ValueError(
+				"Checkpoint conv_arch "
+				f"{checkpoint_arch!r} does not match model conv_arch "
+				f"{self.conv_arch!r}."
+			)
 		if 'posterior_type' in checkpoint:
 			self.posterior_type = checkpoint['posterior_type']
 		else:
@@ -685,6 +845,7 @@ class VAE(nn.Module):
 		for layer_name in layers:
 			layer = layers[layer_name]
 			layer.load_state_dict(checkpoint[layer_name])
+		self._ensure_optimizer()
 		self.optimizer.load_state_dict(checkpoint['optimizer_state'])
 		self.loss = checkpoint['loss']
 		self.epoch = checkpoint['epoch']

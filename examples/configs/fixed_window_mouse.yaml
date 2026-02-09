@@ -50,6 +50,7 @@ training:
     - 6
   vis_filename: reconstruction.pdf
   posterior_type: diag
+  conv_arch: residual
   compile_model: false
   trainer_kwargs: {}
   stopping_kwargs:
