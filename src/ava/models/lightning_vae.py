@@ -10,6 +10,10 @@ from typing import Optional, Union
 import torch
 import torch.nn.functional as F
 
+from ava.models.torch_onnx_compat import patch_torch_onnx_exporter
+
+patch_torch_onnx_exporter()
+
 try:
 	import pytorch_lightning as pl
 except ImportError as exc:  # pragma: no cover - only hit when optional dep missing

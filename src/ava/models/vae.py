@@ -514,10 +514,19 @@ class VAE(nn.Module):
 		x_rec = self.decode(z).view(-1, *self.input_shape)
 		if return_latent_rec:
 			return (
-				z.detach().cpu().numpy(),
-				x_rec.detach().cpu().numpy(),
+				self._to_numpy(z),
+				self._to_numpy(x_rec),
 			)
 		return x_rec, mu, logvar, z, u
+
+	def _to_numpy(self, tensor: torch.Tensor) -> np.ndarray:
+		tensor = tensor.detach().cpu()
+		try:
+			return tensor.numpy()
+		except RuntimeError as exc:
+			if "Numpy is not available" not in str(exc):
+				raise
+			return np.array(tensor.tolist())
 
 
 	def _compute_loss(self, x, beta=1.0):

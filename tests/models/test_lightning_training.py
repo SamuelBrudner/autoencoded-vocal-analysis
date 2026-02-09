@@ -3,8 +3,11 @@ import random
 import numpy as np
 import pytest
 
+from ava.models.torch_onnx_compat import patch_torch_onnx_exporter
+
 
 torch = pytest.importorskip("torch")
+patch_torch_onnx_exporter()
 pytest.importorskip("pytorch_lightning")
 
 from torch.utils.data import DataLoader, Dataset
