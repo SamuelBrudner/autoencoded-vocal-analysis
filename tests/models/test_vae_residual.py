@@ -42,3 +42,18 @@ def test_shape_agnostic_roundtrip(conv_arch, input_shape):
 	recon, _, _, _, _ = vae(batch)
 
 	assert recon.shape == batch.shape
+
+
+@pytest.mark.parametrize("input_shape", [(128, 128), (63, 81)])
+def test_convtranspose_roundtrip(input_shape):
+	batch = torch.randn(2, *input_shape)
+	vae = VAE(
+		save_dir="",
+		device_name="cpu",
+		input_shape=input_shape,
+		decoder_type="convtranspose",
+		build_optimizer=False,
+	)
+	recon, _, _, _, _ = vae(batch)
+
+	assert recon.shape == batch.shape

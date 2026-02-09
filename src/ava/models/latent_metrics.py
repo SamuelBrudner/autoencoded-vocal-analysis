@@ -46,6 +46,7 @@ def load_vae_from_checkpoint(
 	input_shape = tuple(checkpoint.get("input_shape", DEFAULT_INPUT_SHAPE))
 	posterior_type = checkpoint.get("posterior_type", "lowrank")
 	conv_arch = checkpoint.get("conv_arch", "plain")
+	decoder_type = checkpoint.get("decoder_type", "convtranspose")
 	learn_observation_scale = checkpoint.get("learn_observation_scale", False)
 	model_precision = checkpoint.get("model_precision", 10.0)
 	model = VAE(
@@ -53,6 +54,7 @@ def load_vae_from_checkpoint(
 		input_shape=input_shape,
 		posterior_type=posterior_type,
 		conv_arch=conv_arch,
+		decoder_type=decoder_type,
 		learn_observation_scale=learn_observation_scale,
 		model_precision=model_precision,
 		device_name=device,

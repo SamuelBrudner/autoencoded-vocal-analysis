@@ -478,6 +478,9 @@ class DataContainer():
 			vae_kwargs['posterior_type'] = checkpoint['posterior_type']
 		if 'conv_arch' in checkpoint:
 			vae_kwargs['conv_arch'] = checkpoint['conv_arch']
+		vae_kwargs['decoder_type'] = checkpoint.get(
+			'decoder_type', 'convtranspose'
+		)
 		model = VAE(**vae_kwargs)
 		model.load_state(self.model_filename)
 		# For each directory...

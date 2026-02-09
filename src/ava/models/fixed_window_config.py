@@ -277,6 +277,7 @@ class FixedWindowTrainConfig:
 	input_shape: Optional[tuple] = None
 	posterior_type: str = "diag"
 	conv_arch: str = "residual"
+	decoder_type: str = "upsample"
 	kl_beta: float = 1.0
 	kl_warmup_epochs: int = 0
 	invariance_weight: float = 0.0
@@ -306,6 +307,7 @@ class FixedWindowTrainConfig:
 			"input_shape": self.input_shape,
 			"posterior_type": self.posterior_type,
 			"conv_arch": self.conv_arch,
+			"decoder_type": self.decoder_type,
 			"kl_beta": self.kl_beta,
 			"kl_warmup_epochs": self.kl_warmup_epochs,
 			"invariance_weight": self.invariance_weight,
@@ -332,6 +334,7 @@ class FixedWindowTrainConfig:
 			"input_shape": list(self.input_shape) if self.input_shape else None,
 			"posterior_type": self.posterior_type,
 			"conv_arch": self.conv_arch,
+			"decoder_type": self.decoder_type,
 			"kl_beta": self.kl_beta,
 			"kl_warmup_epochs": self.kl_warmup_epochs,
 			"invariance_weight": self.invariance_weight,

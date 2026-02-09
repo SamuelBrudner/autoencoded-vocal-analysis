@@ -79,6 +79,10 @@ class VAE(nn.Module):
 		Decoder convolutional architecture. The decoder now uses residual
 		blocks; ``"plain"`` is retained as a legacy alias for backward
 		compatibility.
+	decoder_type : {"upsample", "convtranspose"}, optional
+		Decoder upsampling implementation. ``"upsample"`` uses nearest-neighbor
+		upsampling plus convolutions, while ``"convtranspose"`` uses
+		ConvTranspose2d layers for legacy compatibility.
 
 	Notes
 	-----
@@ -105,6 +109,7 @@ class VAE(nn.Module):
 	def __init__(self, save_dir='', lr=1e-3, z_dim=32, model_precision=10.0,
 		learn_observation_scale=False, device_name="auto",
 		input_shape=X_SHAPE, posterior_type="diag", conv_arch="plain",
+		decoder_type="upsample",
 		build_optimizer=True):
 		"""Construct a VAE.
 
@@ -139,6 +144,11 @@ class VAE(nn.Module):
 			Decoder convolutional architecture. Residual blocks are used in the
 			decoder; ``"plain"`` is accepted as a legacy alias. Defaults to
 			``"plain"``.
+		decoder_type : {"upsample", "convtranspose"}, optional
+			Decoder upsampling implementation. ``"upsample"`` uses
+			nearest-neighbor upsampling plus convolutions, while
+			``"convtranspose"`` uses ConvTranspose2d layers for legacy
+			compatibility. Defaults to ``"upsample"``.
 		build_optimizer : bool, optional
 			Whether to construct the Adam optimizer during initialization.
 			Defaults to ``True``.
@@ -174,6 +184,7 @@ class VAE(nn.Module):
 		self.input_dim = int(np.prod(self.input_shape))
 		self.posterior_type = self._normalize_posterior_type(posterior_type)
 		self.conv_arch = self._normalize_conv_arch(conv_arch)
+		self.decoder_type = self._normalize_decoder_type(decoder_type)
 		assert device_name != "cuda" or torch.cuda.is_available()
 		if device_name == "auto":
 			device_name = "cuda" if torch.cuda.is_available() else "cpu"
@@ -254,6 +265,20 @@ class VAE(nn.Module):
 			return "residual"
 		raise ValueError("conv_arch must be 'residual' (legacy 'plain' accepted).")
 
+	@staticmethod
+	def _normalize_decoder_type(decoder_type):
+		if decoder_type is None:
+			return "upsample"
+		value = str(decoder_type).strip().lower()
+		if value in {"upsample", "upsampling", "resize", "nearest"}:
+			return "upsample"
+		if value in {"convtranspose", "conv_transpose", "deconv", "transpose",
+				"legacy"}:
+			return "convtranspose"
+		raise ValueError(
+			"decoder_type must be 'upsample' or 'convtranspose'."
+		)
+
 
 	@staticmethod
 	def _coerce_positive_float(value, name):
@@ -277,6 +302,19 @@ class VAE(nn.Module):
 	@staticmethod
 	def _downsample_dim(size):
 		return (size + 1) // 2
+
+	@staticmethod
+	def _output_padding_dim(input_size, target_size, kernel_size=3,
+			stride=2, padding=1):
+		base = (input_size - 1) * stride - 2 * padding + kernel_size
+		output_padding = target_size - base
+		if output_padding < 0 or output_padding >= stride:
+			raise ValueError(
+				"Cannot match target size "
+				f"{target_size} from input size {input_size} "
+				"with ConvTranspose2d configuration."
+			)
+		return int(output_padding)
 
 
 	@classmethod
@@ -370,16 +408,55 @@ class VAE(nn.Module):
 		self.fc42 = nn.Linear(64, self.z_dim)
 		self.fc43 = nn.Linear(64, self.z_dim)
 
-		# Decoder (residual upsample blocks mirror encoder)
+		# Decoder (upsample or convtranspose blocks mirror encoder)
 		self.fc5 = nn.Linear(self.z_dim, 64)
 		self.fc6 = nn.Linear(64, 256)
 		self.fc7 = nn.Linear(256, 1024)
 		self.fc8 = nn.Linear(1024, self._conv_feature_dim)
-		self.dec_blocks = nn.ModuleList([
-			ResBlockUp2D(32, 24, norm_factory=self._make_norm),
-			ResBlockUp2D(24, 16, norm_factory=self._make_norm),
-			ResBlockUp2D(16, 8, norm_factory=self._make_norm),
-		])
+		if self.decoder_type == "upsample":
+			self.dec_blocks = nn.ModuleList([
+				ResBlockUp2D(32, 24, norm_factory=self._make_norm),
+				ResBlockUp2D(24, 16, norm_factory=self._make_norm),
+				ResBlockUp2D(16, 8, norm_factory=self._make_norm),
+			])
+		else:
+			output_paddings = []
+			current_shape = self._conv_feature_shape[1:]
+			for target_shape in self._decoder_upsample_shapes:
+				pad_h = self._output_padding_dim(
+					current_shape[0], target_shape[0]
+				)
+				pad_w = self._output_padding_dim(
+					current_shape[1], target_shape[1]
+				)
+				output_paddings.append((pad_h, pad_w))
+				current_shape = target_shape
+			self.dec_blocks = nn.ModuleList([
+				nn.Sequential(
+					nn.ConvTranspose2d(
+						32, 24, 3, stride=2, padding=1,
+						output_padding=output_paddings[0],
+					),
+					self._make_norm(24),
+					nn.SiLU(),
+				),
+				nn.Sequential(
+					nn.ConvTranspose2d(
+						24, 16, 3, stride=2, padding=1,
+						output_padding=output_paddings[1],
+					),
+					self._make_norm(16),
+					nn.SiLU(),
+				),
+				nn.Sequential(
+					nn.ConvTranspose2d(
+						16, 8, 3, stride=2, padding=1,
+						output_padding=output_paddings[2],
+					),
+					self._make_norm(8),
+					nn.SiLU(),
+				),
+			])
 		self.dec_out = nn.Conv2d(8, 1, 3, 1, padding=1)
 
 
@@ -475,8 +552,13 @@ class VAE(nn.Module):
 		z = self._act(self.fc7(z))
 		z = self._act(self.fc8(z))
 		z = z.view(-1, *self._conv_feature_shape)
-		for block, size in zip(self.dec_blocks, self._decoder_upsample_shapes):
-			z = block(z, size)
+		if self.decoder_type == "upsample":
+			for block, size in zip(self.dec_blocks,
+					self._decoder_upsample_shapes):
+				z = block(z, size)
+		else:
+			for block in self.dec_blocks:
+				z = block(z)
 		z = self.dec_out(z)
 		return z.view(-1, self.input_dim)
 
@@ -690,7 +772,7 @@ class VAE(nn.Module):
 		state['model_precision'] = self.model_precision
 		state['log_precision'] = float(self.log_precision.detach().cpu())
 		state['learn_observation_scale'] = self.learn_observation_scale
-		state['decoder_type'] = "upsample"
+		state['decoder_type'] = self.decoder_type
 		filename = os.path.join(self.save_dir, filename)
 		torch.save(state, filename)
 
@@ -754,12 +836,13 @@ class VAE(nn.Module):
 				f"{self.learn_observation_scale!r}."
 			)
 		checkpoint_decoder = checkpoint.get("decoder_type", "convtranspose")
-		if checkpoint_decoder != "upsample":
+		checkpoint_decoder = self._normalize_decoder_type(checkpoint_decoder)
+		if checkpoint_decoder != self.decoder_type:
 			raise ValueError(
 				"Checkpoint decoder_type "
-				f"{checkpoint_decoder!r} is incompatible with the current "
-				"upsample decoder. Please retrain or export a compatible "
-				"checkpoint."
+				f"{checkpoint_decoder!r} does not match model decoder_type "
+				f"{self.decoder_type!r}. Initialize the VAE with "
+				"decoder_type set to the checkpoint value or retrain."
 			)
 		if 'posterior_type' in checkpoint:
 			self.posterior_type = checkpoint['posterior_type']
