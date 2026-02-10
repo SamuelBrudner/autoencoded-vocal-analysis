@@ -57,6 +57,9 @@ def test_lightning_metrics_match_legacy_forward():
 	assert torch.isfinite(stats["recon_nll"]).item()
 	assert torch.isfinite(stats["kl"]).item()
 	assert torch.isfinite(stats["kl_weight"]).item()
+	assert torch.isfinite(stats["log_precision"]).item()
+	assert torch.isfinite(stats["model_precision"]).item()
+	assert stats["model_precision"].item() > 0
 	assert torch.isfinite(stats["latent_mean_abs"]).item()
 	assert torch.isfinite(stats["latent_var_mean"]).item()
 	expected = stats["recon_nll"] + stats["kl_weight"] * stats["kl"]

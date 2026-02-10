@@ -209,6 +209,9 @@ class VAELightningModule(pl.LightningModule):
 			"latent_mean_abs": latent_mean_abs,
 			"latent_var_mean": latent_var_mean,
 		}
+		log_precision = self.vae.log_precision.detach()
+		stats["log_precision"] = log_precision
+		stats["model_precision"] = torch.exp(log_precision)
 		if aug is not None:
 			if mu_base is None:
 				mu_base, _, _ = self.vae.encode(base)
