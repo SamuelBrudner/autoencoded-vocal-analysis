@@ -8,6 +8,10 @@ temporal pipelines (e.g., distance-image + persistence workflows in
 The goal is to represent a long recording as a **sequence of posterior
 statistics** over time, not as a bag of windows.
 
+See also:
+- `docs/temporal_topology_handoff.md` for an end-to-end export workflow and the
+  handoff into `juvenile_learning_tda` distance-image/persistence code.
+
 ## Versioning
 
 Schema version string: `ava_latent_sequence_v1`
@@ -122,4 +126,3 @@ logvar = npz["logvar"]  # [T, z_dim]
 t = npz["start_times_sec"]  # [T]
 sigma = np.exp(0.5 * logvar)
 ```
-
