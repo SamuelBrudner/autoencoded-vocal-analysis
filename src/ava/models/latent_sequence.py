@@ -234,6 +234,231 @@ def _compute_normalization_stats(
 	return mean, std
 
 
+class LatentSequenceEncoder:
+	"""
+	Reusable encoder that amortizes config + checkpoint loading across many clips.
+
+	This is useful for exporting large manifests where reloading the model for
+	every clip would be prohibitively slow.
+	"""
+
+	def __init__(
+			self,
+			checkpoint_path: Union[str, Path],
+			config: Union[str, Path, FixedWindowExperimentConfig],
+			device: str = "auto",
+	) -> None:
+		if _TORCH_IMPORT_ERROR is not None:  # pragma: no cover
+			raise ImportError(
+				"PyTorch is required for ava.models.latent_sequence. "
+				"Install with `pip install torch`."
+			) from _TORCH_IMPORT_ERROR
+		self.checkpoint_path = Path(checkpoint_path)
+		self.device = str(device)
+		if isinstance(config, (str, Path)):
+			self.config_path = Path(config)
+			self.cfg = FixedWindowExperimentConfig.from_yaml(
+				self.config_path.as_posix()
+			)
+		else:
+			self.cfg = config
+			self.config_path = None
+
+		self.params = self.cfg.preprocess.to_params()
+		self.fs_target = int(self.cfg.preprocess.fs)
+		self.window_length_sec = float(self.cfg.preprocess.window_length)
+		if self.window_length_sec <= 0:
+			raise ValueError("window_length_sec must be positive.")
+
+		self.num_freq_bins = int(self.params["num_freq_bins"])
+		self.num_time_bins = int(self.params["num_time_bins"])
+		self.target_freqs = _default_target_freqs(self.params)
+		self.time_offsets = np.linspace(
+			0.0,
+			self.window_length_sec,
+			self.num_time_bins,
+			dtype=np.float64,
+		)
+
+		model = load_vae_from_checkpoint(self.checkpoint_path.as_posix(), device=device)
+		if tuple(model.input_shape) != (self.num_freq_bins, self.num_time_bins):
+			raise ValueError(
+				"Config spectrogram shape does not match checkpoint input_shape: "
+				f"config={(self.num_freq_bins, self.num_time_bins)} "
+				f"checkpoint={model.input_shape}"
+			)
+		model.eval()
+		self.model = model
+
+	def encode(
+			self,
+			audio_path: Union[str, Path],
+			roi_path: Optional[Union[str, Path]] = None,
+			batch_size: int = 64,
+			hop_length_sec: Optional[float] = None,
+			start_time_sec: float = 0.0,
+			end_time_sec: Optional[float] = None,
+			return_energy: bool = False,
+			compute_audio_sha256: bool = False,
+	) -> LatentSequence:
+		"""
+		Encode a single audio clip into a time-indexed latent sequence.
+
+		See ``encode_clip_to_latent_sequence`` for parameter details.
+		"""
+		audio_path = Path(audio_path)
+		params = self.params
+		fs_target = int(self.fs_target)
+		window_length_sec = float(self.window_length_sec)
+
+		if hop_length_sec is None:
+			hop_length_sec = window_length_sec
+		hop_length_sec = float(hop_length_sec)
+		if hop_length_sec <= 0:
+			raise ValueError("hop_length_sec must be positive.")
+
+		fs_in, audio = wavfile.read(audio_path.as_posix())
+		audio = _to_float_audio(_as_mono(audio))
+		audio = audio - float(np.mean(audio))
+		audio = _resample_audio(audio, int(fs_in), fs_target)
+
+		duration_sec = float(len(audio) / fs_target) if fs_target else 0.0
+		if duration_sec <= 0:
+			raise ValueError("Audio duration is zero after loading/resampling.")
+
+		start_time_sec = float(start_time_sec)
+		if end_time_sec is None:
+			end_time_sec = duration_sec
+		end_time_sec = float(end_time_sec)
+		if start_time_sec < 0 or end_time_sec <= 0:
+			raise ValueError("start_time_sec/end_time_sec must be positive.")
+		if end_time_sec <= start_time_sec:
+			raise ValueError("end_time_sec must be greater than start_time_sec.")
+
+		end_time_sec = min(end_time_sec, duration_sec)
+
+		if roi_path is not None:
+			rois = _load_rois(roi_path)
+			start_times = _window_starts_from_rois(
+				rois,
+				window_length_sec=window_length_sec,
+				hop_length_sec=hop_length_sec,
+				start_time_sec=start_time_sec,
+				end_time_sec=end_time_sec,
+			)
+		else:
+			latest = end_time_sec - window_length_sec
+			if latest >= start_time_sec:
+				start_times = np.arange(
+					start_time_sec,
+					latest + 1e-12,
+					hop_length_sec,
+					dtype=np.float64,
+				)
+			else:
+				start_times = np.array([start_time_sec], dtype=np.float64)
+
+		if start_times.size == 0:
+			raise ValueError("No windows available after ROI/time filtering.")
+
+		f_frames, t_frames, zxx = stft(
+			audio,
+			fs=fs_target,
+			nperseg=int(params["nperseg"]),
+			noverlap=int(params["noverlap"]),
+		)
+		spec_log = np.log(np.abs(zxx) + EPSILON)
+		interp = RegularGridInterpolator(
+			(f_frames, t_frames),
+			spec_log,
+			bounds_error=False,
+			fill_value=-1.0 / EPSILON,
+		)
+
+		norm_center, norm_scale = _compute_normalization_stats(
+			interp=interp,
+			target_freqs=self.target_freqs,
+			start_times=start_times,
+			window_length_sec=window_length_sec,
+			num_time_bins=self.num_time_bins,
+			params=params,
+		)
+
+		time_offsets = self.time_offsets
+		mu_chunks: list[np.ndarray] = []
+		logvar_chunks: list[np.ndarray] = []
+		energy_chunks: list[np.ndarray] = []
+
+		model = self.model
+		with torch.inference_mode():
+			for start in range(0, start_times.size, int(batch_size)):
+				stop = min(start + int(batch_size), start_times.size)
+				batch_starts = start_times[start:stop]
+				target_times = batch_starts[:, None] + time_offsets[None, :]
+				points = np.stack(
+					[
+						self.target_freqs[:, None, None],
+						target_times[None, :, :],
+					],
+					axis=-1,
+				)
+				spec = interp(points).transpose(1, 0, 2)
+				spec = (spec - float(params["spec_min_val"])) / (
+					float(params["spec_max_val"]) - float(params["spec_min_val"])
+				)
+				spec = np.clip(spec, 0.0, 1.0)
+				if norm_center is not None and norm_scale is not None:
+					spec = (spec - norm_center) / norm_scale
+				spec = np.asarray(spec, dtype=np.float32)
+				x = torch.from_numpy(spec).to(model.device)
+				mu, logvar, _ = model.encode(x)
+				mu_chunks.append(mu.detach().cpu().to(dtype=torch.float32).numpy())
+				logvar_chunks.append(logvar.detach().cpu().to(dtype=torch.float32).numpy())
+				if return_energy:
+					s1 = np.floor(batch_starts * fs_target).astype(int)
+					s2 = np.floor((batch_starts + window_length_sec) * fs_target).astype(int)
+					s1 = np.clip(s1, 0, len(audio))
+					s2 = np.clip(s2, 0, len(audio))
+					energies = np.zeros(len(batch_starts), dtype=np.float32)
+					for i, (a, b) in enumerate(zip(s1, s2)):
+						if b <= a:
+							continue
+						chunk = audio[a:b]
+						energies[i] = float(np.sqrt(np.mean(chunk ** 2) + 1e-12))
+					energy_chunks.append(energies)
+
+		mu_arr = np.concatenate(mu_chunks, axis=0)
+		logvar_arr = np.concatenate(logvar_chunks, axis=0)
+		if mu_arr.shape[0] != start_times.shape[0]:
+			raise RuntimeError("Internal error: latent count does not match timestamps.")
+
+		energy_arr = None
+		if return_energy:
+			energy_arr = np.concatenate(energy_chunks, axis=0) if energy_chunks else None
+
+		metadata: Dict[str, Any] = {
+			"schema_version": SCHEMA_VERSION,
+			"created_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+			"clip_id": audio_path.stem,
+			"audio_path": audio_path.as_posix(),
+			"audio_sha256": _sha256_file(audio_path) if compute_audio_sha256 else None,
+			"sample_rate_hz": fs_target,
+			"roi_path": Path(roi_path).as_posix() if roi_path is not None else None,
+			"config_path": self.config_path.as_posix() if self.config_path is not None else None,
+			"checkpoint_path": self.checkpoint_path.as_posix(),
+		}
+
+		return LatentSequence(
+			start_times_sec=start_times,
+			window_length_sec=window_length_sec,
+			hop_length_sec=hop_length_sec,
+			mu=mu_arr,
+			logvar=logvar_arr,
+			energy=energy_arr,
+			metadata=metadata,
+		)
+
+
 def encode_clip_to_latent_sequence(
 		checkpoint_path: Union[str, Path],
 		config: Union[str, Path, FixedWindowExperimentConfig],
@@ -274,180 +499,18 @@ def encode_clip_to_latent_sequence(
 	compute_audio_sha256:
 		If ``True``, compute SHA-256 of the audio file for provenance.
 	"""
-	if _TORCH_IMPORT_ERROR is not None:  # pragma: no cover
-		raise ImportError(
-			"PyTorch is required for ava.models.latent_sequence. "
-			"Install with `pip install torch`."
-		) from _TORCH_IMPORT_ERROR
-	checkpoint_path = Path(checkpoint_path)
-	audio_path = Path(audio_path)
-	if isinstance(config, (str, Path)):
-		config_path = Path(config)
-		cfg = FixedWindowExperimentConfig.from_yaml(config_path.as_posix())
-	else:
-		cfg = config
-		config_path = None
-
-	params = cfg.preprocess.to_params()
-	fs_target = int(cfg.preprocess.fs)
-	window_length_sec = float(cfg.preprocess.window_length)
-	if hop_length_sec is None:
-		hop_length_sec = window_length_sec
-	hop_length_sec = float(hop_length_sec)
-	if hop_length_sec <= 0:
-		raise ValueError("hop_length_sec must be positive.")
-	if window_length_sec <= 0:
-		raise ValueError("window_length_sec must be positive.")
-
-	fs_in, audio = wavfile.read(audio_path.as_posix())
-	audio = _to_float_audio(_as_mono(audio))
-	audio = audio - float(np.mean(audio))
-	audio = _resample_audio(audio, int(fs_in), fs_target)
-
-	duration_sec = float(len(audio) / fs_target) if fs_target else 0.0
-	if duration_sec <= 0:
-		raise ValueError("Audio duration is zero after loading/resampling.")
-
-	start_time_sec = float(start_time_sec)
-	if end_time_sec is None:
-		end_time_sec = duration_sec
-	end_time_sec = float(end_time_sec)
-	if start_time_sec < 0 or end_time_sec <= 0:
-		raise ValueError("start_time_sec/end_time_sec must be positive.")
-	if end_time_sec <= start_time_sec:
-		raise ValueError("end_time_sec must be greater than start_time_sec.")
-
-	end_time_sec = min(end_time_sec, duration_sec)
-
-	if roi_path is not None:
-		rois = _load_rois(roi_path)
-		start_times = _window_starts_from_rois(
-			rois,
-			window_length_sec=window_length_sec,
-			hop_length_sec=hop_length_sec,
-			start_time_sec=start_time_sec,
-			end_time_sec=end_time_sec,
-		)
-	else:
-		latest = end_time_sec - window_length_sec
-		if latest >= start_time_sec:
-			start_times = np.arange(
-				start_time_sec,
-				latest + 1e-12,
-				hop_length_sec,
-				dtype=np.float64,
-			)
-		else:
-			start_times = np.array([start_time_sec], dtype=np.float64)
-
-	if start_times.size == 0:
-		raise ValueError("No windows available after ROI/time filtering.")
-
-	num_freq_bins = int(params["num_freq_bins"])
-	num_time_bins = int(params["num_time_bins"])
-
-	target_freqs = _default_target_freqs(params)
-
-	f_frames, t_frames, zxx = stft(
-		audio,
-		fs=fs_target,
-		nperseg=int(params["nperseg"]),
-		noverlap=int(params["noverlap"]),
+	encoder = LatentSequenceEncoder(
+		checkpoint_path=checkpoint_path,
+		config=config,
+		device=device,
 	)
-	spec_log = np.log(np.abs(zxx) + EPSILON)
-	interp = RegularGridInterpolator(
-		(f_frames, t_frames),
-		spec_log,
-		bounds_error=False,
-		fill_value=-1.0 / EPSILON,
-	)
-
-	norm_center, norm_scale = _compute_normalization_stats(
-		interp=interp,
-		target_freqs=target_freqs,
-		start_times=start_times,
-		window_length_sec=window_length_sec,
-		num_time_bins=num_time_bins,
-		params=params,
-	)
-
-	model = load_vae_from_checkpoint(checkpoint_path.as_posix(), device=device)
-	if tuple(model.input_shape) != (num_freq_bins, num_time_bins):
-		raise ValueError(
-			"Config spectrogram shape does not match checkpoint input_shape: "
-			f"config={(num_freq_bins, num_time_bins)} checkpoint={model.input_shape}"
-		)
-	model.eval()
-
-	time_offsets = np.linspace(0.0, window_length_sec, num_time_bins, dtype=np.float64)
-	mu_chunks: list[np.ndarray] = []
-	logvar_chunks: list[np.ndarray] = []
-	energy_chunks: list[np.ndarray] = []
-
-	with torch.inference_mode():
-		for start in range(0, start_times.size, int(batch_size)):
-			stop = min(start + int(batch_size), start_times.size)
-			batch_starts = start_times[start:stop]
-			target_times = batch_starts[:, None] + time_offsets[None, :]
-			points = np.stack(
-				[
-					target_freqs[:, None, None],
-					target_times[None, :, :],
-				],
-				axis=-1,
-			)
-			spec = interp(points).transpose(1, 0, 2)
-			spec = (spec - float(params["spec_min_val"])) / (
-				float(params["spec_max_val"]) - float(params["spec_min_val"])
-			)
-			spec = np.clip(spec, 0.0, 1.0)
-			if norm_center is not None and norm_scale is not None:
-				spec = (spec - norm_center) / norm_scale
-			spec = np.asarray(spec, dtype=np.float32)
-			x = torch.from_numpy(spec).to(model.device)
-			mu, logvar, _ = model.encode(x)
-			mu_chunks.append(mu.detach().cpu().to(dtype=torch.float32).numpy())
-			logvar_chunks.append(logvar.detach().cpu().to(dtype=torch.float32).numpy())
-			if return_energy:
-				s1 = np.floor(batch_starts * fs_target).astype(int)
-				s2 = np.floor((batch_starts + window_length_sec) * fs_target).astype(int)
-				s1 = np.clip(s1, 0, len(audio))
-				s2 = np.clip(s2, 0, len(audio))
-				energies = np.zeros(len(batch_starts), dtype=np.float32)
-				for i, (a, b) in enumerate(zip(s1, s2)):
-					if b <= a:
-						continue
-					chunk = audio[a:b]
-					energies[i] = float(np.sqrt(np.mean(chunk ** 2) + 1e-12))
-				energy_chunks.append(energies)
-
-	mu_arr = np.concatenate(mu_chunks, axis=0)
-	logvar_arr = np.concatenate(logvar_chunks, axis=0)
-	if mu_arr.shape[0] != start_times.shape[0]:
-		raise RuntimeError("Internal error: latent count does not match timestamps.")
-
-	energy_arr = None
-	if return_energy:
-		energy_arr = np.concatenate(energy_chunks, axis=0) if energy_chunks else None
-
-	metadata: Dict[str, Any] = {
-		"schema_version": SCHEMA_VERSION,
-		"created_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-		"clip_id": audio_path.stem,
-		"audio_path": audio_path.as_posix(),
-		"audio_sha256": _sha256_file(audio_path) if compute_audio_sha256 else None,
-		"sample_rate_hz": fs_target,
-		"roi_path": Path(roi_path).as_posix() if roi_path is not None else None,
-		"config_path": config_path.as_posix() if config_path is not None else None,
-		"checkpoint_path": checkpoint_path.as_posix(),
-	}
-
-	return LatentSequence(
-		start_times_sec=start_times,
-		window_length_sec=window_length_sec,
+	return encoder.encode(
+		audio_path=audio_path,
+		roi_path=roi_path,
+		batch_size=batch_size,
 		hop_length_sec=hop_length_sec,
-		mu=mu_arr,
-		logvar=logvar_arr,
-		energy=energy_arr,
-		metadata=metadata,
+		start_time_sec=start_time_sec,
+		end_time_sec=end_time_sec,
+		return_energy=return_energy,
+		compute_audio_sha256=compute_audio_sha256,
 	)
