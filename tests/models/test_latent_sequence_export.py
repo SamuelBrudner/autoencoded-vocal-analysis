@@ -250,3 +250,86 @@ def test_export_latent_sequences_cli_writes_npz_and_json(tmp_path):
 	meta = json.loads(json_path.read_text(encoding="utf-8"))
 	assert meta["schema_version"] == "ava_latent_sequence_v1"
 	assert meta["clip_id"] == "test"
+
+
+def test_export_latent_sequences_cli_can_export_energy(tmp_path):
+	repo_root = Path(__file__).resolve().parents[2]
+	audio_dir = tmp_path / "audio"
+	roi_dir = tmp_path / "rois"
+	audio_dir.mkdir()
+	roi_dir.mkdir()
+	shutil.copy(repo_root / "tests" / "data" / "test.wav", audio_dir / "test.wav")
+	(roi_dir / "test.txt").write_text("0.0 0.5\n", encoding="utf-8")
+
+	manifest_path = tmp_path / "manifest.json"
+	manifest = {
+		"train": [
+			{
+				"audio_dir_rel": ".",
+				"audio_dir": audio_dir.as_posix(),
+				"roi_dir": roi_dir.as_posix(),
+				"bird_id_norm": "BIRD1",
+				"bird_id_raw": "bird1",
+				"regime": "test",
+				"dph": None,
+				"session_label": None,
+				"num_files": 1,
+				"split": "train",
+			}
+		],
+		"test": [],
+	}
+	manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+	input_shape = (32, 32)
+	config_path = tmp_path / "config.yaml"
+	config = _write_config(config_path, fs=32000, input_shape=input_shape)
+	ckpt_dir = tmp_path / "checkpoint"
+	ckpt_dir.mkdir()
+	checkpoint = _write_checkpoint(
+		ckpt_dir,
+		(config.preprocess.num_freq_bins, config.preprocess.num_time_bins),
+		z_dim=4,
+	)
+
+	out_dir = tmp_path / "out"
+	result = subprocess.run(
+		[
+			sys.executable,
+			str(repo_root / "scripts" / "export_latent_sequences.py"),
+			"--manifest",
+			str(manifest_path),
+			"--split",
+			"train",
+			"--config",
+			str(config_path),
+			"--checkpoint",
+			str(checkpoint),
+			"--out-dir",
+			str(out_dir),
+			"--device",
+			"cpu",
+			"--batch-size",
+			"2",
+			"--max-clips",
+			"1",
+			"--report-every",
+			"1",
+			"--export-energy",
+		],
+		cwd=repo_root,
+		capture_output=True,
+		text=True,
+	)
+	if result.returncode != 0:
+		raise AssertionError(
+			"CLI failed.\n"
+			f"stdout:\n{result.stdout}\n"
+			f"stderr:\n{result.stderr}"
+		)
+
+	npz_path = out_dir / "test.npz"
+	assert npz_path.exists()
+	npz = np.load(npz_path.as_posix())
+	assert "energy" in npz
+	assert np.isfinite(npz["energy"]).all()

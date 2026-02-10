@@ -134,6 +134,11 @@ def main() -> None:
 	parser.add_argument("--start-time-sec", type=float, default=0.0)
 	parser.add_argument("--end-time-sec", type=float, default=None)
 	parser.add_argument("--no-rois", action="store_true")
+	parser.add_argument(
+		"--export-energy",
+		action="store_true",
+		help="Export per-window RMS energy aligned to latent timestamps.",
+	)
 	parser.add_argument("--audio-sha256", action="store_true")
 
 	parser.add_argument(
@@ -252,7 +257,7 @@ def main() -> None:
 				hop_length_sec=args.hop_length_sec,
 				start_time_sec=args.start_time_sec,
 				end_time_sec=args.end_time_sec,
-				return_energy=False,
+				return_energy=args.export_energy,
 				compute_audio_sha256=args.audio_sha256,
 			)
 			seq.metadata["clip_id"] = clip_id
