@@ -27,6 +27,7 @@ This plan captures the staged approach from local validation to full-scale prepr
 
 ## Phase 3 — Full Dataset Preprocessing
 1) Build a manifest of all leaf audio directories.
+   - Use `scripts/build_birdsong_manifest.py` (schema: `docs/birdsong_manifest.md`).
 2) Run ROI generation in parallel (local or cloud).
 3) Produce a ROI coverage report (files/segments per bird/regime).
 
