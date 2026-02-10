@@ -601,7 +601,7 @@ class VAE(nn.Module):
 			)
 		return x_rec, mu, logvar, z, u
 
-	def _to_numpy(self, tensor: torch.Tensor) -> np.ndarray:
+	def _to_numpy(self, tensor: "torch.Tensor") -> np.ndarray:
 		tensor = tensor.detach().cpu()
 		try:
 			return tensor.numpy()
