@@ -110,7 +110,9 @@ class VAE(nn.Module):
 		learn_observation_scale=False, device_name="auto",
 		input_shape=X_SHAPE, posterior_type="diag", conv_arch="plain",
 		decoder_type="upsample",
-		build_optimizer=True):
+		build_optimizer=True,
+		log_precision_min=None,
+		log_precision_max=None):
 		"""Construct a VAE.
 
 		Parameters
@@ -180,6 +182,10 @@ class VAE(nn.Module):
 			self.log_precision = nn.Parameter(log_precision_tensor)
 		else:
 			self.register_buffer("log_precision", log_precision_tensor)
+		self.set_log_precision_bounds(
+			log_precision_min=log_precision_min,
+			log_precision_max=log_precision_max,
+		)
 		self.input_shape = self._normalize_input_shape(input_shape)
 		self.input_dim = int(np.prod(self.input_shape))
 		self.posterior_type = self._normalize_posterior_type(posterior_type)
@@ -208,7 +214,7 @@ class VAE(nn.Module):
 	@property
 	def model_precision(self):
 		"""Return the current observation precision as a float."""
-		return float(torch.exp(self.log_precision).detach().cpu())
+		return float(torch.exp(self._log_precision_tensor()).detach().cpu())
 
 
 	@model_precision.setter
@@ -222,9 +228,47 @@ class VAE(nn.Module):
 				self.log_precision.new_tensor(log_precision)
 			)
 
+	def set_log_precision_bounds(
+			self,
+			log_precision_min=None,
+			log_precision_max=None,
+	) -> None:
+		"""Optionally clamp log-precision for numerical stability."""
+		log_precision_min = self._coerce_optional_float(
+			log_precision_min, "log_precision_min"
+		)
+		log_precision_max = self._coerce_optional_float(
+			log_precision_max, "log_precision_max"
+		)
+		if (log_precision_min is not None and log_precision_max is not None
+				and log_precision_min > log_precision_max):
+			raise ValueError("log_precision_min must be <= log_precision_max.")
+		self.log_precision_min = log_precision_min
+		self.log_precision_max = log_precision_max
+
+	def _log_precision_tensor(self):
+		log_precision = self.log_precision
+		if self.log_precision_min is None and self.log_precision_max is None:
+			return log_precision
+		if self.log_precision_min is not None and self.log_precision_max is not None:
+			return torch.clamp(
+				log_precision,
+				min=float(self.log_precision_min),
+				max=float(self.log_precision_max),
+			)
+		if self.log_precision_min is not None:
+			return torch.clamp(
+				log_precision,
+				min=float(self.log_precision_min),
+			)
+		return torch.clamp(
+			log_precision,
+			max=float(self.log_precision_max),
+		)
+
 
 	def _precision_tensor(self):
-		return torch.exp(self.log_precision)
+		return torch.exp(self._log_precision_tensor())
 
 
 	@staticmethod
@@ -288,6 +332,20 @@ class VAE(nn.Module):
 			raise ValueError(f"{name} must be a positive float.") from exc
 		if not math.isfinite(value) or value <= 0:
 			raise ValueError(f"{name} must be a positive float.")
+		return value
+
+	@staticmethod
+	def _coerce_optional_float(value, name):
+		if value is None:
+			return None
+		if isinstance(value, str) and not value.strip():
+			return None
+		try:
+			value = float(value)
+		except (TypeError, ValueError) as exc:
+			raise ValueError(f"{name} must be a float or null.") from exc
+		if not math.isfinite(value):
+			raise ValueError(f"{name} must be a finite float or null.")
 		return value
 
 
@@ -617,7 +675,7 @@ class VAE(nn.Module):
 		latent_dist = self._posterior_distribution(mu, logvar, u)
 		x_flat = x.view(x.shape[0], -1)
 		recon_flat = recon.view(x.shape[0], -1)
-		log_precision = self.log_precision
+		log_precision = self._log_precision_tensor()
 		precision = self._precision_tensor()
 		log_two_pi = math.log(2 * math.pi)
 		pxz_term = -0.5 * x_flat.shape[1] * (
@@ -771,6 +829,8 @@ class VAE(nn.Module):
 		state['conv_arch'] = self.conv_arch
 		state['model_precision'] = self.model_precision
 		state['log_precision'] = float(self.log_precision.detach().cpu())
+		state['log_precision_min'] = self.log_precision_min
+		state['log_precision_max'] = self.log_precision_max
 		state['learn_observation_scale'] = self.learn_observation_scale
 		state['decoder_type'] = self.decoder_type
 		filename = os.path.join(self.save_dir, filename)
@@ -855,6 +915,11 @@ class VAE(nn.Module):
 				)
 		elif "model_precision" in checkpoint:
 			self.model_precision = checkpoint["model_precision"]
+		if "log_precision_min" in checkpoint or "log_precision_max" in checkpoint:
+			self.set_log_precision_bounds(
+				log_precision_min=checkpoint.get("log_precision_min"),
+				log_precision_max=checkpoint.get("log_precision_max"),
+			)
 		layers = self._get_layers()
 		for layer_name in layers:
 			layer = layers[layer_name]

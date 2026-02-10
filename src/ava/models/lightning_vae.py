@@ -81,6 +81,8 @@ class VAELightningModule(pl.LightningModule):
 	def __init__(self, vae: Optional[VAE] = None, save_dir: str = "",
 		lr: float = 1e-3, z_dim: int = 32, model_precision: float = 10.0,
 		learn_observation_scale: bool = False,
+		log_precision_min: Optional[float] = None,
+		log_precision_max: Optional[float] = None,
 		input_shape: Optional[tuple[int, int]] = None,
 		posterior_type: str = "diag", conv_arch: str = "plain",
 		decoder_type: str = "upsample",
@@ -99,6 +101,8 @@ class VAELightningModule(pl.LightningModule):
 				z_dim=z_dim,
 				model_precision=model_precision,
 				learn_observation_scale=learn_observation_scale,
+				log_precision_min=log_precision_min,
+				log_precision_max=log_precision_max,
 				device_name="cpu",
 				posterior_type=posterior_type,
 				conv_arch=conv_arch,
@@ -109,6 +113,10 @@ class VAELightningModule(pl.LightningModule):
 			vae = VAE(**vae_kwargs)
 		elif save_dir:
 			vae.save_dir = save_dir
+		vae.set_log_precision_bounds(
+			log_precision_min=log_precision_min,
+			log_precision_max=log_precision_max,
+		)
 		self.vae = vae
 		self.save_dir = self.vae.save_dir
 		self.save_hyperparameters(ignore=["vae"])
@@ -146,8 +154,8 @@ class VAELightningModule(pl.LightningModule):
 		latent_dist = self.vae._posterior_distribution(mu, logvar, u)
 		x_flat = batch.view(batch.shape[0], -1)
 		recon_flat = recon.view(batch.shape[0], -1)
-		log_precision = self.vae.log_precision
-		precision = torch.exp(log_precision)
+		precision = self.vae._precision_tensor()
+		log_precision = torch.log(precision)
 		log_two_pi = math.log(2 * math.pi)
 		pxz_term = -0.5 * x_flat.shape[1] * (log_two_pi - log_precision)
 		l2s = torch.sum((x_flat - recon_flat) ** 2, dim=1)
@@ -209,9 +217,9 @@ class VAELightningModule(pl.LightningModule):
 			"latent_mean_abs": latent_mean_abs,
 			"latent_var_mean": latent_var_mean,
 		}
-		log_precision = self.vae.log_precision.detach()
-		stats["log_precision"] = log_precision
-		stats["model_precision"] = torch.exp(log_precision)
+		precision = self.vae._precision_tensor().detach()
+		stats["log_precision"] = torch.log(precision)
+		stats["model_precision"] = precision
 		if aug is not None:
 			if mu_base is None:
 				mu_base, _, _ = self.vae.encode(base)
@@ -567,6 +575,8 @@ def build_trainer(save_dir: str = "", epochs: int = 100,
 def train_vae(loaders: dict, save_dir: str = "", lr: float = 1e-3,
 	z_dim: int = 32, model_precision: float = 10.0,
 	learn_observation_scale: bool = False, epochs: int = 100,
+	log_precision_min: Optional[float] = None,
+	log_precision_max: Optional[float] = None,
 	test_freq: Optional[int] = 2, save_freq: Optional[int] = 10,
 	vis_freq: Optional[int] = 1, num_specs: int = 5, gap=(2, 6),
 	vis_filename: str = "reconstruction.pdf", trainer_kwargs: Optional[dict] = None,
@@ -597,6 +607,8 @@ def train_vae(loaders: dict, save_dir: str = "", lr: float = 1e-3,
 		z_dim=z_dim,
 		model_precision=model_precision,
 		learn_observation_scale=learn_observation_scale,
+		log_precision_min=log_precision_min,
+		log_precision_max=log_precision_max,
 		input_shape=input_shape,
 		posterior_type=posterior_type,
 		conv_arch=conv_arch,

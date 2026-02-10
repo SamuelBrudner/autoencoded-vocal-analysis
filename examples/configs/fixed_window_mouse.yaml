@@ -40,6 +40,9 @@ training:
   lr: 0.001
   z_dim: 32
   model_precision: 10.0
+  learn_observation_scale: false
+  log_precision_min:
+  log_precision_max:
   epochs: 101
   test_freq:
   save_freq: 20

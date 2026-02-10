@@ -267,6 +267,8 @@ class FixedWindowTrainConfig:
 	z_dim: int = 32
 	model_precision: float = 10.0
 	learn_observation_scale: bool = False
+	log_precision_min: Optional[float] = None
+	log_precision_max: Optional[float] = None
 	epochs: int = 100
 	test_freq: Optional[int] = 2
 	save_freq: Optional[int] = 10
@@ -295,6 +297,8 @@ class FixedWindowTrainConfig:
 			"z_dim": self.z_dim,
 			"model_precision": self.model_precision,
 			"learn_observation_scale": self.learn_observation_scale,
+			"log_precision_min": self.log_precision_min,
+			"log_precision_max": self.log_precision_max,
 			"epochs": self.epochs,
 			"test_freq": self.test_freq,
 			"save_freq": self.save_freq,
@@ -324,6 +328,8 @@ class FixedWindowTrainConfig:
 			"z_dim": self.z_dim,
 			"model_precision": self.model_precision,
 			"learn_observation_scale": self.learn_observation_scale,
+			"log_precision_min": self.log_precision_min,
+			"log_precision_max": self.log_precision_max,
 			"epochs": self.epochs,
 			"test_freq": self.test_freq,
 			"save_freq": self.save_freq,
