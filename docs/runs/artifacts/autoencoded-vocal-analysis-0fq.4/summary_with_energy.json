@@ -1,0 +1,15 @@
+{
+  "created_utc": "2026-02-11T18:36:34Z",
+  "manifest_path": "docs/runs/artifacts/autoencoded-vocal-analysis-0fq.2/manifest.json",
+  "config_path": "docs/runs/artifacts/autoencoded-vocal-analysis-0fq.3/fixed_window_smoke_config.yaml",
+  "checkpoint_path": "docs/runs/artifacts/autoencoded-vocal-analysis-0fq.3/training_run/checkpoint_001.tar",
+  "out_dir": "docs/runs/artifacts/autoencoded-vocal-analysis-0fq.4/latent_with_energy",
+  "split": "train",
+  "num_shards": 1,
+  "shard_index": 0,
+  "total": 1,
+  "exported": 1,
+  "skipped": 0,
+  "failed": 0,
+  "errors": []
+}

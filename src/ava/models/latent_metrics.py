@@ -60,7 +60,7 @@ def load_vae_from_checkpoint(
 		device_name=device,
 		build_optimizer=False,
 	)
-	model.load_state(checkpoint_path)
+	model.load_state(checkpoint_path, load_optimizer=False)
 	model.eval()
 	return model
 

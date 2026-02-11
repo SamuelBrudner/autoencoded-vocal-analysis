@@ -203,13 +203,15 @@ def _compute_normalization_stats(
 		0.0, float(window_length_sec), int(num_time_bins), dtype=np.float64
 	)
 	target_times = sample_times[:, None] + time_offsets[None, :]
-	points = np.stack(
-		[
-			target_freqs[:, None, None],
-			target_times[None, :, :],
-		],
-		axis=-1,
+	freq_grid = np.broadcast_to(
+		target_freqs[:, None, None],
+		(target_freqs.size, sample_times.size, num_time_bins),
 	)
+	time_grid = np.broadcast_to(
+		target_times[None, :, :],
+		(target_freqs.size, sample_times.size, num_time_bins),
+	)
+	points = np.stack([freq_grid, time_grid], axis=-1)
 	spec = interp(points).transpose(1, 0, 2)
 	spec = (spec - float(params["spec_min_val"])) / (
 		float(params["spec_max_val"]) - float(params["spec_min_val"])
@@ -395,13 +397,15 @@ class LatentSequenceEncoder:
 				stop = min(start + int(batch_size), start_times.size)
 				batch_starts = start_times[start:stop]
 				target_times = batch_starts[:, None] + time_offsets[None, :]
-				points = np.stack(
-					[
-						self.target_freqs[:, None, None],
-						target_times[None, :, :],
-					],
-					axis=-1,
+				freq_grid = np.broadcast_to(
+					self.target_freqs[:, None, None],
+					(self.target_freqs.size, batch_starts.size, self.num_time_bins),
 				)
+				time_grid = np.broadcast_to(
+					target_times[None, :, :],
+					(self.target_freqs.size, batch_starts.size, self.num_time_bins),
+				)
+				points = np.stack([freq_grid, time_grid], axis=-1)
 				spec = interp(points).transpose(1, 0, 2)
 				spec = (spec - float(params["spec_min_val"])) / (
 					float(params["spec_max_val"]) - float(params["spec_min_val"])

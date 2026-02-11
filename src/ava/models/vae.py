@@ -837,7 +837,7 @@ class VAE(nn.Module):
 		torch.save(state, filename)
 
 
-	def load_state(self, filename):
+	def load_state(self, filename, load_optimizer=True):
 		"""
 		Load all the model parameters from the given ``.tar`` file.
 
@@ -847,6 +847,9 @@ class VAE(nn.Module):
 		----------
 		filename : str
 			File containing a model state.
+		load_optimizer : bool, optional
+			Whether to restore optimizer state from the checkpoint when present.
+			Defaults to ``True``.
 
 		Note
 		----
@@ -925,9 +928,9 @@ class VAE(nn.Module):
 			layer = layers[layer_name]
 			layer.load_state_dict(checkpoint[layer_name])
 		optimizer_state = checkpoint.get("optimizer_state")
-		if self.optimizer is None and optimizer_state is not None:
+		if load_optimizer and self.optimizer is None and optimizer_state is not None:
 			self._ensure_optimizer()
-		if self.optimizer is not None and optimizer_state is not None:
+		if load_optimizer and self.optimizer is not None and optimizer_state is not None:
 			self.optimizer.load_state_dict(optimizer_state)
 		self.loss = checkpoint['loss']
 		self.epoch = checkpoint['epoch']
