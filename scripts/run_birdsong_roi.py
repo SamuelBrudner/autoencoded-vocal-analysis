@@ -14,6 +14,11 @@ from typing import Iterable, Optional
 import yaml
 from joblib import Parallel, delayed
 
+ROOT = Path(__file__).resolve().parents[1]
+SRC_ROOT = ROOT / "src"
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
+
 from ava.segmenting.amplitude_segmentation import get_onsets_offsets
 from ava.segmenting.segment import segment
 from ava.models.utils import _get_wavs_from_dir

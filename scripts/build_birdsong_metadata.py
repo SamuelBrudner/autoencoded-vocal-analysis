@@ -10,8 +10,12 @@ import time
 from collections import Counter
 from pathlib import Path
 
-import pyarrow as pa
-import pyarrow.parquet as pq
+try:
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+except ModuleNotFoundError:
+    pa = None
+    pq = None
 
 
 REGIME_RE = re.compile(r"\b(bells|simple|samba|isolates)\b", re.IGNORECASE)
@@ -197,6 +201,11 @@ def write_chunk(writer, columns):
 
 
 def build_metadata(root, out_path, summary_path, chunk_size, report_every):
+    if pa is None or pq is None:
+        raise ModuleNotFoundError(
+            "pyarrow is required to build metadata parquet outputs. "
+            "Install it in the active environment and retry."
+        )
     root = Path(root).resolve()
     out_path = Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)

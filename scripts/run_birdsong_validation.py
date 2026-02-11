@@ -12,6 +12,11 @@ from typing import Optional
 
 import numpy as np
 
+ROOT = Path(__file__).resolve().parents[1]
+SRC_ROOT = ROOT / "src"
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
+
 from ava.models.fixed_window_config import FixedWindowExperimentConfig
 from ava.models.lightning_vae import train_vae
 from ava.models.shotgun_vae_dataset import get_fixed_shotgun_data_loaders
