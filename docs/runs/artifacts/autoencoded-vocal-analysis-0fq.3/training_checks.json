@@ -1,0 +1,99 @@
+{
+  "checkpoint_path": "docs/runs/artifacts/autoencoded-vocal-analysis-0fq.3/training_run/checkpoint_001.tar",
+  "event_file": "docs/runs/artifacts/autoencoded-vocal-analysis-0fq.3/training_run/lightning_logs/version_0/events.out.tfevents.1770834522.home-mini.local.40697.0",
+  "checkpoint_train_loss": {
+    "0": 39276.948471069336
+  },
+  "checkpoint_train_loss_all_finite": true,
+  "checkpoint_train_loss_decrease": null,
+  "tensorboard": {
+    "available_scalar_tags": [
+      "hp_metric",
+      "train_loss",
+      "train_recon_mse",
+      "train_recon_nll",
+      "train_kl",
+      "train_kl_weight",
+      "train_latent_mean_abs",
+      "train_latent_var_mean",
+      "train_log_precision",
+      "train_model_precision",
+      "epoch"
+    ],
+    "train_loss": [
+      {
+        "step": 63,
+        "value": 39276.9453125
+      },
+      {
+        "step": 127,
+        "value": 18967.92578125
+      }
+    ],
+    "train_loss_all_finite": true,
+    "train_recon_mse": [
+      {
+        "step": 63,
+        "value": 0.9567539691925049
+      },
+      {
+        "step": 127,
+        "value": 0.4597836136817932
+      }
+    ],
+    "train_recon_mse_all_finite": true,
+    "train_latent_mean_abs": [
+      {
+        "step": 63,
+        "value": 1.9595898389816284
+      },
+      {
+        "step": 127,
+        "value": 2.399563789367676
+      }
+    ],
+    "train_latent_mean_abs_all_finite": true,
+    "train_latent_var_mean": [
+      {
+        "step": 63,
+        "value": 0.7267822027206421
+      },
+      {
+        "step": 127,
+        "value": 0.13347893953323364
+      }
+    ],
+    "train_latent_var_mean_all_finite": true,
+    "train_kl": [
+      {
+        "step": 63,
+        "value": 147.79225158691406
+      },
+      {
+        "step": 127,
+        "value": 194.67245483398438
+      }
+    ],
+    "train_kl_all_finite": true,
+    "train_recon_nll": [
+      {
+        "step": 63,
+        "value": 39129.16015625
+      },
+      {
+        "step": 127,
+        "value": 18773.25390625
+      }
+    ],
+    "train_recon_nll_all_finite": true
+  },
+  "collapse_check": {
+    "criterion": {
+      "latent_mean_abs_leq": 0.01,
+      "abs(latent_var_mean-1)_leq": 0.1
+    },
+    "immediate_collapse": false,
+    "last_epoch_latent_mean_abs": 2.399563789367676,
+    "last_epoch_latent_var_mean": 0.13347893953323364
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "config_path": "docs/runs/artifacts/autoencoded-vocal-analysis-0fq.3/fixed_window_smoke_config.yaml",
+  "config_sha256": "4de1fb2c9215aa87edb5e0081f54d5d563b9e0e1dee153721d8c6a8f3043ee7f",
+  "manifest_path": "docs/runs/artifacts/autoencoded-vocal-analysis-0fq.2/manifest.json",
+  "git_commit": "effcd7bf8edf1d26be3eaa131a9648e319f59eaf",
+  "dataset_root": "/Volumes/samsung_ssd/data/birdsong"
+}
