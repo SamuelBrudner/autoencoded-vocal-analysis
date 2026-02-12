@@ -396,6 +396,8 @@ class VAECheckpointCallback(pl.Callback):
 		self.save_freq = save_freq
 
 	def on_train_epoch_end(self, trainer, pl_module):
+		if not getattr(trainer, "is_global_zero", True):
+			return
 		if self.save_freq is None:
 			return
 		epoch = int(trainer.current_epoch)
@@ -417,6 +419,8 @@ class VAEReconstructionCallback(pl.Callback):
 		self.filename = filename
 
 	def on_train_epoch_end(self, trainer, pl_module):
+		if not getattr(trainer, "is_global_zero", True):
+			return
 		if self.loader is None or self.vis_freq is None:
 			return
 		epoch = int(trainer.current_epoch)
@@ -622,12 +626,6 @@ def train_vae(loaders: dict, save_dir: str = "", lr: float = 1e-3,
 		invariance_loss=invariance_loss,
 		invariance_stop_grad=invariance_stop_grad,
 	)
-	write_run_metadata(
-		save_dir=module.save_dir,
-		config_path=config_path,
-		manifest_path=manifest_path,
-		dataset_root=dataset_root,
-	)
 	vis_loader = loaders.get("test") or loaders["train"]
 	trainer = build_trainer(
 		save_dir=module.save_dir,
@@ -643,6 +641,13 @@ def train_vae(loaders: dict, save_dir: str = "", lr: float = 1e-3,
 		stopping_kwargs=stopping_kwargs,
 		extra_callbacks=extra_callbacks,
 	)
+	if getattr(trainer, "is_global_zero", True):
+		write_run_metadata(
+			save_dir=module.save_dir,
+			config_path=config_path,
+			manifest_path=manifest_path,
+			dataset_root=dataset_root,
+		)
 	val_loader = None
 	if test_freq is not None:
 		val_loader = loaders.get("test")
