@@ -6,6 +6,8 @@ in the `Anaconda distribution <https://www.anaconda.com/distribution/>`__. In
 addition to these packages, AVA also requires `PyTorch <https://pytorch.org>`__
 (>=v1.1), `UMAP <https://umap-learn.readthedocs.io/>`__, and
 `affinewarp <https://github.com/ahwillia/affinewarp>`__.
+Birdsong manifest workflows additionally require a parquet reader (`pyarrow`
+in the provided conda environment specs).
 
 Installation
 ############

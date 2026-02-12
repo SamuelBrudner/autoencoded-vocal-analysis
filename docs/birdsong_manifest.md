@@ -12,6 +12,10 @@ python scripts/build_birdsong_manifest.py \
   --out data/manifests/birdsong_manifest.json
 ```
 
+Dependency note:
+- Manifest generation requires a parquet reader in the active environment.
+  The project conda env specs include `pyarrow`; verify it is installed before running manifest workflows inside `ava`.
+
 ## Top-Level Schema
 
 Required keys:
@@ -55,4 +59,3 @@ Additional informational fields currently included by the builder:
 - Manifests are directory-level: downstream code enumerates `.wav` files inside
   each `audio_dir` and expects ROI text files in `roi_dir` with matching
   basenames (e.g., `foo.wav` → `foo.txt`).
-

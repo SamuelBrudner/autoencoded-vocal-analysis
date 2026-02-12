@@ -1,0 +1,17 @@
+segment:
+  fs: 44100
+  min_freq: 300.0
+  max_freq: 10000.0
+  nperseg: 512
+  noverlap: 256
+  spec_min_val: 1.0
+  spec_max_val: 6.5
+  th_1: 0.05
+  th_2: 0.10
+  th_3: 0.15
+  min_dur: 0.005
+  max_dur: 0.5
+  smoothing_timescale: 0.004
+  softmax: true
+  temperature: 0.5
+  algorithm: amplitude

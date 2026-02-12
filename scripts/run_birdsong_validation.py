@@ -19,6 +19,7 @@ if str(SRC_ROOT) not in sys.path:
 
 from ava.models.fixed_window_config import FixedWindowExperimentConfig
 from ava.models.lightning_vae import train_vae
+from ava.models.roi_preflight import assert_window_length_compatible
 from ava.models.shotgun_vae_dataset import get_fixed_shotgun_data_loaders
 from ava.models.utils import _get_wavs_from_dir
 
@@ -123,6 +124,17 @@ def main() -> None:
     if not train_audio:
         raise ValueError("No training audio files found after filtering.")
 
+    config = FixedWindowExperimentConfig.from_yaml(args.config)
+    params = config.preprocess.to_params()
+    data_config = config.data
+    train_config = config.training
+
+    preflight_stats = assert_window_length_compatible(
+        train_rois + test_rois,
+        window_length=params["window_length"],
+    )
+    print(f"ROI duration preflight: {json.dumps(preflight_stats, sort_keys=True)}")
+
     partition = {
         "train": {"audio": np.array(train_audio), "rois": np.array(train_rois)},
         "test": {},
@@ -141,11 +153,6 @@ def main() -> None:
         print(
             f"Skipped {train_empty + test_empty} files with empty ROI files."
         )
-
-    config = FixedWindowExperimentConfig.from_yaml(args.config)
-    params = config.preprocess.to_params()
-    data_config = config.data
-    train_config = config.training
 
     loader_kwargs = data_config.to_loader_kwargs()
     if args.batch_size is not None:
