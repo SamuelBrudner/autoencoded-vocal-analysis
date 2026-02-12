@@ -25,7 +25,10 @@ if str(SRC_ROOT) not in sys.path:
 
 from ava.models.fixed_window_config import FixedWindowExperimentConfig
 from ava.models.lightning_vae import train_vae
-from ava.models.roi_preflight import assert_window_length_compatible
+from ava.models.roi_preflight import (
+    assert_window_length_compatible,
+    assert_window_length_compatible_parquet_sample,
+)
 from ava.models.shotgun_vae_dataset import (
     get_fixed_shotgun_data_loaders,
     get_manifest_fixed_window_data_loaders,
@@ -152,6 +155,24 @@ def main() -> None:
         default=16,
         help="Number of directories whose ROI bundles are cached per worker (streaming mode).",
     )
+    parser.add_argument(
+        "--preflight-sample-dirs",
+        type=int,
+        default=25,
+        help="Number of ROI parquet bundles to sample for duration preflight (streaming parquet).",
+    )
+    parser.add_argument(
+        "--preflight-sample-segments",
+        type=int,
+        default=5000,
+        help="Number of ROI segments to sample for duration preflight (streaming parquet).",
+    )
+    parser.add_argument(
+        "--preflight-seed",
+        type=int,
+        default=0,
+        help="RNG seed for the sampled duration preflight (streaming parquet).",
+    )
 
     parser.add_argument("--disable-spec-cache", action="store_true")
     parser.add_argument("--spec-cache-dir", type=Path, default=None)
@@ -192,6 +213,26 @@ def main() -> None:
         resolved_test = _resolve_entries(test_entries, args.audio_root, args.roi_root)
         if not resolved_train:
             raise ValueError("No manifest entries available for training.")
+
+        if str(args.roi_format) == "parquet":
+            parquet_paths = [
+                os.path.join(entry["roi_dir"], str(args.roi_parquet_name))
+                for entry in (resolved_train + resolved_test)
+            ]
+            preflight_stats = assert_window_length_compatible_parquet_sample(
+                parquet_paths,
+                window_length=float(params["window_length"]),
+                sample_dirs=int(args.preflight_sample_dirs),
+                sample_segments=int(args.preflight_sample_segments),
+                seed=int(args.preflight_seed),
+            )
+            print(
+                "ROI duration preflight (parquet sample): "
+                f"{json.dumps(preflight_stats, sort_keys=True)}"
+            )
+        else:
+            print("Note: streaming mode skips ROI duration preflight for txt ROIs.")
+
         if args.dry_run:
             print(f"Planned train dirs: {len(resolved_train)}")
             print(f"Planned test dirs: {len(resolved_test)}")
@@ -209,7 +250,6 @@ def main() -> None:
             pair_with_original=use_pairs,
             **loader_kwargs,
         )
-        print("Note: streaming mode skips full ROI duration preflight.")
     else:
         train_audio, train_rois, train_missing, train_empty = _collect_files(
             train_entries, args.audio_root, args.roi_root, args.max_files
