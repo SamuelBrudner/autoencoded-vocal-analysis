@@ -1,0 +1,7 @@
+{
+  "config_path": "docs/runs/artifacts/autoencoded-vocal-analysis-7r5/20260212-181626-spec-ab-baseline-autoencoded-vocal-analysis-7r5/fixed_window_medium_pilot_specA.yaml",
+  "config_sha256": "095490be9a30e41cb9fe837dc3c601fa69cf44d27c47878fd33c5a73a9309655",
+  "manifest_path": "docs/runs/artifacts/autoencoded-vocal-analysis-381.2/manifest_medium_tuned.json",
+  "git_commit": "5af17053fcb168c863c59ba5df950da2d9d8bf97",
+  "dataset_root": "/Volumes/samsung_ssd/data/birdsong"
+}
