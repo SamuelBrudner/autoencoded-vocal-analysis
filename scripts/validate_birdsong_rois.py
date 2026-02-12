@@ -10,30 +10,17 @@ import sys
 from pathlib import Path
 from typing import Optional
 
+ROOT = Path(__file__).resolve().parents[1]
+SRC_ROOT = ROOT / "src"
+if str(SRC_ROOT) not in sys.path:
+	sys.path.insert(0, str(SRC_ROOT))
+
+from ava.data.manifest_paths import resolve_manifest_entry_paths
+
 
 def _load_manifest(path: Path) -> dict:
 	with open(path, "r", encoding="utf-8") as handle:
 		return json.load(handle)
-
-
-def _resolve_entry_paths(
-	entry: dict,
-	audio_root: Optional[Path],
-	roi_root: Optional[Path],
-) -> tuple[str, str]:
-	audio_dir = entry.get("audio_dir")
-	roi_dir = entry.get("roi_dir")
-	if not audio_dir:
-		rel = entry.get("audio_dir_rel")
-		if rel is None or audio_root is None:
-			raise ValueError("Manifest entry missing audio_dir and audio_root.")
-		audio_dir = (audio_root if rel in (".", "") else audio_root / rel).as_posix()
-	if not roi_dir:
-		rel = entry.get("audio_dir_rel")
-		if rel is None or roi_root is None:
-			raise ValueError("Manifest entry missing roi_dir and roi_root.")
-		roi_dir = (roi_root if rel in (".", "") else roi_root / rel).as_posix()
-	return audio_dir, roi_dir
 
 
 def _list_wavs(audio_dir: str) -> list[str]:
@@ -87,7 +74,9 @@ def validate_rois(
 	per_dir = []
 
 	for entry in entries[: max_dirs]:
-		audio_dir, roi_dir = _resolve_entry_paths(entry, audio_root, roi_root)
+		audio_dir, roi_dir = resolve_manifest_entry_paths(
+			entry, audio_root=audio_root, roi_root=roi_root
+		)
 		wavs = _list_wavs(audio_dir)
 		if max_files_per_dir is not None:
 			wavs = wavs[: int(max_files_per_dir)]
@@ -198,4 +187,3 @@ if __name__ == "__main__":
 	except Exception as exc:  # pragma: no cover - CLI guardrail
 		print(f"Error: {exc}", file=sys.stderr)
 		sys.exit(1)
-

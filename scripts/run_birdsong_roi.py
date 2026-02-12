@@ -22,6 +22,7 @@ if str(SRC_ROOT) not in sys.path:
 
 from ava.segmenting.amplitude_segmentation import get_onsets_offsets
 from ava.segmenting.segment import segment
+from ava.data.manifest_paths import resolve_manifest_entry_paths
 
 
 ALGORITHMS = {
@@ -81,26 +82,6 @@ def _validate_segment_params(params: dict) -> None:
 def _load_manifest(path: Path) -> dict:
     with open(path, "r", encoding="utf-8") as handle:
         return json.load(handle)
-
-
-def _resolve_entry_paths(
-    entry: dict,
-    audio_root: Optional[Path],
-    roi_root: Optional[Path],
-) -> tuple[str, str]:
-    audio_dir = entry.get("audio_dir")
-    roi_dir = entry.get("roi_dir")
-    if not audio_dir:
-        rel = entry.get("audio_dir_rel")
-        if rel is None or audio_root is None:
-            raise ValueError("Manifest entry missing audio_dir and audio_root.")
-        audio_dir = (audio_root if rel in (".", "") else audio_root / rel).as_posix()
-    if not roi_dir:
-        rel = entry.get("audio_dir_rel")
-        if rel is None or roi_root is None:
-            raise ValueError("Manifest entry missing roi_dir and roi_root.")
-        roi_dir = (roi_root if rel in (".", "") else roi_root / rel).as_posix()
-    return audio_dir, roi_dir
 
 
 def _find_audio_dirs(root: Path) -> list[str]:
@@ -230,10 +211,8 @@ def main() -> None:
         audio_dirs = []
         roi_dirs = []
         for entry in entries:
-            audio_dir, roi_dir = _resolve_entry_paths(
-                entry,
-                audio_root=args.audio_root,
-                roi_root=args.roi_root,
+            audio_dir, roi_dir = resolve_manifest_entry_paths(
+                entry, audio_root=args.audio_root, roi_root=args.roi_root
             )
             audio_dirs.append(audio_dir)
             roi_dirs.append(roi_dir)

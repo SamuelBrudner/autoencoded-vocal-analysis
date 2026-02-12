@@ -22,31 +22,12 @@ from ava.models.lightning_vae import train_vae
 from ava.models.roi_preflight import assert_window_length_compatible
 from ava.models.shotgun_vae_dataset import get_fixed_shotgun_data_loaders
 from ava.models.utils import _get_wavs_from_dir
+from ava.data.manifest_paths import resolve_manifest_entry_paths
 
 
 def _load_manifest(path: Path) -> dict:
     with open(path, "r", encoding="utf-8") as handle:
         return json.load(handle)
-
-
-def _resolve_entry_paths(
-    entry: dict,
-    audio_root: Optional[Path],
-    roi_root: Optional[Path],
-) -> tuple[str, str]:
-    audio_dir = entry.get("audio_dir")
-    roi_dir = entry.get("roi_dir")
-    if not audio_dir:
-        rel = entry.get("audio_dir_rel")
-        if rel is None or audio_root is None:
-            raise ValueError("Manifest entry missing audio_dir and audio_root.")
-        audio_dir = (audio_root if rel in (".", "") else audio_root / rel).as_posix()
-    if not roi_dir:
-        rel = entry.get("audio_dir_rel")
-        if rel is None or roi_root is None:
-            raise ValueError("Manifest entry missing roi_dir and roi_root.")
-        roi_dir = (roi_root if rel in (".", "") else roi_root / rel).as_posix()
-    return audio_dir, roi_dir
 
 
 def _roi_has_data(filename: str) -> bool:
@@ -72,7 +53,9 @@ def _collect_files(
     missing = 0
     empty = 0
     for entry in entries:
-        audio_dir, roi_dir = _resolve_entry_paths(entry, audio_root, roi_root)
+        audio_dir, roi_dir = resolve_manifest_entry_paths(
+            entry, audio_root=audio_root, roi_root=roi_root
+        )
         wavs = _get_wavs_from_dir(audio_dir)
         for wav in wavs:
             roi_path = os.path.join(roi_dir, f"{Path(wav).stem}.txt")

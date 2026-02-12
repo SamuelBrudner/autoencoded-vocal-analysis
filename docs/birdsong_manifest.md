@@ -54,8 +54,10 @@ Additional informational fields currently included by the builder:
 ## Consumption Notes
 
 - Scripts that consume manifests generally accept `--audio-root` and `--roi-root`
-  overrides. If an entry is missing `audio_dir` or `roi_dir`, those overrides
-  are used to resolve absolute paths from `audio_dir_rel`.
+  overrides. When provided (and `audio_dir_rel` is present), these overrides
+  take precedence over the absolute `audio_dir`/`roi_dir` stored in the manifest
+  so that datasets and ROI outputs can be relocated without regenerating the
+  manifest.
 - Manifests are directory-level: downstream code enumerates `.wav` files inside
   each `audio_dir` and expects ROI text files in `roi_dir` with matching
   basenames (e.g., `foo.wav` → `foo.txt`).

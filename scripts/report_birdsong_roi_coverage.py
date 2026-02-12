@@ -23,6 +23,13 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 from joblib import Parallel, delayed
 
+ROOT = Path(__file__).resolve().parents[1]
+SRC_ROOT = ROOT / "src"
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
+
+from ava.data.manifest_paths import resolve_manifest_entry_paths
+
 APPLEDOUBLE_PREFIX = "._"
 
 
@@ -40,29 +47,6 @@ def _select_entries(manifest: dict, split: str) -> list[dict]:
     entries.extend(manifest.get("train", []))
     entries.extend(manifest.get("test", []))
     return entries
-
-
-def _resolve_entry_paths(
-    entry: dict,
-    audio_root: Optional[Path],
-    roi_root: Optional[Path],
-) -> Tuple[str, str]:
-    audio_dir = entry.get("audio_dir")
-    roi_dir = entry.get("roi_dir")
-
-    if not audio_dir:
-        rel = entry.get("audio_dir_rel")
-        if rel is None or audio_root is None:
-            raise ValueError("Manifest entry missing audio_dir and audio_root.")
-        audio_dir = (audio_root if rel in (".", "") else audio_root / rel).as_posix()
-
-    if not roi_dir:
-        rel = entry.get("audio_dir_rel")
-        if rel is None or roi_root is None:
-            raise ValueError("Manifest entry missing roi_dir and roi_root.")
-        roi_dir = (roi_root if rel in (".", "") else roi_root / rel).as_posix()
-
-    return str(audio_dir), str(roi_dir)
 
 
 def _list_wavs(audio_dir: str) -> list[str]:
@@ -139,7 +123,9 @@ def coverage_for_entry(
     roi_root: Optional[Path],
     max_files_per_dir: Optional[int],
 ) -> dict:
-    audio_dir, roi_dir = _resolve_entry_paths(entry, audio_root, roi_root)
+    audio_dir, roi_dir = resolve_manifest_entry_paths(
+        entry, audio_root=audio_root, roi_root=roi_root
+    )
 
     wavs = _list_wavs(audio_dir)
     if max_files_per_dir is not None:
@@ -276,7 +262,9 @@ def main() -> None:
         )
         for entry in entries[:10]:
             audio_dir_rel = entry.get("audio_dir_rel")
-            roi_dir = entry.get("roi_dir") or "<roi via root>"
+            _, roi_dir = resolve_manifest_entry_paths(
+                entry, audio_root=args.audio_root, roi_root=args.roi_root
+            )
             print(f"  {audio_dir_rel} -> {roi_dir}")
         return
 

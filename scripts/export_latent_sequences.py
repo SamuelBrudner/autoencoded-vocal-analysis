@@ -23,6 +23,8 @@ SRC_ROOT = ROOT / "src"
 if str(SRC_ROOT) not in sys.path:
 	sys.path.insert(0, str(SRC_ROOT))
 
+from ava.data.manifest_paths import resolve_manifest_entry_paths
+
 
 def _load_manifest(path: Path) -> dict:
 	with open(path, "r", encoding="utf-8") as handle:
@@ -48,20 +50,13 @@ def _resolve_entry_paths(
 	audio_dir_rel = entry.get("audio_dir_rel")
 	if not audio_dir_rel:
 		audio_dir_rel = "."
+		entry = dict(entry)
+		entry["audio_dir_rel"] = audio_dir_rel
 
-	audio_dir = entry.get("audio_dir")
-	roi_dir = entry.get("roi_dir")
-
-	if not audio_dir:
-		if audio_root is None:
-			raise ValueError("Manifest entry missing audio_dir; pass --audio-root.")
-		audio_dir = (audio_root if audio_dir_rel in (".", "") else audio_root / audio_dir_rel).as_posix()
-	if not roi_dir:
-		if roi_root is None:
-			raise ValueError("Manifest entry missing roi_dir; pass --roi-root.")
-		roi_dir = (roi_root if audio_dir_rel in (".", "") else roi_root / audio_dir_rel).as_posix()
-
-	return audio_dir_rel, audio_dir, roi_dir
+	audio_dir, roi_dir = resolve_manifest_entry_paths(
+		entry, audio_root=audio_root, roi_root=roi_root
+	)
+	return str(audio_dir_rel), audio_dir, roi_dir
 
 
 def _list_wavs(audio_dir: str) -> list[str]:
