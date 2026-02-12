@@ -1,0 +1,26 @@
+FROM python:3.10-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV PIP_NO_CACHE_DIR=1
+ENV MPLBACKEND=Agg
+
+WORKDIR /opt/ava
+
+# Install only the dependencies needed for ROI extraction + S3 I/O.
+RUN pip install --upgrade pip && \
+    pip install \
+      awscli \
+      joblib \
+      matplotlib \
+      numpy \
+      pyarrow \
+      pyyaml \
+      scipy
+
+COPY src/ src/
+COPY scripts/ scripts/
+
+# Default to the Batch shard runner; `aws batch submit-job` can override.
+ENTRYPOINT ["python", "scripts/cloud/aws/run_birdsong_roi_batch_shard.py"]
+
