@@ -15,6 +15,10 @@ from ava.models.window_vae_dataset import (  # noqa: F401
 	get_warped_window_data_loaders,
 	get_window_partition,
 )
+from ava.models.manifest_window_dataset import (  # noqa: F401
+	ManifestFixedWindowDataset,
+	get_manifest_fixed_window_data_loaders,
+)
 
 
 FixedShotgunDataset = FixedWindowDataset
@@ -27,8 +31,10 @@ __all__ = [
 	"DEFAULT_WARP_PARAMS",
 	"FixedShotgunDataset",
 	"FixedWindowDataset",
+	"ManifestFixedWindowDataset",
 	"WarpedShotgunDataset",
 	"WarpedWindowDataset",
+	"get_manifest_fixed_window_data_loaders",
 	"get_fixed_shotgun_data_loaders",
 	"get_fixed_window_data_loaders",
 	"get_shotgun_partition",

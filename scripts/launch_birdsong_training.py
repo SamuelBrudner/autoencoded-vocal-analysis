@@ -26,7 +26,10 @@ if str(SRC_ROOT) not in sys.path:
 from ava.models.fixed_window_config import FixedWindowExperimentConfig
 from ava.models.lightning_vae import train_vae
 from ava.models.roi_preflight import assert_window_length_compatible
-from ava.models.shotgun_vae_dataset import get_fixed_shotgun_data_loaders
+from ava.models.shotgun_vae_dataset import (
+    get_fixed_shotgun_data_loaders,
+    get_manifest_fixed_window_data_loaders,
+)
 from ava.models.utils import _get_wavs_from_dir
 from ava.data.manifest_paths import resolve_manifest_entry_paths
 
@@ -89,6 +92,23 @@ def _parse_trainer_overrides(payload: Optional[str]) -> dict:
     return overrides
 
 
+def _resolve_entries(
+    entries: list[dict],
+    audio_root: Optional[Path],
+    roi_root: Optional[Path],
+) -> list[dict]:
+    resolved = []
+    for entry in entries:
+        audio_dir, roi_dir = resolve_manifest_entry_paths(
+            entry, audio_root=audio_root, roi_root=roi_root
+        )
+        payload = dict(entry)
+        payload["audio_dir"] = audio_dir
+        payload["roi_dir"] = roi_dir
+        resolved.append(payload)
+    return resolved
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Launch fixed-window birdsong training (scaled-ready)."
@@ -103,6 +123,35 @@ def main() -> None:
     parser.add_argument("--batch-size", type=int, default=None)
     parser.add_argument("--num-workers", type=int, default=None)
     parser.add_argument("--max-files", type=int, default=None)
+    parser.add_argument(
+        "--streaming",
+        action="store_true",
+        help="Use manifest streaming dataset (does not enumerate all wav/ROI files).",
+    )
+    parser.add_argument(
+        "--roi-format",
+        choices=["txt", "parquet"],
+        default="txt",
+        help="ROI storage format under each roi_dir (streaming mode).",
+    )
+    parser.add_argument(
+        "--roi-parquet-name",
+        type=str,
+        default="roi.parquet",
+        help="Filename for per-directory ROI parquet bundle (streaming mode).",
+    )
+    parser.add_argument(
+        "--dataset-length",
+        type=int,
+        default=2048,
+        help="Arbitrary dataset length controlling batches/epoch for window sampling.",
+    )
+    parser.add_argument(
+        "--roi-cache-size",
+        type=int,
+        default=16,
+        help="Number of directories whose ROI bundles are cached per worker (streaming mode).",
+    )
 
     parser.add_argument("--disable-spec-cache", action="store_true")
     parser.add_argument("--spec-cache-dir", type=Path, default=None)
@@ -122,46 +171,10 @@ def main() -> None:
     train_entries = manifest.get("train", [])
     test_entries = manifest.get("test", [])
 
-    train_audio, train_rois, train_missing, train_empty = _collect_files(
-        train_entries, args.audio_root, args.roi_root, args.max_files
-    )
-    test_audio, test_rois, test_missing, test_empty = _collect_files(
-        test_entries, args.audio_root, args.roi_root, args.max_files
-    )
-
-    if not train_audio:
-        raise ValueError("No training audio files found after filtering.")
-
     config = FixedWindowExperimentConfig.from_yaml(args.config)
     params = config.preprocess.to_params()
     data_config = config.data
     train_config = config.training
-
-    preflight_stats = assert_window_length_compatible(
-        train_rois + test_rois,
-        window_length=params["window_length"],
-    )
-    print(f"ROI duration preflight: {json.dumps(preflight_stats, sort_keys=True)}")
-
-    if train_missing or test_missing:
-        print(f"Skipped {train_missing + test_missing} files with missing ROI files.")
-    if train_empty or test_empty:
-        print(f"Skipped {train_empty + test_empty} files with empty ROI files.")
-
-    if args.dry_run:
-        print(f"Planned train files: {len(train_audio)}")
-        print(f"Planned test files: {len(test_audio)}")
-        return
-
-    partition: dict[str, Any] = {
-        "train": {"audio": np.array(train_audio), "rois": np.array(train_rois)},
-        "test": {},
-    }
-    if test_audio:
-        partition["test"] = {
-            "audio": np.array(test_audio),
-            "rois": np.array(test_rois),
-        }
 
     loader_kwargs = data_config.to_loader_kwargs()
     if args.batch_size is not None:
@@ -174,14 +187,76 @@ def main() -> None:
         loader_kwargs["spec_cache_dir"] = args.spec_cache_dir.as_posix()
 
     use_pairs = train_config.invariance_weight > 0
-    loaders = get_fixed_shotgun_data_loaders(
-        partition,
-        params,
-        augmentations=config.augmentations,
-        return_pair=use_pairs,
-        pair_with_original=use_pairs,
-        **loader_kwargs,
-    )
+    if args.streaming:
+        resolved_train = _resolve_entries(train_entries, args.audio_root, args.roi_root)
+        resolved_test = _resolve_entries(test_entries, args.audio_root, args.roi_root)
+        if not resolved_train:
+            raise ValueError("No manifest entries available for training.")
+        if args.dry_run:
+            print(f"Planned train dirs: {len(resolved_train)}")
+            print(f"Planned test dirs: {len(resolved_test)}")
+            return
+        loaders = get_manifest_fixed_window_data_loaders(
+            resolved_train,
+            resolved_test if resolved_test else None,
+            params,
+            roi_format=str(args.roi_format),
+            roi_parquet_name=str(args.roi_parquet_name),
+            dataset_length=int(args.dataset_length),
+            roi_cache_size=int(args.roi_cache_size),
+            augmentations=config.augmentations,
+            return_pair=use_pairs,
+            pair_with_original=use_pairs,
+            **loader_kwargs,
+        )
+        print("Note: streaming mode skips full ROI duration preflight.")
+    else:
+        train_audio, train_rois, train_missing, train_empty = _collect_files(
+            train_entries, args.audio_root, args.roi_root, args.max_files
+        )
+        test_audio, test_rois, test_missing, test_empty = _collect_files(
+            test_entries, args.audio_root, args.roi_root, args.max_files
+        )
+
+        if not train_audio:
+            raise ValueError("No training audio files found after filtering.")
+
+        preflight_stats = assert_window_length_compatible(
+            train_rois + test_rois,
+            window_length=params["window_length"],
+        )
+        print(f"ROI duration preflight: {json.dumps(preflight_stats, sort_keys=True)}")
+
+        if train_missing or test_missing:
+            print(
+                f"Skipped {train_missing + test_missing} files with missing ROI files."
+            )
+        if train_empty or test_empty:
+            print(f"Skipped {train_empty + test_empty} files with empty ROI files.")
+
+        if args.dry_run:
+            print(f"Planned train files: {len(train_audio)}")
+            print(f"Planned test files: {len(test_audio)}")
+            return
+
+        partition: dict[str, Any] = {
+            "train": {"audio": np.array(train_audio), "rois": np.array(train_rois)},
+            "test": {},
+        }
+        if test_audio:
+            partition["test"] = {
+                "audio": np.array(test_audio),
+                "rois": np.array(test_rois),
+            }
+
+        loaders = get_fixed_shotgun_data_loaders(
+            partition,
+            params,
+            augmentations=config.augmentations,
+            return_pair=use_pairs,
+            pair_with_original=use_pairs,
+            **loader_kwargs,
+        )
 
     train_kwargs = train_config.to_train_kwargs()
     if args.epochs is not None:
@@ -202,7 +277,14 @@ def main() -> None:
         **train_kwargs,
     )
 
-    print(f"Training complete. Train files: {len(train_audio)} Test files: {len(test_audio)}")
+    if args.streaming:
+        print(
+            f"Training complete. Train dirs: {len(train_entries)} Test dirs: {len(test_entries)}"
+        )
+    else:
+        print(
+            f"Training complete. Train files: {len(train_audio)} Test files: {len(test_audio)}"
+        )
     print(f"Artifacts saved to: {args.save_dir}")
 
 
