@@ -31,6 +31,7 @@ if str(SRC_ROOT) not in sys.path:
 from ava.data.manifest_paths import resolve_manifest_entry_paths
 
 APPLEDOUBLE_PREFIX = "._"
+DEFAULT_ROI_PARQUET_NAME = "roi.parquet"
 
 
 def _load_manifest(path: Path) -> dict:
@@ -93,6 +94,27 @@ def _parse_roi_file(path: str) -> Tuple[int, float, List[float], int]:
     return len(durations), total, durations, parse_errors
 
 
+def _load_roi_parquet(path: str) -> dict[str, tuple[list[float], list[float]]]:
+    try:
+        import pyarrow.parquet as pq  # type: ignore
+    except ImportError as exc:  # pragma: no cover - optional dependency
+        raise ImportError(
+            "Parquet ROI coverage requires pyarrow. Install pyarrow or use --roi-format txt."
+        ) from exc
+
+    table = pq.read_table(path, columns=["clip_stem", "onsets_sec", "offsets_sec"])
+    payload = table.to_pydict()
+    stems = payload.get("clip_stem") or []
+    onsets = payload.get("onsets_sec") or []
+    offsets = payload.get("offsets_sec") or []
+    if not (len(stems) == len(onsets) == len(offsets)):
+        raise ValueError("Malformed ROI parquet payload (column lengths differ).")
+    out: dict[str, tuple[list[float], list[float]]] = {}
+    for stem, ons, offs in zip(stems, onsets, offsets):
+        out[str(stem)] = ([float(x) for x in (ons or [])], [float(x) for x in (offs or [])])
+    return out
+
+
 def _select_shard(entries: list[dict], num_shards: int, shard_index: int) -> list[dict]:
     if num_shards <= 1:
         return entries
@@ -121,6 +143,8 @@ def coverage_for_entry(
     entry: dict,
     audio_root: Optional[Path],
     roi_root: Optional[Path],
+    roi_format: str,
+    roi_parquet_name: str,
     max_files_per_dir: Optional[int],
 ) -> dict:
     audio_dir, roi_dir = resolve_manifest_entry_paths(
@@ -151,10 +175,12 @@ def coverage_for_entry(
         "segment_duration_max_sec": None,
     }
 
-    if not os.path.isdir(roi_dir):
-        out["missing_roi_dir"] = True
-        out["missing_roi_files"] = int(len(wavs))
-        return out
+    roi_index = None
+    roi_parquet_path = None
+    if roi_format == "parquet":
+        roi_parquet_path = os.path.join(roi_dir, roi_parquet_name)
+        if os.path.exists(roi_parquet_path):
+            roi_index = _load_roi_parquet(roi_parquet_path)
 
     durations_all: list[float] = []
     missing = 0
@@ -164,18 +190,62 @@ def coverage_for_entry(
     segments_total = 0
     duration_total = 0.0
 
+    if roi_format == "txt" and not os.path.isdir(roi_dir):
+        out["missing_roi_dir"] = True
+        out["missing_roi_files"] = int(len(wavs))
+        return out
+
+    if roi_format == "parquet" and roi_index is None:
+        out["missing_roi_dir"] = True
+        out["missing_roi_files"] = int(len(wavs))
+        return out
+
     for wav in wavs:
-        roi_path = os.path.join(roi_dir, f"{Path(wav).stem}.txt")
-        if not os.path.exists(roi_path):
+        if roi_format == "txt":
+            roi_path = os.path.join(roi_dir, f"{Path(wav).stem}.txt")
+            if not os.path.exists(roi_path):
+                missing += 1
+                continue
+            present += 1
+            segs, dur_sum, durations, errs = _parse_roi_file(roi_path)
+            parse_errors += int(errs)
+            if segs == 0:
+                empty += 1
+                continue
+            segments_total += int(segs)
+            duration_total += float(dur_sum)
+            durations_all.extend(durations)
+            continue
+
+        stem = Path(wav).stem
+        record = roi_index.get(stem) if roi_index is not None else None
+        if record is None:
             missing += 1
             continue
         present += 1
-        segs, dur_sum, durations, errs = _parse_roi_file(roi_path)
-        parse_errors += int(errs)
+        onsets, offsets = record
+        if len(onsets) != len(offsets):
+            parse_errors += 1
+            segs = min(len(onsets), len(offsets))
+            onsets = onsets[:segs]
+            offsets = offsets[:segs]
+        segs = len(onsets)
         if segs == 0:
             empty += 1
             continue
-        segments_total += int(segs)
+        durations = []
+        dur_sum = 0.0
+        for onset, offset in zip(onsets, offsets):
+            dur = float(offset - onset)
+            if not np.isfinite(dur) or dur <= 0:
+                parse_errors += 1
+                continue
+            durations.append(dur)
+            dur_sum += dur
+        if not durations:
+            empty += 1
+            continue
+        segments_total += int(len(durations))
         duration_total += float(dur_sum)
         durations_all.extend(durations)
 
@@ -212,6 +282,18 @@ def main() -> None:
     )
     parser.add_argument("--audio-root", type=Path, default=None)
     parser.add_argument("--roi-root", type=Path, default=None)
+    parser.add_argument(
+        "--roi-format",
+        choices=["txt", "parquet"],
+        default="txt",
+        help="ROI storage format under each roi_dir.",
+    )
+    parser.add_argument(
+        "--roi-parquet-name",
+        type=str,
+        default=DEFAULT_ROI_PARQUET_NAME,
+        help="Filename for per-directory ROI parquet bundle (when --roi-format=parquet).",
+    )
     parser.add_argument("--max-dirs", type=int, default=None)
     parser.add_argument("--max-files-per-dir", type=int, default=None)
     parser.add_argument("--num-shards", type=int, default=1)
@@ -280,6 +362,8 @@ def main() -> None:
             entry,
             audio_root=args.audio_root,
             roi_root=args.roi_root,
+            roi_format=str(args.roi_format),
+            roi_parquet_name=str(args.roi_parquet_name),
             max_files_per_dir=args.max_files_per_dir,
         )
         for entry in entries

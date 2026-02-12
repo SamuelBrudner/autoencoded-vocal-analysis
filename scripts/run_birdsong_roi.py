@@ -14,6 +14,9 @@ from typing import Iterable, Optional
 
 import yaml
 from joblib import Parallel, delayed
+from scipy.io import wavfile
+from scipy.io.wavfile import WavFileWarning
+import warnings
 
 ROOT = Path(__file__).resolve().parents[1]
 SRC_ROOT = ROOT / "src"
@@ -31,6 +34,7 @@ ALGORITHMS = {
 }
 
 APPLEDOUBLE_PREFIX = "._"
+DEFAULT_ROI_PARQUET_NAME = "roi.parquet"
 
 
 def _load_segment_params(path: Path) -> dict:
@@ -121,7 +125,7 @@ def _count_roi_txts(roi_dir: str) -> int:
     )
 
 
-def _should_skip(audio_dir: str, roi_dir: str, force: bool, skip_existing: bool) -> bool:
+def _should_skip_txt(audio_dir: str, roi_dir: str, force: bool, skip_existing: bool) -> bool:
     if force or not skip_existing:
         return False
     if not os.path.isdir(roi_dir):
@@ -133,6 +137,15 @@ def _should_skip(audio_dir: str, roi_dir: str, force: bool, skip_existing: bool)
     return roi_count >= wav_count
 
 
+def _should_skip_parquet(
+    roi_dir: str, parquet_name: str, force: bool, skip_existing: bool
+) -> bool:
+    if force or not skip_existing:
+        return False
+    path = Path(roi_dir) / parquet_name
+    return path.exists()
+
+
 def _select_shard(tasks: list[tuple[str, str]], num_shards: int, shard_index: int) -> list[tuple[str, str]]:
     if num_shards <= 1:
         return tasks
@@ -141,25 +154,150 @@ def _select_shard(tasks: list[tuple[str, str]], num_shards: int, shard_index: in
     return [task for idx, task in enumerate(tasks) if (idx % num_shards) == shard_index]
 
 
+def _list_wavs(audio_dir: str) -> list[str]:
+    try:
+        filenames = os.listdir(audio_dir)
+    except FileNotFoundError:
+        return []
+    return [
+        os.path.join(audio_dir, name)
+        for name in sorted(filenames)
+        if name.lower().endswith(".wav") and not name.startswith(APPLEDOUBLE_PREFIX)
+    ]
+
+
+def _segment_directory_to_parquet(
+    audio_dir: str,
+    roi_dir: str,
+    params: dict,
+    parquet_name: str,
+) -> tuple[int, int]:
+    try:
+        import pyarrow as pa  # type: ignore
+        import pyarrow.parquet as pq  # type: ignore
+    except ImportError as exc:  # pragma: no cover - optional dependency
+        raise ImportError(
+            "Parquet output requires pyarrow. Install pyarrow or use --roi-output-format txt."
+        ) from exc
+
+    output_dir = Path(roi_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    output_path = output_dir / parquet_name
+    tmp_path = output_dir / f".{parquet_name}.tmp"
+
+    schema = pa.schema(
+        [
+            pa.field("clip_stem", pa.string()),
+            pa.field("onsets_sec", pa.list_(pa.float32())),
+            pa.field("offsets_sec", pa.list_(pa.float32())),
+        ]
+    )
+
+    wavs = _list_wavs(audio_dir)
+    segments_total = 0
+    clips_total = 0
+
+    try:
+        with pq.ParquetWriter(str(tmp_path), schema=schema) as writer:
+            batch_clip_stems: list[str] = []
+            batch_onsets: list[list[float]] = []
+            batch_offsets: list[list[float]] = []
+
+            def flush_batch() -> None:
+                if not batch_clip_stems:
+                    return
+                table = pa.Table.from_arrays(
+                    [
+                        pa.array(batch_clip_stems, type=pa.string()),
+                        pa.array(batch_onsets, type=pa.list_(pa.float32())),
+                        pa.array(batch_offsets, type=pa.list_(pa.float32())),
+                    ],
+                    names=["clip_stem", "onsets_sec", "offsets_sec"],
+                )
+                writer.write_table(table)
+                batch_clip_stems.clear()
+                batch_onsets.clear()
+                batch_offsets.clear()
+
+            for wav_path in wavs:
+                with warnings.catch_warnings():
+                    warnings.filterwarnings("ignore", category=WavFileWarning)
+                    fs, audio = wavfile.read(wav_path)
+                expected_fs = params.get("fs")
+                local_params = params
+                if expected_fs is not None and fs != expected_fs:
+                    # Keep parquet mode robust across mixed sample rates while
+                    # warning loudly. The legacy txt pipeline does not enforce
+                    # sample rate consistency either.
+                    print(
+                        f"Warning: sample rate mismatch for {wav_path}: found {fs}, expected {expected_fs}. Using {fs}.",
+                        file=sys.stderr,
+                    )
+                    local_params = dict(params)
+                    local_params["fs"] = fs
+
+                onsets, offsets = local_params["algorithm"](audio, local_params)
+                onsets = [float(x) for x in onsets]
+                offsets = [float(x) for x in offsets]
+                if len(onsets) != len(offsets):
+                    raise ValueError(
+                        f"Algorithm returned mismatched onsets/offsets lengths for {wav_path}."
+                    )
+
+                batch_clip_stems.append(Path(wav_path).stem)
+                batch_onsets.append(onsets)
+                batch_offsets.append(offsets)
+
+                clips_total += 1
+                segments_total += len(onsets)
+
+                if len(batch_clip_stems) >= 512:
+                    flush_batch()
+
+            flush_batch()
+        os.replace(tmp_path, output_path)
+    finally:
+        if tmp_path.exists():
+            try:
+                tmp_path.unlink()
+            except OSError:
+                pass
+    return clips_total, segments_total
+
+
 def _run_segment_task(
     audio_dir: str,
     roi_dir: str,
     params: dict,
+    roi_output_format: str,
+    roi_parquet_name: str,
     max_retries: int,
 ) -> dict:
     attempts = 0
     start = time.time()
     last_error = None
+    clips_total = None
+    segments_total = None
     while attempts <= max_retries:
         attempts += 1
         try:
-            segment(audio_dir, roi_dir, params, verbose=True)
+            if roi_output_format == "txt":
+                segment(audio_dir, roi_dir, params, verbose=True)
+            else:
+                clips_total, segments_total = _segment_directory_to_parquet(
+                    audio_dir,
+                    roi_dir,
+                    params,
+                    parquet_name=roi_parquet_name,
+                )
             return {
                 "audio_dir": audio_dir,
                 "roi_dir": roi_dir,
                 "status": "ok",
                 "attempts": attempts,
                 "elapsed_sec": float(time.time() - start),
+                "clips_total": clips_total,
+                "segments_total": segments_total,
             }
         except Exception as exc:  # pragma: no cover - exercised via integration runs
             last_error = str(exc)
@@ -170,6 +308,8 @@ def _run_segment_task(
         "attempts": attempts,
         "elapsed_sec": float(time.time() - start),
         "error": last_error,
+        "clips_total": clips_total,
+        "segments_total": segments_total,
     }
 
 
@@ -186,6 +326,18 @@ def main() -> None:
     parser.add_argument("--jobs", type=int, default=None)
     parser.add_argument("--skip-existing", action="store_true")
     parser.add_argument("--force", action="store_true")
+    parser.add_argument(
+        "--roi-output-format",
+        choices=["txt", "parquet"],
+        default="txt",
+        help="ROI output format. 'txt' writes one <clip>.txt per wav; 'parquet' writes one parquet bundle per audio directory.",
+    )
+    parser.add_argument(
+        "--roi-parquet-name",
+        type=str,
+        default=DEFAULT_ROI_PARQUET_NAME,
+        help="Filename for per-directory parquet bundles (when --roi-output-format=parquet).",
+    )
     parser.add_argument("--num-shards", type=int, default=1)
     parser.add_argument("--shard-index", type=int, default=0)
     parser.add_argument("--max-retries", type=int, default=0)
@@ -238,7 +390,18 @@ def main() -> None:
     tasks = []
     skipped_existing = 0
     for audio_dir, roi_dir in planned_tasks:
-        if _should_skip(audio_dir, roi_dir, args.force, args.skip_existing):
+        if args.roi_output_format == "txt":
+            should_skip = _should_skip_txt(
+                audio_dir, roi_dir, args.force, args.skip_existing
+            )
+        else:
+            should_skip = _should_skip_parquet(
+                roi_dir,
+                parquet_name=str(args.roi_parquet_name),
+                force=args.force,
+                skip_existing=args.skip_existing,
+            )
+        if should_skip:
             skipped_existing += 1
             continue
         tasks.append((audio_dir, roi_dir))
@@ -267,7 +430,14 @@ def main() -> None:
         f"{total} directories (skipped_existing={skipped_existing} shard={args.shard_index}/{args.num_shards})."
     )
 
-    gen = zip([t[0] for t in tasks], [t[1] for t in tasks], repeat(params), repeat(int(args.max_retries)))
+    gen = zip(
+        [t[0] for t in tasks],
+        [t[1] for t in tasks],
+        repeat(params),
+        repeat(str(args.roi_output_format)),
+        repeat(str(args.roi_parquet_name)),
+        repeat(int(args.max_retries)),
+    )
     results = Parallel(n_jobs=args.jobs)(
         delayed(_run_segment_task)(*args) for args in gen
     )
