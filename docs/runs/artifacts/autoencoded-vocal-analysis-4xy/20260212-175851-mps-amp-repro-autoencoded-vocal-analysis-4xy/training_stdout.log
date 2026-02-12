@@ -1,0 +1,29 @@
+Using 16bit Automatic Mixed Precision (AMP)
+/opt/anaconda3/envs/ava/lib/python3.10/site-packages/torch/cuda/amp/grad_scaler.py:126: UserWarning: torch.cuda.amp.GradScaler is enabled, but CUDA is not available.  Disabling.
+  warnings.warn(
+GPU available: True (mps), used: True
+TPU available: False, using: 0 TPU cores
+/opt/anaconda3/envs/ava/lib/python3.10/site-packages/pytorch_lightning/trainer/configuration_validator.py:70: You defined a `validation_step` but have no `val_dataloader`. Skipping val loop.
+/opt/anaconda3/envs/ava/lib/python3.10/site-packages/pytorch_lightning/utilities/model_summary/model_summary.py:242: Precision 16-mixed is not supported by the model summary.  Estimated model size in MB will not be accurate. Using 32 bits instead.
+
+  | Name | Type | Params | Mode  | FLOPs
+----------------------------------------------
+0 | vae  | VAE  | 9.0 M  | train | 0    
+----------------------------------------------
+9.0 M     Trainable params
+0         Non-trainable params
+9.0 M     Total params
+36.142    Total estimated model params size (MB)
+63        Modules in train mode
+0         Modules in eval mode
+0         Total Flops
+/opt/anaconda3/envs/ava/lib/python3.10/site-packages/pytorch_lightning/trainer/connectors/data_connector.py:429: Consider setting `persistent_workers=True` in 'train_dataloader' to speed up the dataloader worker initialization.
+Error: User specified an unsupported autocast device_type 'mps'
+
+ERROR conda.cli.main_run:execute(127): `conda run python scripts/launch_birdsong_training.py --manifest docs/runs/artifacts/autoencoded-vocal-analysis-0fq.2/manifest.json --config docs/runs/artifacts/autoencoded-vocal-analysis-0fq.3/fixed_window_smoke_config.yaml --save-dir docs/runs/artifacts/autoencoded-vocal-analysis-4xy/20260212-175851-mps-amp-repro-autoencoded-vocal-analysis-4xy/training_run --epochs 1 --max-files 1 --trainer-kwargs-json {"accelerator":"mps","devices":1,"precision":"16-mixed"}` failed. (See above for error)
+ROI duration preflight: {"compatible_fraction": 1.0, "max_duration_sec": 0.01161000000000012, "median_duration_sec": 0.01161000000000001, "min_duration_sec": 0.011609999999999898, "p05_duration_sec": 0.011609999999999898, "p95_duration_sec": 0.01161000000000012, "roi_segments_compatible": 99, "roi_segments_total": 99, "window_length_sec": 0.01}
+
+Training: |          | 0/? [00:00<?, ?it/s]
+Training: |          | 0/? [00:00<?, ?it/s]
+Epoch 0:   0%|          | 0/64 [00:00<?, ?it/s]
+Epoch 0:   0%|          | 0/64 [00:20<?, ?it/s]

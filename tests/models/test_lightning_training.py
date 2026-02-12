@@ -10,9 +10,9 @@ torch = pytest.importorskip("torch")
 patch_torch_onnx_exporter()
 pytest.importorskip("pytorch_lightning")
 
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader, Dataset, TensorDataset
 
-from ava.models.lightning_vae import VAELightningModule, train_vae
+from ava.models.lightning_vae import VAELightningModule, build_trainer, train_vae
 from ava.models.vae import VAE
 
 
@@ -127,3 +127,50 @@ def test_lightning_checkpoint_loads_legacy(tmp_path):
 	loaded.load_state(str(checkpoint))
 
 	assert 0 in loaded.loss["train"]
+
+
+def test_mps_mixed_precision_is_overridden_to_fp32(tmp_path):
+	if not (hasattr(torch.backends, "mps") and torch.backends.mps.is_available()):
+		pytest.skip("MPS not available for this test.")
+
+	import pytorch_lightning as pl
+
+	class _TinyModule(pl.LightningModule):
+		def __init__(self):
+			super().__init__()
+			self.layer = torch.nn.Linear(4, 1)
+
+		def forward(self, x):
+			return self.layer(x).squeeze(-1)
+
+		def training_step(self, batch, batch_idx):
+			x, y = batch
+			pred = self(x)
+			return torch.nn.functional.mse_loss(pred, y)
+
+		def configure_optimizers(self):
+			return torch.optim.SGD(self.parameters(), lr=0.01)
+
+	x = torch.randn(8, 4)
+	y = torch.randn(8)
+	loader = DataLoader(TensorDataset(x, y), batch_size=2, shuffle=False, num_workers=0)
+	save_dir = tmp_path / "mps_precision_override"
+	trainer = build_trainer(
+		save_dir=str(save_dir),
+		epochs=1,
+		test_freq=None,
+		save_freq=None,
+		vis_freq=None,
+		trainer_kwargs={
+			"accelerator": "mps",
+			"devices": 1,
+			"precision": "16-mixed",
+			"logger": False,
+			"enable_progress_bar": False,
+			"enable_model_summary": False,
+			"limit_train_batches": 1,
+			"num_sanity_val_steps": 0,
+		},
+	)
+	trainer.fit(_TinyModule(), train_dataloaders=loader)
+	assert getattr(trainer.strategy, "root_device", torch.device("cpu")).type == "mps"

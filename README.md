@@ -21,6 +21,9 @@ $ cd autoencoded-vocal-analysis
 $ pip install .
 ```
 
+#### Apple Silicon (MPS)
+PyTorch on Apple Silicon can train on Metal Performance Shaders via `accelerator: mps`. In this stack, AMP/autocast (e.g. `precision: 16-mixed`) is not supported on MPS; use `precision: 32` instead (mixed precision will be overridden to fp32 with a warning).
+
 #### Dependencies:
 * [Python3](https://www.python.org/) (3.5+)
 * [PyTorch](https://pytorch.org)

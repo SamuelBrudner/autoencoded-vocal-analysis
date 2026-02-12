@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import math
 import os
+import warnings
 from typing import Optional, Union
 
 import torch
@@ -73,6 +74,21 @@ def _infer_input_shape(loaders: dict) -> tuple[int, int]:
 	if batch.dim() == 3:
 		return tuple(batch.shape[1:])
 	raise ValueError("Training batches must have shape [batch, height, width].")
+
+
+def _mps_available() -> bool:
+	return hasattr(torch.backends, "mps") and torch.backends.mps.is_available()
+
+
+def _precision_requests_amp(precision: object) -> bool:
+	if precision is None:
+		return False
+	if isinstance(precision, (int, float)):
+		return int(precision) == 16
+	if isinstance(precision, str):
+		value = precision.strip().lower()
+		return value in ("16", "16-mixed", "bf16", "bf16-mixed")
+	return False
 
 
 class VAELightningModule(pl.LightningModule):
@@ -551,8 +567,22 @@ def build_trainer(save_dir: str = "", epochs: int = 100,
 	trainer_kwargs = dict(trainer_kwargs)
 	trainer_kwargs.setdefault("accelerator", "auto")
 	trainer_kwargs.setdefault("devices", 1)
+	accelerator = trainer_kwargs.get("accelerator")
+	accelerator_key = accelerator.lower() if isinstance(accelerator, str) else accelerator
+	precision = trainer_kwargs.get("precision")
+	if _precision_requests_amp(precision):
+		auto_mps = (
+			accelerator_key in (None, "auto")
+			and not torch.cuda.is_available()
+			and _mps_available()
+		)
+		if accelerator_key == "mps" or auto_mps:
+			warnings.warn(
+				f"AMP/autocast is not supported on MPS; forcing precision={precision!r} -> 32.",
+				UserWarning,
+			)
+			trainer_kwargs["precision"] = 32
 	if "precision" not in trainer_kwargs:
-		accelerator = trainer_kwargs.get("accelerator")
 		use_amp = (
 			accelerator in (None, "auto", "gpu", "cuda")
 			and torch.cuda.is_available()
