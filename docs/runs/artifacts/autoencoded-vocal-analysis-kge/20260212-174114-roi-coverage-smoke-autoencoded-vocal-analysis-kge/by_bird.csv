@@ -1,0 +1,4 @@
+bird_id_norm,regime,dph,session_label,split,directories,wav_files_checked,roi_files_present,missing_roi_files,empty_roi_files,segments_total,segment_duration_total_sec,roi_parse_errors,segment_duration_mean_sec_weighted
+PK244,bells,36.0,,train,1,20,20,0,0,168,14.303490000000002,0,0.08513982142857143
+PK244,bells,37.0,,train,1,20,20,0,0,293,32.97824000000001,0,0.11255372013651879
+PK244,bells,38.0,,train,1,20,0,20,0,0,0.0,0,

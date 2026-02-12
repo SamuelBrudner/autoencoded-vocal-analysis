@@ -1,0 +1,16 @@
+{
+  "created_utc": "2026-02-12T17:41:25Z",
+  "manifest_path": "data/manifests/birdsong_manifest.json",
+  "split": "train",
+  "num_shards": 1,
+  "shard_index": 0,
+  "directories": 3,
+  "missing_roi_dirs": 1,
+  "missing_roi_files": 20,
+  "empty_roi_files": 0,
+  "roi_parse_errors": 0,
+  "segments_total": 461,
+  "segment_duration_total_sec": 47.28173000000001,
+  "elapsed_sec": 0.13945508003234863,
+  "dirs_per_sec": 21.512303455020113
+}
