@@ -1,0 +1,6 @@
+Running ROI generation for 2 directories (skipped_existing=0 shard=0/1).
+Done. total=2 ok=2 failed=0 (0.32 dirs/s, jobs=2)
+Segmenting audio in /Volumes/samsung_ssd/data/birdsong/day43 Bells/pk244/36
+	Found 2744 segments in /Volumes/samsung_ssd/data/birdsong/day43 Bells/pk244/36
+Segmenting audio in /Volumes/samsung_ssd/data/birdsong/day43 Bells/pk244/37
+	Found 10367 segments in /Volumes/samsung_ssd/data/birdsong/day43 Bells/pk244/37

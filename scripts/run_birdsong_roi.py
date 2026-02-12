@@ -7,6 +7,7 @@ import argparse
 import json
 import os
 import sys
+import time
 from itertools import repeat
 from pathlib import Path
 from typing import Iterable, Optional
@@ -21,13 +22,14 @@ if str(SRC_ROOT) not in sys.path:
 
 from ava.segmenting.amplitude_segmentation import get_onsets_offsets
 from ava.segmenting.segment import segment
-from ava.models.utils import _get_wavs_from_dir
 
 
 ALGORITHMS = {
     "amplitude": get_onsets_offsets,
     "amplitude_segmentation": get_onsets_offsets,
 }
+
+APPLEDOUBLE_PREFIX = "._"
 
 
 def _load_segment_params(path: Path) -> dict:
@@ -104,9 +106,38 @@ def _resolve_entry_paths(
 def _find_audio_dirs(root: Path) -> list[str]:
     audio_dirs = []
     for dirpath, _, filenames in os.walk(root):
-        if any(name.lower().endswith(".wav") for name in filenames):
+        if any(
+            name.lower().endswith(".wav") and not name.startswith(APPLEDOUBLE_PREFIX)
+            for name in filenames
+        ):
             audio_dirs.append(Path(dirpath).as_posix())
     return sorted(set(audio_dirs))
+
+
+def _count_audio_wavs(audio_dir: str) -> int:
+    try:
+        filenames = os.listdir(audio_dir)
+    except FileNotFoundError:
+        return 0
+    return len(
+        [
+            name
+            for name in filenames
+            if name.lower().endswith(".wav") and not name.startswith(APPLEDOUBLE_PREFIX)
+        ]
+    )
+
+
+def _count_roi_txts(roi_dir: str) -> int:
+    if not os.path.isdir(roi_dir):
+        return 0
+    return len(
+        [
+            name
+            for name in os.listdir(roi_dir)
+            if name.lower().endswith(".txt") and not name.startswith(APPLEDOUBLE_PREFIX)
+        ]
+    )
 
 
 def _should_skip(audio_dir: str, roi_dir: str, force: bool, skip_existing: bool) -> bool:
@@ -114,15 +145,51 @@ def _should_skip(audio_dir: str, roi_dir: str, force: bool, skip_existing: bool)
         return False
     if not os.path.isdir(roi_dir):
         return False
-    wav_count = len(_get_wavs_from_dir(audio_dir))
+    wav_count = _count_audio_wavs(audio_dir)
     if wav_count == 0:
         return True
-    roi_count = len([f for f in os.listdir(roi_dir) if f.endswith(".txt")])
+    roi_count = _count_roi_txts(roi_dir)
     return roi_count >= wav_count
 
 
-def _run_segment(audio_dir: str, roi_dir: str, params: dict) -> None:
-    segment(audio_dir, roi_dir, params, verbose=True)
+def _select_shard(tasks: list[tuple[str, str]], num_shards: int, shard_index: int) -> list[tuple[str, str]]:
+    if num_shards <= 1:
+        return tasks
+    if shard_index < 0 or shard_index >= num_shards:
+        raise ValueError("--shard-index must be in [0, --num-shards).")
+    return [task for idx, task in enumerate(tasks) if (idx % num_shards) == shard_index]
+
+
+def _run_segment_task(
+    audio_dir: str,
+    roi_dir: str,
+    params: dict,
+    max_retries: int,
+) -> dict:
+    attempts = 0
+    start = time.time()
+    last_error = None
+    while attempts <= max_retries:
+        attempts += 1
+        try:
+            segment(audio_dir, roi_dir, params, verbose=True)
+            return {
+                "audio_dir": audio_dir,
+                "roi_dir": roi_dir,
+                "status": "ok",
+                "attempts": attempts,
+                "elapsed_sec": float(time.time() - start),
+            }
+        except Exception as exc:  # pragma: no cover - exercised via integration runs
+            last_error = str(exc)
+    return {
+        "audio_dir": audio_dir,
+        "roi_dir": roi_dir,
+        "status": "error",
+        "attempts": attempts,
+        "elapsed_sec": float(time.time() - start),
+        "error": last_error,
+    }
 
 
 def main() -> None:
@@ -138,10 +205,18 @@ def main() -> None:
     parser.add_argument("--jobs", type=int, default=None)
     parser.add_argument("--skip-existing", action="store_true")
     parser.add_argument("--force", action="store_true")
+    parser.add_argument("--num-shards", type=int, default=1)
+    parser.add_argument("--shard-index", type=int, default=0)
+    parser.add_argument("--max-retries", type=int, default=0)
+    parser.add_argument("--summary-out", type=Path, default=None)
     parser.add_argument("--dry-run", action="store_true")
 
     args = parser.parse_args()
 
+    if args.num_shards <= 0:
+        raise ValueError("--num-shards must be positive.")
+    if args.max_retries < 0:
+        raise ValueError("--max-retries must be >= 0.")
     params = _load_segment_params(args.segment_config)
     _validate_segment_params(params)
 
@@ -174,18 +249,26 @@ def main() -> None:
             ]
         ]
 
+    planned_tasks = list(zip(audio_dirs, roi_dirs))
+
     if args.max_dirs is not None:
-        audio_dirs = audio_dirs[: args.max_dirs]
-        roi_dirs = roi_dirs[: args.max_dirs]
+        planned_tasks = planned_tasks[: args.max_dirs]
+
+    planned_tasks = _select_shard(planned_tasks, args.num_shards, args.shard_index)
 
     tasks = []
-    for audio_dir, roi_dir in zip(audio_dirs, roi_dirs):
+    skipped_existing = 0
+    for audio_dir, roi_dir in planned_tasks:
         if _should_skip(audio_dir, roi_dir, args.force, args.skip_existing):
+            skipped_existing += 1
             continue
         tasks.append((audio_dir, roi_dir))
 
     if args.dry_run:
-        print(f"Planned ROI directories: {len(tasks)}")
+        print(
+            "Planned ROI directories: "
+            f"{len(tasks)} (skipped_existing={skipped_existing} shard={args.shard_index}/{args.num_shards})"
+        )
         for audio_dir, roi_dir in tasks[:10]:
             print(f"  {audio_dir} -> {roi_dir}")
         return
@@ -198,9 +281,51 @@ def main() -> None:
         cpu_count = os.cpu_count() or 1
         args.jobs = max(1, min(len(tasks), cpu_count - 1))
 
-    print(f"Running ROI generation for {len(tasks)} directories.")
-    gen = zip([t[0] for t in tasks], [t[1] for t in tasks], repeat(params))
-    Parallel(n_jobs=args.jobs)(delayed(_run_segment)(*args) for args in gen)
+    start_time = time.time()
+    total = len(tasks)
+    print(
+        "Running ROI generation for "
+        f"{total} directories (skipped_existing={skipped_existing} shard={args.shard_index}/{args.num_shards})."
+    )
+
+    gen = zip([t[0] for t in tasks], [t[1] for t in tasks], repeat(params), repeat(int(args.max_retries)))
+    results = Parallel(n_jobs=args.jobs)(
+        delayed(_run_segment_task)(*args) for args in gen
+    )
+
+    ok = [r for r in results if r.get("status") == "ok"]
+    failed = [r for r in results if r.get("status") != "ok"]
+
+    elapsed = max(1e-9, time.time() - start_time)
+    rate = total / elapsed
+    print(
+        f"Done. total={total} ok={len(ok)} failed={len(failed)} ({rate:.2f} dirs/s, jobs={args.jobs})"
+    )
+
+    if args.summary_out is not None:
+        summary = {
+            "created_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            "manifest_path": args.manifest.as_posix() if args.manifest else None,
+            "segment_config": args.segment_config.as_posix(),
+            "split": args.split,
+            "audio_root": args.audio_root.as_posix() if args.audio_root else None,
+            "roi_root": args.roi_root.as_posix() if args.roi_root else None,
+            "num_shards": int(args.num_shards),
+            "shard_index": int(args.shard_index),
+            "planned_total": int(len(planned_tasks)),
+            "skipped_existing": int(skipped_existing),
+            "total": int(total),
+            "ok": int(len(ok)),
+            "failed": int(len(failed)),
+            "elapsed_sec": float(elapsed),
+            "dirs_per_sec": float(rate),
+            "errors": failed,
+        }
+        args.summary_out.parent.mkdir(parents=True, exist_ok=True)
+        args.summary_out.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+
+    if failed:
+        sys.exit(1)
 
 
 if __name__ == "__main__":
