@@ -1,0 +1,57 @@
+Manifest summary:
+{
+  "train": {
+    "birds": 43,
+    "directories": 2624,
+    "files": 3190613,
+    "by_regime": {
+      "bells": {
+        "birds": 15,
+        "directories": 1082,
+        "files": 1221165
+      },
+      "isolates": {
+        "birds": 10,
+        "directories": 395,
+        "files": 585769
+      },
+      "samba": {
+        "birds": 13,
+        "directories": 895,
+        "files": 1017857
+      },
+      "simple": {
+        "birds": 5,
+        "directories": 252,
+        "files": 365822
+      }
+    }
+  },
+  "test": {
+    "birds": 10,
+    "directories": 521,
+    "files": 631163,
+    "by_regime": {
+      "bells": {
+        "birds": 4,
+        "directories": 261,
+        "files": 240684
+      },
+      "isolates": {
+        "birds": 2,
+        "directories": 55,
+        "files": 67684
+      },
+      "samba": {
+        "birds": 3,
+        "directories": 153,
+        "files": 241583
+      },
+      "simple": {
+        "birds": 1,
+        "directories": 52,
+        "files": 81212
+      }
+    }
+  }
+}
