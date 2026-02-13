@@ -2,8 +2,12 @@
 """Submit an AWS Batch array job for birdsong ROI extraction.
 
 This script generates (and optionally submits) an `aws batch submit-job`
-payload that runs `scripts/cloud/aws/run_birdsong_roi_batch_shard.py` as an
-array job.
+payload for an array job.
+
+Note: by default this script does *not* override the container command. This
+matches `docker/Dockerfile.roi`, which sets the shard runner as the image
+ENTRYPOINT. Use `--override-command` only if your job definition expects an
+explicit command.
 """
 
 from __future__ import annotations
@@ -57,6 +61,11 @@ def main() -> None:
     parser.add_argument("--jobs", type=int, default=None, help="Parallelism inside ROI script (optional).")
     parser.add_argument("--skip-existing", action="store_true")
     parser.add_argument(
+        "--override-command",
+        action="store_true",
+        help="Override the container command to run the shard runner explicitly.",
+    )
+    parser.add_argument(
         "--s3-summary-root",
         type=str,
         default=None,
@@ -98,15 +107,19 @@ def main() -> None:
     ]
     env_items = [item for item in env_items if item is not None]
 
+    container_overrides: dict = {"environment": env_items}
+    if args.override_command:
+        container_overrides["command"] = [
+            "python",
+            "scripts/cloud/aws/run_birdsong_roi_batch_shard.py",
+        ]
+
     payload = {
         "jobName": str(args.job_name),
         "jobQueue": str(args.job_queue),
         "jobDefinition": str(args.job_definition),
         "arrayProperties": {"size": int(args.array_size)},
-        "containerOverrides": {
-            "command": ["python", "scripts/cloud/aws/run_birdsong_roi_batch_shard.py"],
-            "environment": env_items,
-        },
+        "containerOverrides": container_overrides,
     }
 
     rendered = json.dumps(payload, indent=2)
@@ -129,4 +142,3 @@ if __name__ == "__main__":
     except Exception as exc:  # pragma: no cover - CLI guardrail
         print(f"Error: {exc}", file=sys.stderr)
         sys.exit(1)
-
