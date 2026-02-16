@@ -133,6 +133,23 @@ def _load_rois(path: Union[str, Path]) -> np.ndarray:
 	return np.asarray(rois, dtype=np.float64)
 
 
+def _coerce_rois(rois: np.ndarray) -> np.ndarray:
+	"""Normalize in-memory ROI arrays to finite onset/offset pairs."""
+	arr = np.asarray(rois, dtype=np.float64)
+	if arr.size == 0:
+		return np.zeros((0, 2), dtype=np.float64)
+	arr = np.atleast_2d(arr)
+	if arr.shape[1] < 2:
+		raise ValueError("ROI array must have at least onset/offset columns.")
+	arr = np.asarray(arr[:, :2], dtype=np.float64)
+	mask = (
+		np.isfinite(arr[:, 0])
+		& np.isfinite(arr[:, 1])
+		& (arr[:, 1] > arr[:, 0])
+	)
+	return arr[mask]
+
+
 def _window_starts_from_rois(
 		rois: np.ndarray,
 		window_length_sec: float,
@@ -296,6 +313,7 @@ class LatentSequenceEncoder:
 			self,
 			audio_path: Union[str, Path],
 			roi_path: Optional[Union[str, Path]] = None,
+			rois: Optional[np.ndarray] = None,
 			batch_size: int = 64,
 			hop_length_sec: Optional[float] = None,
 			start_time_sec: float = 0.0,
@@ -339,10 +357,18 @@ class LatentSequenceEncoder:
 
 		end_time_sec = min(end_time_sec, duration_sec)
 
-		if roi_path is not None:
-			rois = _load_rois(roi_path)
+		if rois is not None and roi_path is not None:
+			raise ValueError("Pass either `roi_path` or `rois`, not both.")
+
+		roi_array = None
+		if rois is not None:
+			roi_array = _coerce_rois(rois)
+		elif roi_path is not None:
+			roi_array = _load_rois(roi_path)
+
+		if roi_array is not None:
 			start_times = _window_starts_from_rois(
-				rois,
+				roi_array,
 				window_length_sec=window_length_sec,
 				hop_length_sec=hop_length_sec,
 				start_time_sec=start_time_sec,
@@ -448,6 +474,7 @@ class LatentSequenceEncoder:
 			"audio_sha256": _sha256_file(audio_path) if compute_audio_sha256 else None,
 			"sample_rate_hz": fs_target,
 			"roi_path": Path(roi_path).as_posix() if roi_path is not None else None,
+			"roi_source": "array" if rois is not None else ("path" if roi_path is not None else None),
 			"config_path": self.config_path.as_posix() if self.config_path is not None else None,
 			"checkpoint_path": self.checkpoint_path.as_posix(),
 		}
@@ -468,6 +495,7 @@ def encode_clip_to_latent_sequence(
 		config: Union[str, Path, FixedWindowExperimentConfig],
 		audio_path: Union[str, Path],
 		roi_path: Optional[Union[str, Path]] = None,
+		rois: Optional[np.ndarray] = None,
 		device: str = "auto",
 		batch_size: int = 64,
 		hop_length_sec: Optional[float] = None,
@@ -490,6 +518,9 @@ def encode_clip_to_latent_sequence(
 	roi_path:
 		Optional ROI file containing onset/offset times in seconds. If provided,
 		windows are sampled only within ROIs.
+	rois:
+		Optional in-memory ROI onset/offset array. Mutually exclusive with
+		``roi_path``.
 	device:
 		{"cpu", "cuda", "auto"}.
 	batch_size:
@@ -511,6 +542,7 @@ def encode_clip_to_latent_sequence(
 	return encoder.encode(
 		audio_path=audio_path,
 		roi_path=roi_path,
+		rois=rois,
 		batch_size=batch_size,
 		hop_length_sec=hop_length_sec,
 		start_time_sec=start_time_sec,

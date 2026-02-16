@@ -158,6 +158,38 @@ def test_latent_sequence_encoder_supports_energy(tmp_path):
 	assert np.isfinite(seq.energy).all()
 
 
+def test_latent_sequence_encoder_accepts_in_memory_rois(tmp_path):
+	repo_root = Path(__file__).resolve().parents[2]
+	audio_path = tmp_path / "test.wav"
+	shutil.copy(repo_root / "tests" / "data" / "test.wav", audio_path)
+
+	input_shape = (32, 32)
+	config_path = tmp_path / "config.yaml"
+	config = _write_config(config_path, fs=32000, input_shape=input_shape)
+	ckpt_dir = tmp_path / "checkpoint"
+	ckpt_dir.mkdir()
+	checkpoint = _write_checkpoint(
+		ckpt_dir,
+		(config.preprocess.num_freq_bins, config.preprocess.num_time_bins),
+		z_dim=4,
+	)
+
+	encoder = LatentSequenceEncoder(
+		checkpoint_path=checkpoint,
+		config=config_path,
+		device="cpu",
+	)
+	seq = encoder.encode(
+		audio_path=audio_path,
+		rois=np.asarray([[0.0, 0.5]], dtype=np.float64),
+		batch_size=2,
+	)
+
+	assert seq.mu.shape[0] > 0
+	assert seq.metadata["roi_source"] == "array"
+	assert seq.metadata["roi_path"] is None
+
+
 def test_export_latent_sequences_cli_writes_npz_and_json(tmp_path):
 	repo_root = Path(__file__).resolve().parents[2]
 	audio_dir = tmp_path / "audio"
@@ -333,3 +365,101 @@ def test_export_latent_sequences_cli_can_export_energy(tmp_path):
 	npz = np.load(npz_path.as_posix())
 	assert "energy" in npz
 	assert np.isfinite(npz["energy"]).all()
+
+
+def test_export_latent_sequences_cli_supports_parquet_rois(tmp_path):
+	pyarrow = pytest.importorskip("pyarrow")
+	import pyarrow.parquet as pq
+
+	repo_root = Path(__file__).resolve().parents[2]
+	audio_dir = tmp_path / "audio"
+	roi_dir = tmp_path / "rois"
+	audio_dir.mkdir()
+	roi_dir.mkdir()
+	shutil.copy(repo_root / "tests" / "data" / "test.wav", audio_dir / "test.wav")
+
+	table = pyarrow.table(
+		{
+			"clip_stem": ["test"],
+			"onsets_sec": [[0.0]],
+			"offsets_sec": [[0.5]],
+		}
+	)
+	pq.write_table(table, roi_dir / "roi.parquet")
+
+	manifest_path = tmp_path / "manifest.json"
+	manifest = {
+		"train": [
+			{
+				"audio_dir_rel": ".",
+				"audio_dir": audio_dir.as_posix(),
+				"roi_dir": roi_dir.as_posix(),
+				"bird_id_norm": "BIRD1",
+				"bird_id_raw": "bird1",
+				"regime": "test",
+				"dph": None,
+				"session_label": None,
+				"num_files": 1,
+				"split": "train",
+			}
+		],
+		"test": [],
+	}
+	manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+	input_shape = (32, 32)
+	config_path = tmp_path / "config.yaml"
+	config = _write_config(config_path, fs=32000, input_shape=input_shape)
+	ckpt_dir = tmp_path / "checkpoint"
+	ckpt_dir.mkdir()
+	checkpoint = _write_checkpoint(
+		ckpt_dir,
+		(config.preprocess.num_freq_bins, config.preprocess.num_time_bins),
+		z_dim=4,
+	)
+
+	out_dir = tmp_path / "out"
+	result = subprocess.run(
+		[
+			sys.executable,
+			str(repo_root / "scripts" / "export_latent_sequences.py"),
+			"--manifest",
+			str(manifest_path),
+			"--split",
+			"train",
+			"--config",
+			str(config_path),
+			"--checkpoint",
+			str(checkpoint),
+			"--out-dir",
+			str(out_dir),
+			"--device",
+			"cpu",
+			"--batch-size",
+			"2",
+			"--max-clips",
+			"1",
+			"--roi-format",
+			"parquet",
+			"--roi-parquet-name",
+			"roi.parquet",
+		],
+		cwd=repo_root,
+		capture_output=True,
+		text=True,
+	)
+	if result.returncode != 0:
+		raise AssertionError(
+			"CLI failed.\n"
+			f"stdout:\n{result.stdout}\n"
+			f"stderr:\n{result.stderr}"
+		)
+
+	npz_path = out_dir / "test.npz"
+	json_path = out_dir / "test.json"
+	assert npz_path.exists()
+	assert json_path.exists()
+
+	meta = json.loads(json_path.read_text(encoding="utf-8"))
+	assert meta["roi_source"] == "array"
+	assert meta["roi_path"].endswith("roi.parquet")

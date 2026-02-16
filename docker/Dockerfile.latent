@@ -1,0 +1,24 @@
+FROM python:3.10-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV PIP_NO_CACHE_DIR=1
+ENV MPLBACKEND=Agg
+
+WORKDIR /opt/ava
+
+# Install dependencies for latent export + S3 I/O.
+RUN pip install --upgrade pip && \
+    pip install \
+      awscli \
+      matplotlib \
+      numpy \
+      pyarrow \
+      pyyaml \
+      scipy && \
+    pip install --index-url https://download.pytorch.org/whl/cpu torch
+
+COPY src/ src/
+COPY scripts/ scripts/
+
+ENTRYPOINT ["python", "scripts/cloud/aws/run_birdsong_latent_export_batch_shard.py"]

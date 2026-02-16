@@ -104,6 +104,64 @@ def _is_complete(out_npz: Path, out_json: Path) -> bool:
 	return out_npz.exists() and out_json.exists()
 
 
+def _load_parquet_roi_index(roi_parquet_path: Path) -> Dict[str, np.ndarray]:
+	try:
+		import pyarrow.parquet as pq  # type: ignore
+	except ImportError as exc:  # pragma: no cover - optional dependency
+		raise ImportError(
+			"ROI parquet export requires pyarrow. Install pyarrow or use --roi-format txt."
+		) from exc
+
+	if not roi_parquet_path.exists():
+		raise FileNotFoundError(roi_parquet_path.as_posix())
+
+	table = pq.read_table(
+		roi_parquet_path.as_posix(),
+		columns=["clip_stem", "onsets_sec", "offsets_sec"],
+	)
+	payload = table.to_pydict()
+	stems = payload.get("clip_stem") or []
+	onsets = payload.get("onsets_sec") or []
+	offsets = payload.get("offsets_sec") or []
+	if not (len(stems) == len(onsets) == len(offsets)):
+		raise ValueError(f"Malformed ROI parquet payload: {roi_parquet_path.as_posix()}")
+
+	index: Dict[str, np.ndarray] = {}
+	for stem, ons, offs in zip(stems, onsets, offsets):
+		ons = ons or []
+		offs = offs or []
+		count = min(len(ons), len(offs))
+		if count <= 0:
+			index[str(stem)] = np.zeros((0, 2), dtype=np.float64)
+			continue
+		arr = np.stack(
+			[
+				np.asarray(ons[:count], dtype=np.float64),
+				np.asarray(offs[:count], dtype=np.float64),
+			],
+			axis=1,
+		)
+		mask = (
+			np.isfinite(arr[:, 0])
+			& np.isfinite(arr[:, 1])
+			& (arr[:, 1] > arr[:, 0])
+		)
+		index[str(stem)] = arr[mask]
+	return index
+
+
+def _lookup_parquet_rois(
+	cache: Dict[str, Dict[str, np.ndarray]],
+	roi_dir: str,
+	roi_parquet_name: str,
+	clip_stem: str,
+) -> np.ndarray:
+	key = os.path.abspath(str(roi_dir))
+	if key not in cache:
+		cache[key] = _load_parquet_roi_index(Path(roi_dir) / str(roi_parquet_name))
+	return cache[key].get(str(clip_stem), np.zeros((0, 2), dtype=np.float64))
+
+
 def main() -> None:
 	parser = argparse.ArgumentParser(
 		description="Export per-clip latent sequences from a birdsong manifest."
@@ -116,6 +174,8 @@ def main() -> None:
 
 	parser.add_argument("--audio-root", type=Path, default=None)
 	parser.add_argument("--roi-root", type=Path, default=None)
+	parser.add_argument("--roi-format", choices=["txt", "parquet"], default="txt")
+	parser.add_argument("--roi-parquet-name", type=str, default="roi.parquet")
 	parser.add_argument("--max-dirs", type=int, default=None)
 	parser.add_argument("--max-files-per-dir", type=int, default=None)
 	parser.add_argument("--max-clips", type=int, default=None)
@@ -183,13 +243,19 @@ def main() -> None:
 		for wav_path in wavs:
 			clip_id = _clip_id_for_wav(audio_dir_rel, wav_path)
 			roi_path = None
+			roi_parquet_path = None
 			if not args.no_rois:
-				roi_path = os.path.join(roi_dir, f"{Path(wav_path).stem}.txt")
+				if args.roi_format == "txt":
+					roi_path = os.path.join(roi_dir, f"{Path(wav_path).stem}.txt")
+				else:
+					roi_parquet_path = os.path.join(roi_dir, str(args.roi_parquet_name))
 			tasks.append(
 				{
 					"clip_id": clip_id,
 					"audio_path": wav_path,
+					"roi_dir": roi_dir,
 					"roi_path": roi_path,
+					"roi_parquet_path": roi_parquet_path,
 					"entry": entry,
 				}
 			)
@@ -203,7 +269,7 @@ def main() -> None:
 
 	if args.dry_run:
 		print(
-			f"Planned clips: {len(tasks)} (split={args.split} shard={args.shard_index}/{args.num_shards})"
+			f"Planned clips: {len(tasks)} (split={args.split} shard={args.shard_index}/{args.num_shards}, roi_format={args.roi_format})"
 		)
 		for task in tasks[:10]:
 			print(f"  {task['clip_id']}  {task['audio_path']}")
@@ -222,8 +288,12 @@ def main() -> None:
 	start_time = time.time()
 	exported = 0
 	skipped = 0
+	skipped_existing = 0
+	skipped_no_roi = 0
+	skipped_no_windows = 0
 	failed = 0
 	errors: list[dict] = []
+	parquet_roi_cache: Dict[str, Dict[str, np.ndarray]] = {}
 
 	total = len(tasks)
 	print(f"Exporting {total} clips to: {args.out_dir.as_posix()}")
@@ -232,6 +302,8 @@ def main() -> None:
 		clip_id = str(task["clip_id"])
 		audio_path = str(task["audio_path"])
 		roi_path = task.get("roi_path")
+		roi_parquet_path = task.get("roi_parquet_path")
+		roi_dir = str(task.get("roi_dir") or "")
 		entry = task.get("entry") or {}
 
 		out_prefix = args.out_dir / Path(clip_id)
@@ -240,14 +312,29 @@ def main() -> None:
 
 		if args.skip_existing and not args.force and _is_complete(out_npz, out_json):
 			skipped += 1
+			skipped_existing += 1
 			continue
 
 		out_prefix.parent.mkdir(parents=True, exist_ok=True)
 
 		try:
+			rois = None
+			if (not args.no_rois) and args.roi_format == "parquet":
+				rois = _lookup_parquet_rois(
+					cache=parquet_roi_cache,
+					roi_dir=roi_dir,
+					roi_parquet_name=str(args.roi_parquet_name),
+					clip_stem=Path(audio_path).stem,
+				)
+				if rois.size == 0:
+					skipped += 1
+					skipped_no_roi += 1
+					continue
+
 			seq = encoder.encode(
 				audio_path=audio_path,
 				roi_path=roi_path,
+				rois=rois,
 				batch_size=args.batch_size,
 				hop_length_sec=args.hop_length_sec,
 				start_time_sec=args.start_time_sec,
@@ -258,6 +345,9 @@ def main() -> None:
 			seq.metadata["clip_id"] = clip_id
 			seq.metadata["manifest_path"] = args.manifest.as_posix()
 			seq.metadata["entry"] = _minimal_entry_metadata(entry)
+			if roi_parquet_path is not None:
+				seq.metadata["roi_path"] = str(roi_parquet_path)
+				seq.metadata["roi_source"] = "parquet"
 
 			arrays = seq.to_npz_arrays()
 			np.savez_compressed(out_npz.as_posix(), **arrays)
@@ -265,13 +355,18 @@ def main() -> None:
 				json.dump(seq.metadata, handle, indent=2, sort_keys=False)
 			exported += 1
 		except Exception as exc:
+			msg = str(exc)
+			if "No windows available after ROI/time filtering." in msg:
+				skipped += 1
+				skipped_no_windows += 1
+				continue
 			failed += 1
 			errors.append(
 				{
 					"clip_id": clip_id,
 					"audio_path": audio_path,
-					"roi_path": roi_path,
-					"error": str(exc),
+					"roi_path": roi_path or roi_parquet_path,
+					"error": msg,
 				}
 			)
 			print(f"[{idx}/{total}] Failed: {clip_id} ({exc})", file=sys.stderr)
@@ -292,11 +387,16 @@ def main() -> None:
 		"checkpoint_path": args.checkpoint.as_posix(),
 		"out_dir": args.out_dir.as_posix(),
 		"split": args.split,
+		"roi_format": args.roi_format,
+		"roi_parquet_name": str(args.roi_parquet_name),
 		"num_shards": int(args.num_shards),
 		"shard_index": int(args.shard_index),
 		"total": int(total),
 		"exported": int(exported),
 		"skipped": int(skipped),
+		"skipped_existing": int(skipped_existing),
+		"skipped_no_roi": int(skipped_no_roi),
+		"skipped_no_windows": int(skipped_no_windows),
 		"failed": int(failed),
 		"errors": errors,
 	}
