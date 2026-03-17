@@ -26,6 +26,7 @@ from pytorch_lightning.loggers import TensorBoardLogger
 
 from ava.models.vae import VAE
 from ava.models.run_metadata import write_run_metadata
+from ava.models.training_dashboard import TrainingDashboardCallback
 
 
 def _unwrap_batch(batch):
@@ -562,6 +563,7 @@ def build_trainer(save_dir: str = "", epochs: int = 100,
 		))
 	if stopping_kwargs is not None:
 		callbacks.append(VAEMotivatedStoppingCallback(**stopping_kwargs))
+	callbacks.append(TrainingDashboardCallback(save_dir=save_dir))
 	if extra_callbacks:
 		callbacks.extend(extra_callbacks)
 	trainer_kwargs = dict(trainer_kwargs)

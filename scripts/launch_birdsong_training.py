@@ -326,6 +326,8 @@ def main() -> None:
             f"Training complete. Train files: {len(train_audio)} Test files: {len(test_audio)}"
         )
     print(f"Artifacts saved to: {args.save_dir}")
+    print(f"Dashboard HTML: {args.save_dir / 'training_dashboard.html'}")
+    print(f"Dashboard JSON: {args.save_dir / 'training_dashboard.json'}")
 
 
 if __name__ == "__main__":

@@ -42,6 +42,39 @@ This should periodically save the model, print train and test loss, and write
 a file in :code:`save_dir` called :code:`reconstruction.pdf` which displays
 several spectrograms and their reconstructions.
 
+Training Dashboard
+##################
+
+The Lightning training loop now also writes two dashboard artifacts into
+:code:`save_dir`:
+
+- :code:`training_dashboard.json`: structured status + metric history
+- :code:`training_dashboard.html`: self-contained progress page
+
+The HTML page refreshes automatically while the run is active and is intended
+to be easy to inspect from a remote machine. Because it is plain static HTML,
+you can serve it with any simple file server, copy it off a cloud instance, or
+sync it to object storage from an AWS job directory without running TensorBoard.
+
+For older runs that only have :code:`lightning_logs/`, you can backfill the
+same dashboard view from the saved TensorBoard event files:
+
+.. code:: bash
+
+	python scripts/render_training_dashboard.py \
+		--run-dir path/to/training_run \
+		--status completed
+
+If you want a quick remote preview over SSH, one straightforward option is:
+
+.. code:: bash
+
+	cd path/to/training_run
+	python -m http.server 8000
+
+Then port-forward or expose that directory and open
+:code:`training_dashboard.html` in a browser.
+
 Residual blocks are the current default. To be explicit, pass
 :code:`conv_arch="residual"` to :code:`train_vae` or :class:`ava.models.vae.VAE`,
 or set :code:`training.conv_arch: residual` in fixed-window configs. The legacy
