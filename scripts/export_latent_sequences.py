@@ -347,7 +347,7 @@ def main() -> None:
 			seq.metadata["entry"] = _minimal_entry_metadata(entry)
 			if roi_parquet_path is not None:
 				seq.metadata["roi_path"] = str(roi_parquet_path)
-				seq.metadata["roi_source"] = "parquet"
+				seq.metadata["roi_storage"] = "parquet"
 
 			arrays = seq.to_npz_arrays()
 			np.savez_compressed(out_npz.as_posix(), **arrays)

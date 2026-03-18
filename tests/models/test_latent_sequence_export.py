@@ -18,6 +18,7 @@ from ava.models.fixed_window_config import (  # noqa: E402
 )
 from ava.models.latent_sequence import (  # noqa: E402
 	LatentSequenceEncoder,
+	_to_float_audio,
 	encode_clip_to_latent_sequence,
 )
 from ava.models.vae import VAE  # noqa: E402
@@ -84,6 +85,14 @@ def _assert_strictly_increasing(values: np.ndarray) -> None:
 	assert values.ndim == 1
 	deltas = np.diff(values)
 	assert (deltas > 0).all()
+
+
+def test_to_float_audio_preserves_integer_pcm_scale():
+	audio = np.asarray([-32768, -1024, 0, 1024, 32767], dtype=np.int16)
+	converted = _to_float_audio(audio)
+
+	assert converted.dtype == np.float64
+	assert np.array_equal(converted, audio.astype(np.float64))
 
 
 def test_encode_clip_to_latent_sequence_invariants(tmp_path):
@@ -188,6 +197,7 @@ def test_latent_sequence_encoder_accepts_in_memory_rois(tmp_path):
 	assert seq.mu.shape[0] > 0
 	assert seq.metadata["roi_source"] == "array"
 	assert seq.metadata["roi_path"] is None
+	assert seq.metadata["roi_storage"] is None
 
 
 def test_export_latent_sequences_cli_writes_npz_and_json(tmp_path):
@@ -462,4 +472,5 @@ def test_export_latent_sequences_cli_supports_parquet_rois(tmp_path):
 
 	meta = json.loads(json_path.read_text(encoding="utf-8"))
 	assert meta["roi_source"] == "array"
+	assert meta["roi_storage"] == "parquet"
 	assert meta["roi_path"].endswith("roi.parquet")

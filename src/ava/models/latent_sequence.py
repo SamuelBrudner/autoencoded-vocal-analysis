@@ -87,9 +87,8 @@ def _to_float_audio(audio: np.ndarray) -> np.ndarray:
 	if np.issubdtype(audio.dtype, np.floating):
 		return audio.astype(np.float64, copy=False)
 	if np.issubdtype(audio.dtype, np.integer):
-		info = np.iinfo(audio.dtype)
-		denom = float(max(abs(int(info.min)), int(info.max)))
-		return audio.astype(np.float64) / denom
+		# Keep integer PCM amplitude scale to match training preprocessing.
+		return audio.astype(np.float64)
 	raise TypeError(f"Unsupported audio dtype {audio.dtype!r}.")
 
 
@@ -475,6 +474,9 @@ class LatentSequenceEncoder:
 			"sample_rate_hz": fs_target,
 			"roi_path": Path(roi_path).as_posix() if roi_path is not None else None,
 			"roi_source": "array" if rois is not None else ("path" if roi_path is not None else None),
+			"roi_storage": (
+				Path(roi_path).suffix.lstrip(".").lower() if roi_path is not None else None
+			),
 			"config_path": self.config_path.as_posix() if self.config_path is not None else None,
 			"checkpoint_path": self.checkpoint_path.as_posix(),
 		}
