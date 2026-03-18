@@ -1,0 +1,48 @@
+{
+  "schema_version": "ava_latent_sequence_v1",
+  "runs": [
+    {
+      "name": "latent_no_energy",
+      "out_dir": "docs/runs/artifacts/autoencoded-vocal-analysis-0fq.4/latent_no_energy",
+      "expect_energy": false,
+      "num_npz": 1,
+      "num_json": 1,
+      "ok": true,
+      "errors": [],
+      "clips": [
+        {
+          "stem": "latent_no_energy/day 75 bells/R521/49/521_26113_on_July_30_13_32_35",
+          "npz_path": "docs/runs/artifacts/autoencoded-vocal-analysis-0fq.4/latent_no_energy/day 75 bells/R521/49/521_26113_on_July_30_13_32_35.npz",
+          "json_path": "docs/runs/artifacts/autoencoded-vocal-analysis-0fq.4/latent_no_energy/day 75 bells/R521/49/521_26113_on_July_30_13_32_35.json",
+          "ok": true,
+          "errors": [],
+          "has_energy": false,
+          "num_windows": 99,
+          "z_dim": 32
+        }
+      ]
+    },
+    {
+      "name": "latent_with_energy",
+      "out_dir": "docs/runs/artifacts/autoencoded-vocal-analysis-0fq.4/latent_with_energy",
+      "expect_energy": true,
+      "num_npz": 1,
+      "num_json": 1,
+      "ok": true,
+      "errors": [],
+      "clips": [
+        {
+          "stem": "latent_with_energy/day 75 bells/R521/49/521_26113_on_July_30_13_32_35",
+          "npz_path": "docs/runs/artifacts/autoencoded-vocal-analysis-0fq.4/latent_with_energy/day 75 bells/R521/49/521_26113_on_July_30_13_32_35.npz",
+          "json_path": "docs/runs/artifacts/autoencoded-vocal-analysis-0fq.4/latent_with_energy/day 75 bells/R521/49/521_26113_on_July_30_13_32_35.json",
+          "ok": true,
+          "errors": [],
+          "has_energy": true,
+          "num_windows": 99,
+          "z_dim": 32
+        }
+      ]
+    }
+  ],
+  "ok": true
+}

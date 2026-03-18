@@ -47,6 +47,9 @@ training:
   lr: 0.001
   z_dim: 32
   model_precision: 10.0
+  learn_observation_scale: false
+  log_precision_min:
+  log_precision_max:
   epochs: 100
   test_freq:
   save_freq: 10
@@ -57,6 +60,7 @@ training:
     - 6
   vis_filename: reconstruction.pdf
   posterior_type: diag
+  conv_arch: residual
   kl_beta: 1.0
   kl_warmup_epochs: 10
   compile_model: false

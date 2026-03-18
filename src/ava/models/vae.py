@@ -18,6 +18,7 @@ VAE References
 __date__ = "November 2018 - November 2019"
 
 
+import math
 import numpy as np
 import os
 from types import SimpleNamespace
@@ -26,6 +27,7 @@ try:
 	import torch
 	from torch.distributions import LowRankMultivariateNormal
 	import torch.nn as nn
+	import torch.nn.functional as F
 	from torch.optim import Adam
 except ImportError as exc:  # pragma: no cover - optional in some envs
 	torch = None
@@ -33,10 +35,12 @@ except ImportError as exc:  # pragma: no cover - optional in some envs
 	Adam = None
 	_TORCH_IMPORT_ERROR = exc
 	nn = SimpleNamespace(Module=object)
+	F = None
 else:
 	_TORCH_IMPORT_ERROR = None
 
 from ava.plotting.grid_plot import grid_plot
+from ava.models.blocks import ResBlock2D, ResBlockUp2D
 
 
 DEFAULT_INPUT_SHAPE = (128, 128)
@@ -45,7 +49,6 @@ X_SHAPE = DEFAULT_INPUT_SHAPE
 """Legacy alias for the default processed spectrogram shape."""
 X_DIM = int(np.prod(X_SHAPE))
 """Legacy default spectrogram dimension: ``freq_bins * time_bins``."""
-
 
 
 class VAE(nn.Module):
@@ -60,7 +63,10 @@ class VAE(nn.Module):
 	z_dim : int, optional
 		Latent dimension. Defaults to ``32``.
 	model_precision : float, optional
-		Precision of the observation model. Defaults to ``10.0``.
+		Initial precision of the observation model. Defaults to ``10.0``.
+	learn_observation_scale : bool, optional
+		Whether to learn the observation precision instead of keeping it fixed.
+		Defaults to ``False``.
 	device_name : {'cpu', 'cuda', 'auto'}, optional
 		Name of device to train the model on. When ``'auto'`` is passed,
 		``'cuda'`` is chosen if ``torch.cuda.is_available()``, otherwise
@@ -69,6 +75,14 @@ class VAE(nn.Module):
 		Expected spectrogram shape as ``(freq_bins, time_bins)``.
 	posterior_type : {"diag", "lowrank"}, optional
 		Posterior covariance structure.
+	conv_arch : {"plain", "residual"}, optional
+		Decoder convolutional architecture. The decoder now uses residual
+		blocks; ``"plain"`` is retained as a legacy alias for backward
+		compatibility.
+	decoder_type : {"upsample", "convtranspose"}, optional
+		Decoder upsampling implementation. ``"upsample"`` uses nearest-neighbor
+		upsampling plus convolutions, while ``"convtranspose"`` uses
+		ConvTranspose2d layers for legacy compatibility.
 
 	Notes
 	-----
@@ -88,12 +102,17 @@ class VAE(nn.Module):
 
 	The convolutional stack downsamples the input three times with stride-2
 	convolutions. The expected spectrogram shape is configurable via
-	``input_shape``, which drives the linear layer sizes and decoder
-	output_padding so reconstructions match the input dimensions.
+	``input_shape``, which drives the linear layer sizes and decoder upsampling
+	so reconstructions match the input dimensions.
 	"""
 
 	def __init__(self, save_dir='', lr=1e-3, z_dim=32, model_precision=10.0,
-		device_name="auto", input_shape=X_SHAPE, posterior_type="diag"):
+		learn_observation_scale=False, device_name="auto",
+		input_shape=X_SHAPE, posterior_type="diag", conv_arch="plain",
+		decoder_type="upsample",
+		build_optimizer=True,
+		log_precision_min=None,
+		log_precision_max=None):
 		"""Construct a VAE.
 
 		Parameters
@@ -106,8 +125,11 @@ class VAE(nn.Module):
 		z_dim : int, optional
 			Dimension of the latent space. Defaults to 32.
 		model_precision : float, optional
-			Precision of the noise model, p(x|z) = N(mu(z), \Lambda) where
-			\Lambda = model_precision * I. Defaults to 10.0.
+			Initial precision of the noise model, p(x|z) = N(mu(z), \Lambda)
+			where \Lambda = model_precision * I. Defaults to 10.0.
+		learn_observation_scale : bool, optional
+			Whether to learn the observation precision instead of keeping it
+			fixed. Defaults to ``False``.
 		device_name: str, optional
 			Name of device to train the model on. Valid options are ["cpu",
 			"cuda", "auto"]. "auto" will choose "cuda" if it is available.
@@ -120,6 +142,18 @@ class VAE(nn.Module):
 			parameterized by ``(mu, logvar)`` for speed, while ``"lowrank"``
 			retains the legacy low-rank-plus-diagonal posterior. Defaults to
 			``"diag"``.
+		conv_arch : {"plain", "residual"}, optional
+			Decoder convolutional architecture. Residual blocks are used in the
+			decoder; ``"plain"`` is accepted as a legacy alias. Defaults to
+			``"plain"``.
+		decoder_type : {"upsample", "convtranspose"}, optional
+			Decoder upsampling implementation. ``"upsample"`` uses
+			nearest-neighbor upsampling plus convolutions, while
+			``"convtranspose"`` uses ConvTranspose2d layers for legacy
+			compatibility. Defaults to ``"upsample"``.
+		build_optimizer : bool, optional
+			Whether to construct the Adam optimizer during initialization.
+			Defaults to ``True``.
 
 		Note
 		----
@@ -136,10 +170,27 @@ class VAE(nn.Module):
 		self.save_dir = save_dir
 		self.lr = lr
 		self.z_dim = z_dim
-		self.model_precision = model_precision
+		self.learn_observation_scale = bool(learn_observation_scale)
+		model_precision = self._coerce_positive_float(
+			model_precision, "model_precision"
+		)
+		log_precision = math.log(model_precision)
+		log_precision_tensor = torch.tensor(
+			log_precision, dtype=torch.get_default_dtype()
+		)
+		if self.learn_observation_scale:
+			self.log_precision = nn.Parameter(log_precision_tensor)
+		else:
+			self.register_buffer("log_precision", log_precision_tensor)
+		self.set_log_precision_bounds(
+			log_precision_min=log_precision_min,
+			log_precision_max=log_precision_max,
+		)
 		self.input_shape = self._normalize_input_shape(input_shape)
 		self.input_dim = int(np.prod(self.input_shape))
 		self.posterior_type = self._normalize_posterior_type(posterior_type)
+		self.conv_arch = self._normalize_conv_arch(conv_arch)
+		self.decoder_type = self._normalize_decoder_type(decoder_type)
 		assert device_name != "cuda" or torch.cuda.is_available()
 		if device_name == "auto":
 			device_name = "cuda" if torch.cuda.is_available() else "cpu"
@@ -147,7 +198,9 @@ class VAE(nn.Module):
 		if self.save_dir != '' and not os.path.exists(self.save_dir):
 			os.makedirs(self.save_dir)
 		self._build_network()
-		self.optimizer = Adam(self.parameters(), lr=self.lr)
+		self.optimizer = None
+		if build_optimizer:
+			self._ensure_optimizer()
 		self.epoch = 0
 		self.loss = {'train':{}, 'test':{}}
 		self.to(self._requested_device)
@@ -156,6 +209,66 @@ class VAE(nn.Module):
 	@property
 	def device(self):
 		return next(self.parameters()).device
+
+
+	@property
+	def model_precision(self):
+		"""Return the current observation precision as a float."""
+		return float(torch.exp(self._log_precision_tensor()).detach().cpu())
+
+
+	@model_precision.setter
+	def model_precision(self, value):
+		value = self._coerce_positive_float(value, "model_precision")
+		log_precision = math.log(value)
+		if not hasattr(self, "log_precision"):
+			raise AttributeError("log_precision has not been initialized.")
+		with torch.no_grad():
+			self.log_precision.copy_(
+				self.log_precision.new_tensor(log_precision)
+			)
+
+	def set_log_precision_bounds(
+			self,
+			log_precision_min=None,
+			log_precision_max=None,
+	) -> None:
+		"""Optionally clamp log-precision for numerical stability."""
+		log_precision_min = self._coerce_optional_float(
+			log_precision_min, "log_precision_min"
+		)
+		log_precision_max = self._coerce_optional_float(
+			log_precision_max, "log_precision_max"
+		)
+		if (log_precision_min is not None and log_precision_max is not None
+				and log_precision_min > log_precision_max):
+			raise ValueError("log_precision_min must be <= log_precision_max.")
+		self.log_precision_min = log_precision_min
+		self.log_precision_max = log_precision_max
+
+	def _log_precision_tensor(self):
+		log_precision = self.log_precision
+		if self.log_precision_min is None and self.log_precision_max is None:
+			return log_precision
+		if self.log_precision_min is not None and self.log_precision_max is not None:
+			return torch.clamp(
+				log_precision,
+				min=float(self.log_precision_min),
+				max=float(self.log_precision_max),
+			)
+		if self.log_precision_min is not None:
+			return torch.clamp(
+				log_precision,
+				min=float(self.log_precision_min),
+			)
+		return torch.clamp(
+			log_precision,
+			max=float(self.log_precision_max),
+		)
+
+
+	def _precision_tensor(self):
+		return torch.exp(self._log_precision_tensor())
 
 
 	@staticmethod
@@ -186,6 +299,57 @@ class VAE(nn.Module):
 
 
 	@staticmethod
+	def _normalize_conv_arch(conv_arch):
+		if conv_arch is None:
+			return "residual"
+		value = str(conv_arch).strip().lower()
+		if value in {"plain", "legacy", "conv"}:
+			return "residual"
+		if value in {"residual", "resnet", "res"}:
+			return "residual"
+		raise ValueError("conv_arch must be 'residual' (legacy 'plain' accepted).")
+
+	@staticmethod
+	def _normalize_decoder_type(decoder_type):
+		if decoder_type is None:
+			return "upsample"
+		value = str(decoder_type).strip().lower()
+		if value in {"upsample", "upsampling", "resize", "nearest"}:
+			return "upsample"
+		if value in {"convtranspose", "conv_transpose", "deconv", "transpose",
+				"legacy"}:
+			return "convtranspose"
+		raise ValueError(
+			"decoder_type must be 'upsample' or 'convtranspose'."
+		)
+
+
+	@staticmethod
+	def _coerce_positive_float(value, name):
+		try:
+			value = float(value)
+		except (TypeError, ValueError) as exc:
+			raise ValueError(f"{name} must be a positive float.") from exc
+		if not math.isfinite(value) or value <= 0:
+			raise ValueError(f"{name} must be a positive float.")
+		return value
+
+	@staticmethod
+	def _coerce_optional_float(value, name):
+		if value is None:
+			return None
+		if isinstance(value, str) and not value.strip():
+			return None
+		try:
+			value = float(value)
+		except (TypeError, ValueError) as exc:
+			raise ValueError(f"{name} must be a float or null.") from exc
+		if not math.isfinite(value):
+			raise ValueError(f"{name} must be a finite float or null.")
+		return value
+
+
+	@staticmethod
 	def _make_norm(num_channels, max_groups=8):
 		groups = min(max_groups, num_channels)
 		while groups > 1 and num_channels % groups != 0:
@@ -196,6 +360,19 @@ class VAE(nn.Module):
 	@staticmethod
 	def _downsample_dim(size):
 		return (size + 1) // 2
+
+	@staticmethod
+	def _output_padding_dim(input_size, target_size, kernel_size=3,
+			stride=2, padding=1):
+		base = (input_size - 1) * stride - 2 * padding + kernel_size
+		output_padding = target_size - base
+		if output_padding < 0 or output_padding >= stride:
+			raise ValueError(
+				"Cannot match target size "
+				f"{target_size} from input size {input_size} "
+				"with ConvTranspose2d configuration."
+			)
+		return int(output_padding)
 
 
 	@classmethod
@@ -209,51 +386,14 @@ class VAE(nn.Module):
 		return shapes
 
 
-	@staticmethod
-	def _output_padding_for(target_size, input_size):
-		padding = target_size - (2 * input_size - 1)
-		if padding not in (0, 1):
-			raise ValueError(
-				"Input shape cannot be reconstructed with current decoder."
-			)
-		return padding
-
-
-	@classmethod
-	def _compute_output_paddings(cls, shapes):
-		pad_stage_2 = (
-			cls._output_padding_for(shapes[2][0], shapes[3][0]),
-			cls._output_padding_for(shapes[2][1], shapes[3][1]),
-		)
-		pad_stage_4 = (
-			cls._output_padding_for(shapes[1][0], shapes[2][0]),
-			cls._output_padding_for(shapes[1][1], shapes[2][1]),
-		)
-		pad_stage_6 = (
-			cls._output_padding_for(shapes[0][0], shapes[1][0]),
-			cls._output_padding_for(shapes[0][1], shapes[1][1]),
-		)
-		return {
-			"convt2": pad_stage_2,
-			"convt4": pad_stage_4,
-			"convt6": pad_stage_6,
-		}
-
-
 	def _infer_conv_shapes(self):
 		shapes = [self.input_shape]
 		with torch.no_grad():
 			x = torch.zeros(1, 1, *self.input_shape)
-			x = self._act(self.bn1(self.conv1(x)))
-			x = self._act(self.bn2(self.conv2(x)))
-			shapes.append((x.shape[2], x.shape[3]))
-			x = self._act(self.bn3(self.conv3(x)))
-			x = self._act(self.bn4(self.conv4(x)))
-			shapes.append((x.shape[2], x.shape[3]))
-			x = self._act(self.bn5(self.conv5(x)))
-			x = self._act(self.bn6(self.conv6(x)))
-			shapes.append((x.shape[2], x.shape[3]))
-			x = self._act(self.bn7(self.conv7(x)))
+			for block in self.enc_blocks:
+				x = block(x)
+				shapes.append((x.shape[2], x.shape[3]))
+			x = self.enc_out(x)
 		conv_feature_shape = (x.shape[1], x.shape[2], x.shape[3])
 		return shapes, conv_feature_shape
 
@@ -287,29 +427,34 @@ class VAE(nn.Module):
 		return (u.squeeze(-1) ** 2 + torch.exp(logvar)).mean()
 
 
+	def _ensure_optimizer(self):
+		if self.optimizer is None:
+			self.optimizer = Adam(self.parameters(), lr=self.lr)
+
+
+	@staticmethod
+	def _upsample_to(x, size):
+		return F.interpolate(x, size=size, mode="nearest")
+
+
 	def _build_network(self):
 		"""Define all the network layers."""
 		self._act = nn.SiLU()
-		# Encoder (Conv-Norm-Act)
-		self.conv1 = nn.Conv2d(1, 8, 3, 1, padding=1)
-		self.bn1 = self._make_norm(8)
-		self.conv2 = nn.Conv2d(8, 8, 3, 2, padding=1)
-		self.bn2 = self._make_norm(8)
-		self.conv3 = nn.Conv2d(8, 16, 3, 1, padding=1)
-		self.bn3 = self._make_norm(16)
-		self.conv4 = nn.Conv2d(16, 16, 3, 2, padding=1)
-		self.bn4 = self._make_norm(16)
-		self.conv5 = nn.Conv2d(16, 24, 3, 1, padding=1)
-		self.bn5 = self._make_norm(24)
-		self.conv6 = nn.Conv2d(24, 24, 3, 2, padding=1)
-		self.bn6 = self._make_norm(24)
-		self.conv7 = nn.Conv2d(24, 32, 3, 1, padding=1)
-		self.bn7 = self._make_norm(32)
+		self.enc_blocks = nn.ModuleList([
+			ResBlock2D(1, 8, stride=2, norm_factory=self._make_norm),
+			ResBlock2D(8, 16, stride=2, norm_factory=self._make_norm),
+			ResBlock2D(16, 24, stride=2, norm_factory=self._make_norm),
+		])
+		self.enc_out = nn.Sequential(
+			nn.Conv2d(24, 32, 3, 1, padding=1),
+			self._make_norm(32),
+			nn.SiLU(),
+		)
 
 		self._conv_shapes, self._conv_feature_shape = self._infer_conv_shapes()
 		self._conv_feature_dim = int(np.prod(self._conv_feature_shape))
-		self._decoder_output_padding = self._compute_output_paddings(
-			self._conv_shapes
+		self._decoder_upsample_shapes = list(
+			reversed(self._conv_shapes[:-1])
 		)
 
 		self.fc1 = nn.Linear(self._conv_feature_dim, 1024)
@@ -321,52 +466,72 @@ class VAE(nn.Module):
 		self.fc42 = nn.Linear(64, self.z_dim)
 		self.fc43 = nn.Linear(64, self.z_dim)
 
-		# Decoder (Act-Norm-ConvTranspose mirrors encoder)
+		# Decoder (upsample or convtranspose blocks mirror encoder)
 		self.fc5 = nn.Linear(self.z_dim, 64)
 		self.fc6 = nn.Linear(64, 256)
 		self.fc7 = nn.Linear(256, 1024)
 		self.fc8 = nn.Linear(1024, self._conv_feature_dim)
-		self.convt1 = nn.ConvTranspose2d(32, 24, 3, 1, padding=1)
-		self.convt2 = nn.ConvTranspose2d(
-			24, 24, 3, 2, padding=1,
-			output_padding=self._decoder_output_padding["convt2"]
-		)
-		self.convt3 = nn.ConvTranspose2d(24, 16, 3, 1, padding=1)
-		self.convt4 = nn.ConvTranspose2d(
-			16, 16, 3, 2, padding=1,
-			output_padding=self._decoder_output_padding["convt4"]
-		)
-		self.convt5 = nn.ConvTranspose2d(16, 8, 3, 1, padding=1)
-		self.convt6 = nn.ConvTranspose2d(
-			8, 8, 3, 2, padding=1,
-			output_padding=self._decoder_output_padding["convt6"]
-		)
-		self.convt7 = nn.ConvTranspose2d(8, 1, 3, 1, padding=1)
-		self.bn8 = self._make_norm(24)
-		self.bn9 = self._make_norm(24)
-		self.bn10 = self._make_norm(16)
-		self.bn11 = self._make_norm(16)
-		self.bn12 = self._make_norm(8)
-		self.bn13 = self._make_norm(8)
-		self.bn14 = nn.Identity()
+		if self.decoder_type == "upsample":
+			self.dec_blocks = nn.ModuleList([
+				ResBlockUp2D(32, 24, norm_factory=self._make_norm),
+				ResBlockUp2D(24, 16, norm_factory=self._make_norm),
+				ResBlockUp2D(16, 8, norm_factory=self._make_norm),
+			])
+		else:
+			output_paddings = []
+			current_shape = self._conv_feature_shape[1:]
+			for target_shape in self._decoder_upsample_shapes:
+				pad_h = self._output_padding_dim(
+					current_shape[0], target_shape[0]
+				)
+				pad_w = self._output_padding_dim(
+					current_shape[1], target_shape[1]
+				)
+				output_paddings.append((pad_h, pad_w))
+				current_shape = target_shape
+			self.dec_blocks = nn.ModuleList([
+				nn.Sequential(
+					nn.ConvTranspose2d(
+						32, 24, 3, stride=2, padding=1,
+						output_padding=output_paddings[0],
+					),
+					self._make_norm(24),
+					nn.SiLU(),
+				),
+				nn.Sequential(
+					nn.ConvTranspose2d(
+						24, 16, 3, stride=2, padding=1,
+						output_padding=output_paddings[1],
+					),
+					self._make_norm(16),
+					nn.SiLU(),
+				),
+				nn.Sequential(
+					nn.ConvTranspose2d(
+						16, 8, 3, stride=2, padding=1,
+						output_padding=output_paddings[2],
+					),
+					self._make_norm(8),
+					nn.SiLU(),
+				),
+			])
+		self.dec_out = nn.Conv2d(8, 1, 3, 1, padding=1)
 
 
 	def _get_layers(self):
 		"""Return a dictionary mapping names to network layers."""
-		return {'fc1':self.fc1, 'fc2':self.fc2, 'fc31':self.fc31,
-				'fc32':self.fc32, 'fc33':self.fc33, 'fc41':self.fc41,
-				'fc42':self.fc42, 'fc43':self.fc43, 'fc5':self.fc5,
-				'fc6':self.fc6, 'fc7':self.fc7, 'fc8':self.fc8, 'bn1':self.bn1,
-				'bn2':self.bn2, 'bn3':self.bn3, 'bn4':self.bn4, 'bn5':self.bn5,
-				'bn6':self.bn6, 'bn7':self.bn7, 'bn8':self.bn8, 'bn9':self.bn9,
-				'bn10':self.bn10, 'bn11':self.bn11, 'bn12':self.bn12,
-				'bn13':self.bn13, 'bn14':self.bn14, 'conv1':self.conv1,
-				'conv2':self.conv2, 'conv3':self.conv3, 'conv4':self.conv4,
-				'conv5':self.conv5, 'conv6':self.conv6, 'conv7':self.conv7,
-				'convt1':self.convt1, 'convt2':self.convt2,
-				'convt3':self.convt3, 'convt4':self.convt4,
-				'convt5':self.convt5, 'convt6':self.convt6,
-				'convt7':self.convt7}
+		layers = {
+			'fc1': self.fc1, 'fc2': self.fc2, 'fc31': self.fc31,
+			'fc32': self.fc32, 'fc33': self.fc33, 'fc41': self.fc41,
+			'fc42': self.fc42, 'fc43': self.fc43, 'fc5': self.fc5,
+			'fc6': self.fc6, 'fc7': self.fc7, 'fc8': self.fc8,
+			'enc_blocks': self.enc_blocks, 'enc_out': self.enc_out,
+		}
+		layers.update({
+			'dec_blocks': self.dec_blocks,
+			'dec_out': self.dec_out,
+		})
+		return layers
 
 
 	def encode(self, x):
@@ -398,13 +563,9 @@ class VAE(nn.Module):
 		"""
 		self._check_input(x)
 		x = x.unsqueeze(1)
-		x = self._act(self.bn1(self.conv1(x)))
-		x = self._act(self.bn2(self.conv2(x)))
-		x = self._act(self.bn3(self.conv3(x)))
-		x = self._act(self.bn4(self.conv4(x)))
-		x = self._act(self.bn5(self.conv5(x)))
-		x = self._act(self.bn6(self.conv6(x)))
-		x = self._act(self.bn7(self.conv7(x)))
+		for block in self.enc_blocks:
+			x = block(x)
+		x = self.enc_out(x)
 		x = x.view(x.shape[0], -1)
 		x = self._act(self.fc1(x))
 		x = self._act(self.fc2(x))
@@ -429,7 +590,9 @@ class VAE(nn.Module):
 		.. math:: \Lambda = \mathtt{model\_precision} \cdot I
 
 		where :math:`\mu` is a deterministic function of `z`, :math:`\Lambda` is
-		a precision matrix, and :math:`I` is the identity matrix.
+		a precision matrix, and :math:`I` is the identity matrix. When
+		``learn_observation_scale=True``, :math:`\mathtt{model\_precision}` is
+		learned during training.
 
 		Parameters
 		----------
@@ -447,13 +610,14 @@ class VAE(nn.Module):
 		z = self._act(self.fc7(z))
 		z = self._act(self.fc8(z))
 		z = z.view(-1, *self._conv_feature_shape)
-		z = self._act(self.bn8(self.convt1(z)))
-		z = self._act(self.bn9(self.convt2(z)))
-		z = self._act(self.bn10(self.convt3(z)))
-		z = self._act(self.bn11(self.convt4(z)))
-		z = self._act(self.bn12(self.convt5(z)))
-		z = self._act(self.bn13(self.convt6(z)))
-		z = self.convt7(z)
+		if self.decoder_type == "upsample":
+			for block, size in zip(self.dec_blocks,
+					self._decoder_upsample_shapes):
+				z = block(z, size)
+		else:
+			for block in self.dec_blocks:
+				z = block(z)
+		z = self.dec_out(z)
 		return z.view(-1, self.input_dim)
 
 
@@ -490,10 +654,19 @@ class VAE(nn.Module):
 		x_rec = self.decode(z).view(-1, *self.input_shape)
 		if return_latent_rec:
 			return (
-				z.detach().cpu().numpy(),
-				x_rec.detach().cpu().numpy(),
+				self._to_numpy(z),
+				self._to_numpy(x_rec),
 			)
 		return x_rec, mu, logvar, z, u
+
+	def _to_numpy(self, tensor: "torch.Tensor") -> np.ndarray:
+		tensor = tensor.detach().cpu()
+		try:
+			return tensor.numpy()
+		except RuntimeError as exc:
+			if "Numpy is not available" not in str(exc):
+				raise
+			return np.array(tensor.tolist())
 
 
 	def _compute_loss(self, x, beta=1.0):
@@ -502,11 +675,14 @@ class VAE(nn.Module):
 		latent_dist = self._posterior_distribution(mu, logvar, u)
 		x_flat = x.view(x.shape[0], -1)
 		recon_flat = recon.view(x.shape[0], -1)
+		log_precision = self._log_precision_tensor()
+		precision = self._precision_tensor()
+		log_two_pi = math.log(2 * math.pi)
 		pxz_term = -0.5 * x_flat.shape[1] * (
-			np.log(2 * np.pi / self.model_precision)
+			log_two_pi - log_precision
 		)
 		l2s = torch.sum(torch.pow(x_flat - recon_flat, 2), dim=1)
-		pxz_term = pxz_term - 0.5 * self.model_precision * torch.sum(l2s)
+		pxz_term = pxz_term - 0.5 * precision * torch.sum(l2s)
 		log_pz = -0.5 * (
 			torch.sum(torch.pow(z, 2)) + self.z_dim * np.log(2 * np.pi)
 		)
@@ -545,6 +721,7 @@ class VAE(nn.Module):
 			`train_loader`.
 		"""
 		self.train()
+		self._ensure_optimizer()
 		train_loss = 0.0
 		for batch_idx, data in enumerate(train_loader):
 			self.optimizer.zero_grad()
@@ -640,6 +817,7 @@ class VAE(nn.Module):
 		state = {}
 		for layer_name in layers:
 			state[layer_name] = layers[layer_name].state_dict()
+		self._ensure_optimizer()
 		state['optimizer_state'] = self.optimizer.state_dict()
 		state['loss'] = self.loss
 		state['z_dim'] = self.z_dim
@@ -648,11 +826,18 @@ class VAE(nn.Module):
 		state['epoch'] = self.epoch
 		state['lr'] = self.lr
 		state['save_dir'] = self.save_dir
+		state['conv_arch'] = self.conv_arch
+		state['model_precision'] = self.model_precision
+		state['log_precision'] = float(self.log_precision.detach().cpu())
+		state['log_precision_min'] = self.log_precision_min
+		state['log_precision_max'] = self.log_precision_max
+		state['learn_observation_scale'] = self.learn_observation_scale
+		state['decoder_type'] = self.decoder_type
 		filename = os.path.join(self.save_dir, filename)
 		torch.save(state, filename)
 
 
-	def load_state(self, filename):
+	def load_state(self, filename, load_optimizer=True):
 		"""
 		Load all the model parameters from the given ``.tar`` file.
 
@@ -662,6 +847,9 @@ class VAE(nn.Module):
 		----------
 		filename : str
 			File containing a model state.
+		load_optimizer : bool, optional
+			Whether to restore optimizer state from the checkpoint when present.
+			Defaults to ``True``.
 
 		Note
 		----
@@ -677,15 +865,73 @@ class VAE(nn.Module):
 					f"{tuple(checkpoint['input_shape'])} does not match "
 					f"model input_shape {self.input_shape}."
 				)
+		checkpoint_arch = checkpoint.get('conv_arch', 'plain')
+		if checkpoint_arch in {"plain", "legacy", "conv"}:
+			raise ValueError(
+				"Checkpoint decoder uses the legacy conv stack which is "
+				"incompatible with the residual-block decoder. Retrain or "
+				"export a compatible checkpoint."
+			)
+		if checkpoint_arch != self.conv_arch:
+			raise ValueError(
+				"Checkpoint conv_arch "
+				f"{checkpoint_arch!r} does not match model conv_arch "
+				f"{self.conv_arch!r}."
+			)
+		if "enc_blocks" not in checkpoint:
+			raise ValueError(
+				"Checkpoint encoder uses the legacy conv stack which is "
+				"incompatible with the residual-block encoder. Retrain or "
+				"export a compatible checkpoint."
+			)
+		if "dec_blocks" not in checkpoint:
+			raise ValueError(
+				"Checkpoint decoder uses the legacy conv stack which is "
+				"incompatible with the residual-block decoder. Retrain or "
+				"export a compatible checkpoint."
+			)
+		checkpoint_learned = checkpoint.get("learn_observation_scale")
+		if (checkpoint_learned is not None
+				and checkpoint_learned != self.learn_observation_scale):
+			raise ValueError(
+				"Checkpoint learn_observation_scale "
+				f"{checkpoint_learned!r} does not match model setting "
+				f"{self.learn_observation_scale!r}."
+			)
+		checkpoint_decoder = checkpoint.get("decoder_type", "convtranspose")
+		checkpoint_decoder = self._normalize_decoder_type(checkpoint_decoder)
+		if checkpoint_decoder != self.decoder_type:
+			raise ValueError(
+				"Checkpoint decoder_type "
+				f"{checkpoint_decoder!r} does not match model decoder_type "
+				f"{self.decoder_type!r}. Initialize the VAE with "
+				"decoder_type set to the checkpoint value or retrain."
+			)
 		if 'posterior_type' in checkpoint:
 			self.posterior_type = checkpoint['posterior_type']
 		else:
 			self.posterior_type = "lowrank"
+		if "log_precision" in checkpoint:
+			with torch.no_grad():
+				self.log_precision.copy_(
+					self.log_precision.new_tensor(checkpoint["log_precision"])
+				)
+		elif "model_precision" in checkpoint:
+			self.model_precision = checkpoint["model_precision"]
+		if "log_precision_min" in checkpoint or "log_precision_max" in checkpoint:
+			self.set_log_precision_bounds(
+				log_precision_min=checkpoint.get("log_precision_min"),
+				log_precision_max=checkpoint.get("log_precision_max"),
+			)
 		layers = self._get_layers()
 		for layer_name in layers:
 			layer = layers[layer_name]
 			layer.load_state_dict(checkpoint[layer_name])
-		self.optimizer.load_state_dict(checkpoint['optimizer_state'])
+		optimizer_state = checkpoint.get("optimizer_state")
+		if load_optimizer and self.optimizer is None and optimizer_state is not None:
+			self._ensure_optimizer()
+		if load_optimizer and self.optimizer is not None and optimizer_state is not None:
+			self.optimizer.load_state_dict(optimizer_state)
 		self.loss = checkpoint['loss']
 		self.epoch = checkpoint['epoch']
 

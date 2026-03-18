@@ -22,11 +22,13 @@ This plan captures the staged approach from local validation to full-scale prepr
 ## Phase 2 — Medium-Scale Pilot (1–2 weeks)
 1) Expand to 10–20 birds, stratified by regime.
 2) Generate ROIs for all leaf dirs in the cohort.
+   - Use `examples/configs/birdsong_roi_medium_pilot.yaml` as the calibrated starting point for medium runs.
 3) Train longer (50–100 epochs).
 4) Check for collapse/overfit; tune kl_warmup/kl_beta.
 
 ## Phase 3 — Full Dataset Preprocessing
 1) Build a manifest of all leaf audio directories.
+   - Use `scripts/build_birdsong_manifest.py` (schema: `docs/birdsong_manifest.md`).
 2) Run ROI generation in parallel (local or cloud).
 3) Produce a ROI coverage report (files/segments per bird/regime).
 
@@ -39,3 +41,7 @@ This plan captures the staged approach from local validation to full-scale prepr
 - Train/test split should include all regimes and be stratified by bird to avoid leakage.
 - The fixed-window dataset uses ROI files (onset/offset in seconds) for sampling windows.
 - Use `examples/configs/fixed_window_finch_30ms_44k.yaml` as the baseline config.
+- Recommended `window_length` defaults:
+  - Smoke runs: start at `0.01` seconds unless ROI duration preflight supports longer windows.
+  - Medium pilot: target `0.03` seconds once ROI thresholds are tuned so most segments are at least 30 ms.
+- Run `scripts/run_birdsong_validation.py` preflight before training; it reports ROI duration stats and fails fast if `window_length` exceeds all available ROI segments.

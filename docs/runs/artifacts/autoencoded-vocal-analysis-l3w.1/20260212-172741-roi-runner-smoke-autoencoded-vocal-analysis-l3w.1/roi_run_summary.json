@@ -1,0 +1,18 @@
+{
+  "created_utc": "2026-02-12T17:28:18Z",
+  "manifest_path": "data/manifests/birdsong_manifest.json",
+  "segment_config": "examples/configs/birdsong_roi_medium_pilot.yaml",
+  "split": "train",
+  "audio_root": null,
+  "roi_root": null,
+  "num_shards": 1,
+  "shard_index": 0,
+  "planned_total": 2,
+  "skipped_existing": 0,
+  "total": 2,
+  "ok": 2,
+  "failed": 0,
+  "elapsed_sec": 6.188662767410278,
+  "dirs_per_sec": 0.3231715921785353,
+  "errors": []
+}

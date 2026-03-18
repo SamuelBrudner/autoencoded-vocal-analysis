@@ -1,0 +1,13 @@
+# Keep Docker build contexts small and avoid unsupported files (e.g. sockets).
+# This repo's ROI image only needs `src/` + `scripts/` (and optionally `docker/`).
+
+**
+
+!.dockerignore
+!docker/
+!docker/**
+!scripts/
+!scripts/**
+!src/
+!src/**
+

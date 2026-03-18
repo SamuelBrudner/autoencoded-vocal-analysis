@@ -15,7 +15,7 @@ def test_grid_plot_writes_file(tmp_path):
 
 
 def test_projection_plot_writes_file(tmp_path):
-	pytest.importorskip("umap")
+	pytest.importorskip("umap", exc_type=(ImportError, RuntimeError))
 	from ava.plotting.latent_projection import projection_plot
 
 	rng = np.random.default_rng(1)

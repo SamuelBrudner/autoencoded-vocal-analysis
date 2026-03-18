@@ -5,10 +5,15 @@ from __future__ import annotations
 
 import math
 import os
-from typing import Optional
+import warnings
+from typing import Optional, Union
 
 import torch
 import torch.nn.functional as F
+
+from ava.models.torch_onnx_compat import patch_torch_onnx_exporter
+
+patch_torch_onnx_exporter()
 
 try:
 	import pytorch_lightning as pl
@@ -20,6 +25,8 @@ except ImportError as exc:  # pragma: no cover - only hit when optional dep miss
 from pytorch_lightning.loggers import TensorBoardLogger
 
 from ava.models.vae import VAE
+from ava.models.run_metadata import write_run_metadata
+from ava.models.training_dashboard import TrainingDashboardCallback
 
 
 def _unwrap_batch(batch):
@@ -38,6 +45,23 @@ def _unwrap_batch(batch):
 	return batch
 
 
+def _extract_pair(batch):
+	if isinstance(batch, dict):
+		base = batch.get("x")
+		aug = batch.get("x_aug")
+		if torch.is_tensor(base) and torch.is_tensor(aug):
+			if base.shape == aug.shape:
+				return base, aug
+			raise ValueError("Paired tensors must have matching shapes.")
+	if isinstance(batch, (list, tuple)) and len(batch) == 2:
+		base, aug = batch
+		if torch.is_tensor(base) and torch.is_tensor(aug):
+			if base.shape == aug.shape:
+				return base, aug
+			raise ValueError("Paired tensors must have matching shapes.")
+	return None, None
+
+
 def _infer_input_shape(loaders: dict) -> tuple[int, int]:
 	loader = loaders.get("train")
 	if loader is None:
@@ -53,15 +77,39 @@ def _infer_input_shape(loaders: dict) -> tuple[int, int]:
 	raise ValueError("Training batches must have shape [batch, height, width].")
 
 
+def _mps_available() -> bool:
+	return hasattr(torch.backends, "mps") and torch.backends.mps.is_available()
+
+
+def _precision_requests_amp(precision: object) -> bool:
+	if precision is None:
+		return False
+	if isinstance(precision, (int, float)):
+		return int(precision) == 16
+	if isinstance(precision, str):
+		value = precision.strip().lower()
+		return value in ("16", "16-mixed", "bf16", "bf16-mixed")
+	return False
+
+
 class VAELightningModule(pl.LightningModule):
 	"""LightningModule wrapper for the VAE."""
 
 	def __init__(self, vae: Optional[VAE] = None, save_dir: str = "",
 		lr: float = 1e-3, z_dim: int = 32, model_precision: float = 10.0,
+		learn_observation_scale: bool = False,
+		log_precision_min: Optional[float] = None,
+		log_precision_max: Optional[float] = None,
 		input_shape: Optional[tuple[int, int]] = None,
-		posterior_type: str = "diag", compile_model: bool = False,
+		posterior_type: str = "diag", conv_arch: str = "plain",
+		decoder_type: str = "upsample",
+		compile_model: bool = False,
 		compile_kwargs: Optional[dict] = None, kl_beta: float = 1.0,
-		kl_warmup_epochs: int = 0):
+		kl_warmup_epochs: int = 0,
+		invariance_weight: float = 0.0,
+		invariance_warmup_epochs: int = 0,
+		invariance_loss: str = "mse",
+		invariance_stop_grad: Optional[Union[str, bool]] = "none"):
 		super().__init__()
 		if vae is None:
 			vae_kwargs = dict(
@@ -69,14 +117,23 @@ class VAELightningModule(pl.LightningModule):
 				lr=lr,
 				z_dim=z_dim,
 				model_precision=model_precision,
+				learn_observation_scale=learn_observation_scale,
+				log_precision_min=log_precision_min,
+				log_precision_max=log_precision_max,
 				device_name="cpu",
 				posterior_type=posterior_type,
+				conv_arch=conv_arch,
+				decoder_type=decoder_type,
 			)
 			if input_shape is not None:
 				vae_kwargs["input_shape"] = input_shape
 			vae = VAE(**vae_kwargs)
 		elif save_dir:
 			vae.save_dir = save_dir
+		vae.set_log_precision_bounds(
+			log_precision_min=log_precision_min,
+			log_precision_max=log_precision_max,
+		)
 		self.vae = vae
 		self.save_dir = self.vae.save_dir
 		self.save_hyperparameters(ignore=["vae"])
@@ -86,6 +143,14 @@ class VAELightningModule(pl.LightningModule):
 		self._val_loss_count = 0
 		self.kl_beta = kl_beta
 		self.kl_warmup_epochs = kl_warmup_epochs
+		self.invariance_weight = float(invariance_weight)
+		self.invariance_warmup_epochs = int(invariance_warmup_epochs)
+		self.invariance_loss = self._normalize_invariance_loss(invariance_loss)
+		self.invariance_stop_grad = self._normalize_stop_grad(invariance_stop_grad)
+		if self.invariance_weight < 0:
+			raise ValueError("invariance_weight must be non-negative.")
+		if self.invariance_warmup_epochs < 0:
+			raise ValueError("invariance_warmup_epochs must be non-negative.")
 		self._compiled_loss_fn = None
 		if compile_model:
 			if not hasattr(torch, "compile"):
@@ -101,16 +166,17 @@ class VAELightningModule(pl.LightningModule):
 	def forward(self, x, return_latent_rec: bool = False):
 		return self.vae(x, return_latent_rec=return_latent_rec)
 
-	def _compute_loss_and_stats_impl(self, batch):
+	def _compute_loss_and_stats_impl(self, batch, return_mu: bool = False):
 		recon, mu, logvar, z, u = self.vae(batch)
 		latent_dist = self.vae._posterior_distribution(mu, logvar, u)
 		x_flat = batch.view(batch.shape[0], -1)
 		recon_flat = recon.view(batch.shape[0], -1)
-		pxz_term = -0.5 * x_flat.shape[1] * math.log(
-			2 * math.pi / self.vae.model_precision
-		)
+		precision = self.vae._precision_tensor()
+		log_precision = torch.log(precision)
+		log_two_pi = math.log(2 * math.pi)
+		pxz_term = -0.5 * x_flat.shape[1] * (log_two_pi - log_precision)
 		l2s = torch.sum((x_flat - recon_flat) ** 2, dim=1)
-		pxz_term = pxz_term - 0.5 * self.vae.model_precision * torch.sum(l2s)
+		pxz_term = pxz_term - 0.5 * precision * torch.sum(l2s)
 		log_pz = -0.5 * (
 			torch.sum(z ** 2) + self.vae.z_dim * math.log(2 * math.pi)
 		)
@@ -123,19 +189,43 @@ class VAELightningModule(pl.LightningModule):
 		latent_var_mean = self.vae._latent_variance_mean(u, logvar)
 		recon_nll = (-pxz_term) / batch.shape[0]
 		kl_mean = kl / batch.shape[0]
+		if return_mu:
+			return (
+				loss,
+				recon_mse,
+				latent_mean_abs,
+				latent_var_mean,
+				recon_nll,
+				kl_mean,
+				kl_weight,
+				mu,
+			)
 		return loss, recon_mse, latent_mean_abs, latent_var_mean, recon_nll, kl_mean, kl_weight
 
 	def _compute_loss_and_stats(self, batch):
-		if self._compiled_loss_fn is None:
+		base, aug = self._split_batch(batch)
+		if aug is None and self.invariance_weight > 0:
+			raise ValueError(
+				"invariance_weight > 0 requires paired batches with x and x_aug."
+			)
+		if aug is None and self._compiled_loss_fn is not None:
 			(loss, recon_mse, latent_mean_abs, latent_var_mean, recon_nll,
 				kl_mean, kl_weight) = (
-				self._compute_loss_and_stats_impl(batch)
+				self._compiled_loss_fn(base)
 			)
+			mu_base = None
 		else:
-			(loss, recon_mse, latent_mean_abs, latent_var_mean, recon_nll,
-				kl_mean, kl_weight) = (
-				self._compiled_loss_fn(batch)
-			)
+			if aug is None:
+				(loss, recon_mse, latent_mean_abs, latent_var_mean, recon_nll,
+					kl_mean, kl_weight) = (
+					self._compute_loss_and_stats_impl(base)
+				)
+				mu_base = None
+			else:
+				(loss, recon_mse, latent_mean_abs, latent_var_mean, recon_nll,
+					kl_mean, kl_weight, mu_base) = (
+					self._compute_loss_and_stats_impl(base, return_mu=True)
+				)
 		stats = {
 			"recon_mse": recon_mse,
 			"recon_nll": recon_nll,
@@ -144,6 +234,19 @@ class VAELightningModule(pl.LightningModule):
 			"latent_mean_abs": latent_mean_abs,
 			"latent_var_mean": latent_var_mean,
 		}
+		precision = self.vae._precision_tensor().detach()
+		stats["log_precision"] = torch.log(precision)
+		stats["model_precision"] = precision
+		if aug is not None:
+			if mu_base is None:
+				mu_base, _, _ = self.vae.encode(base)
+			loss, inv_stats = self._apply_invariance_loss(
+				loss,
+				mu_base,
+				aug,
+				base.shape[0],
+			)
+			stats.update(inv_stats)
 		return loss, stats
 
 	def _log_stats(self, stats, stage: str, batch_size: int):
@@ -164,9 +267,93 @@ class VAELightningModule(pl.LightningModule):
 			progress = 1.0
 		return float(self.kl_beta) * progress
 
+	def _invariance_weight(self) -> float:
+		if self.invariance_warmup_epochs and self.invariance_warmup_epochs > 0:
+			progress = min(1.0, self.current_epoch / self.invariance_warmup_epochs)
+		else:
+			progress = 1.0
+		return float(self.invariance_weight) * progress
+
+	def _split_batch(self, batch):
+		base, aug = _extract_pair(batch)
+		if base is not None:
+			return base, aug
+		return _unwrap_batch(batch), None
+
+	def _normalize_invariance_loss(self, loss_name: str) -> str:
+		if loss_name is None:
+			return "mse"
+		if not isinstance(loss_name, str):
+			raise ValueError("invariance_loss must be a string.")
+		loss_name = loss_name.strip().lower()
+		if loss_name in ("mse", "l2"):
+			return "mse"
+		if loss_name in ("cosine", "cos", "cosine_distance"):
+			return "cosine"
+		raise ValueError("invariance_loss must be 'mse' or 'cosine'.")
+
+	def _normalize_stop_grad(self, stop_grad: Optional[Union[str, bool]]) -> str:
+		if isinstance(stop_grad, bool):
+			return "aug" if stop_grad else "none"
+		if stop_grad is None:
+			return "none"
+		if not isinstance(stop_grad, str):
+			raise ValueError("invariance_stop_grad must be a string or bool.")
+		stop_grad = stop_grad.strip().lower()
+		if stop_grad in ("none", "off", "false", "no"):
+			return "none"
+		if stop_grad in ("aug", "x_aug", "augmentation"):
+			return "aug"
+		if stop_grad in ("base", "x", "original"):
+			return "base"
+		raise ValueError(
+			"invariance_stop_grad must be 'none', 'base', or 'aug'."
+		)
+
+	def _apply_invariance_loss(self, loss, mu_base, aug, batch_size: int):
+		mu_aug, _, _ = self.vae.encode(aug)
+		mu_base_detached = mu_base
+		mu_aug_detached = mu_aug
+		if self.invariance_stop_grad == "base":
+			mu_base_detached = mu_base.detach()
+		elif self.invariance_stop_grad == "aug":
+			mu_aug_detached = mu_aug.detach()
+		if self.invariance_loss == "mse":
+			inv_loss = F.mse_loss(
+				mu_base_detached,
+				mu_aug_detached,
+				reduction="mean",
+			)
+		else:
+			cosine_sim = F.cosine_similarity(
+				mu_base_detached,
+				mu_aug_detached,
+				dim=1,
+			)
+			inv_loss = (1.0 - cosine_sim).mean()
+		inv_weight = loss.new_tensor(self._invariance_weight())
+		if inv_weight.item() > 0:
+			loss = loss + inv_weight * inv_loss * batch_size
+		mu_delta = (mu_base - mu_aug).detach()
+		inv_l2 = torch.norm(mu_delta, dim=1).mean()
+		inv_cosine = F.cosine_similarity(
+			mu_base.detach(),
+			mu_aug.detach(),
+			dim=1,
+		).mean()
+		stats = {
+			"invariance_loss": inv_loss,
+			"invariance_weight": inv_weight,
+			"invariance_mu_l2": inv_l2,
+			"invariance_mu_cosine": inv_cosine,
+		}
+		if inv_weight.item() == 0:
+			return loss, stats
+		return loss, stats
+
 	def training_step(self, batch, batch_idx):
 		loss, stats = self._compute_loss_and_stats(batch)
-		batch_size = batch.shape[0]
+		batch_size = self._split_batch(batch)[0].shape[0]
 		self._train_loss_sum += loss.detach().item()
 		self._train_loss_count += batch_size
 		self.log(
@@ -182,7 +369,7 @@ class VAELightningModule(pl.LightningModule):
 
 	def validation_step(self, batch, batch_idx):
 		loss, stats = self._compute_loss_and_stats(batch)
-		batch_size = batch.shape[0]
+		batch_size = self._split_batch(batch)[0].shape[0]
 		self._val_loss_sum += loss.detach().item()
 		self._val_loss_count += batch_size
 		self.log(
@@ -226,6 +413,8 @@ class VAECheckpointCallback(pl.Callback):
 		self.save_freq = save_freq
 
 	def on_train_epoch_end(self, trainer, pl_module):
+		if not getattr(trainer, "is_global_zero", True):
+			return
 		if self.save_freq is None:
 			return
 		epoch = int(trainer.current_epoch)
@@ -247,6 +436,8 @@ class VAEReconstructionCallback(pl.Callback):
 		self.filename = filename
 
 	def on_train_epoch_end(self, trainer, pl_module):
+		if not getattr(trainer, "is_global_zero", True):
+			return
 		if self.loader is None or self.vis_freq is None:
 			return
 		epoch = int(trainer.current_epoch)
@@ -372,13 +563,28 @@ def build_trainer(save_dir: str = "", epochs: int = 100,
 		))
 	if stopping_kwargs is not None:
 		callbacks.append(VAEMotivatedStoppingCallback(**stopping_kwargs))
+	callbacks.append(TrainingDashboardCallback(save_dir=save_dir))
 	if extra_callbacks:
 		callbacks.extend(extra_callbacks)
 	trainer_kwargs = dict(trainer_kwargs)
 	trainer_kwargs.setdefault("accelerator", "auto")
 	trainer_kwargs.setdefault("devices", 1)
+	accelerator = trainer_kwargs.get("accelerator")
+	accelerator_key = accelerator.lower() if isinstance(accelerator, str) else accelerator
+	precision = trainer_kwargs.get("precision")
+	if _precision_requests_amp(precision):
+		auto_mps = (
+			accelerator_key in (None, "auto")
+			and not torch.cuda.is_available()
+			and _mps_available()
+		)
+		if accelerator_key == "mps" or auto_mps:
+			warnings.warn(
+				f"AMP/autocast is not supported on MPS; forcing precision={precision!r} -> 32.",
+				UserWarning,
+			)
+			trainer_kwargs["precision"] = 32
 	if "precision" not in trainer_kwargs:
-		accelerator = trainer_kwargs.get("accelerator")
 		use_amp = (
 			accelerator in (None, "auto", "gpu", "cuda")
 			and torch.cuda.is_available()
@@ -403,16 +609,28 @@ def build_trainer(save_dir: str = "", epochs: int = 100,
 
 
 def train_vae(loaders: dict, save_dir: str = "", lr: float = 1e-3,
-	z_dim: int = 32, model_precision: float = 10.0, epochs: int = 100,
+	z_dim: int = 32, model_precision: float = 10.0,
+	learn_observation_scale: bool = False, epochs: int = 100,
+	log_precision_min: Optional[float] = None,
+	log_precision_max: Optional[float] = None,
 	test_freq: Optional[int] = 2, save_freq: Optional[int] = 10,
 	vis_freq: Optional[int] = 1, num_specs: int = 5, gap=(2, 6),
 	vis_filename: str = "reconstruction.pdf", trainer_kwargs: Optional[dict] = None,
 	vae: Optional[VAE] = None, stopping_kwargs: Optional[dict] = None,
 	extra_callbacks: Optional[list] = None,
 	input_shape: Optional[tuple[int, int]] = None,
-	posterior_type: str = "diag", compile_model: bool = False,
+	posterior_type: str = "diag", conv_arch: str = "plain",
+	decoder_type: str = "upsample",
+	compile_model: bool = False,
 	compile_kwargs: Optional[dict] = None, kl_beta: float = 1.0,
-	kl_warmup_epochs: int = 0):
+	kl_warmup_epochs: int = 0,
+	invariance_weight: float = 0.0,
+	invariance_warmup_epochs: int = 0,
+	invariance_loss: str = "mse",
+	invariance_stop_grad: Optional[Union[str, bool]] = "none",
+	config_path: Optional[str] = None,
+	manifest_path: Optional[str] = None,
+	dataset_root: Optional[str] = None):
 	"""Train a VAE with Lightning while preserving legacy outputs."""
 	if "train" not in loaders or loaders["train"] is None:
 		raise ValueError("loaders must include a non-empty 'train' dataloader.")
@@ -424,12 +642,21 @@ def train_vae(loaders: dict, save_dir: str = "", lr: float = 1e-3,
 		lr=lr,
 		z_dim=z_dim,
 		model_precision=model_precision,
+		learn_observation_scale=learn_observation_scale,
+		log_precision_min=log_precision_min,
+		log_precision_max=log_precision_max,
 		input_shape=input_shape,
 		posterior_type=posterior_type,
+		conv_arch=conv_arch,
+		decoder_type=decoder_type,
 		compile_model=compile_model,
 		compile_kwargs=compile_kwargs,
 		kl_beta=kl_beta,
 		kl_warmup_epochs=kl_warmup_epochs,
+		invariance_weight=invariance_weight,
+		invariance_warmup_epochs=invariance_warmup_epochs,
+		invariance_loss=invariance_loss,
+		invariance_stop_grad=invariance_stop_grad,
 	)
 	vis_loader = loaders.get("test") or loaders["train"]
 	trainer = build_trainer(
@@ -446,6 +673,13 @@ def train_vae(loaders: dict, save_dir: str = "", lr: float = 1e-3,
 		stopping_kwargs=stopping_kwargs,
 		extra_callbacks=extra_callbacks,
 	)
+	if getattr(trainer, "is_global_zero", True):
+		write_run_metadata(
+			save_dir=module.save_dir,
+			config_path=config_path,
+			manifest_path=manifest_path,
+			dataset_root=dataset_root,
+		)
 	val_loader = None
 	if test_freq is not None:
 		val_loader = loaders.get("test")

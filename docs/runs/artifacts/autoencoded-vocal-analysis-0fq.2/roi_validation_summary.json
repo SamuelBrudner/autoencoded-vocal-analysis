@@ -1,0 +1,43 @@
+{
+  "directories_checked": 4,
+  "wav_files_checked": 455,
+  "missing_roi_dirs": 0,
+  "missing_roi_files": 0,
+  "empty_roi_files": 0,
+  "per_directory": [
+    {
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day 75 bells/R521/49",
+      "roi_dir": "/tmp/ava_roi_smoke_autoencoded-vocal-analysis-0fq.2-s332/day 75 bells/R521/49",
+      "wav_files": 32,
+      "missing_roi_dir": false,
+      "missing_roi_files": 0,
+      "empty_roi_files": 0
+    },
+    {
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/isolates/R 403/94",
+      "roi_dir": "/tmp/ava_roi_smoke_autoencoded-vocal-analysis-0fq.2-s332/isolates/R 403/94",
+      "wav_files": 69,
+      "missing_roi_dir": false,
+      "missing_roi_files": 0,
+      "empty_roi_files": 0
+    },
+    {
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day 90 samba/R425/105",
+      "roi_dir": "/tmp/ava_roi_smoke_autoencoded-vocal-analysis-0fq.2-s332/day 90 samba/R425/105",
+      "wav_files": 349,
+      "missing_roi_dir": false,
+      "missing_roi_files": 0,
+      "empty_roi_files": 0
+    },
+    {
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day 90 simple/R515/45",
+      "roi_dir": "/tmp/ava_roi_smoke_autoencoded-vocal-analysis-0fq.2-s332/day 90 simple/R515/45",
+      "wav_files": 5,
+      "missing_roi_dir": false,
+      "missing_roi_files": 0,
+      "empty_roi_files": 0
+    }
+  ],
+  "manifest": "docs/runs/artifacts/autoencoded-vocal-analysis-0fq.2/manifest.json",
+  "split": "train"
+}

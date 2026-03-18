@@ -16,6 +16,10 @@ except ImportError as exc:  # pragma: no cover - optional dependency
 		"Install with `pip install optuna`."
 	) from exc
 
+from ava.models.torch_onnx_compat import patch_torch_onnx_exporter
+
+patch_torch_onnx_exporter()
+
 try:
 	import pytorch_lightning as pl
 except ImportError as exc:  # pragma: no cover - optional dependency
@@ -219,6 +223,7 @@ def run_optuna_sweep(loaders: dict, save_dir: str, n_trials: int = 20,
 			lr=params["lr"],
 			z_dim=int(params["z_dim"]),
 			model_precision=params["model_precision"],
+			learn_observation_scale=params.get("learn_observation_scale", False),
 			epochs=epochs,
 			test_freq=test_freq,
 			save_freq=save_freq,

@@ -1,0 +1,287 @@
+{
+  "created_utc": "2026-02-12T14:12:05Z",
+  "metadata_path": "data/metadata/birdsong/birdsong_files.parquet",
+  "root": "/Volumes/samsung_ssd/data/birdsong",
+  "roi_root": "/tmp/ava_roi_medium_autoencoded-vocal-analysis-381.2-default",
+  "seed": 3812,
+  "train_fraction": 0.8,
+  "filters": {
+    "birds_per_regime": 3,
+    "train_birds_per_regime": null,
+    "test_birds_per_regime": null,
+    "min_files_per_dir": 1,
+    "max_dirs_per_bird": 1,
+    "regimes": [
+      "bells",
+      "isolates",
+      "samba",
+      "simple"
+    ]
+  },
+  "bird_sets": {
+    "bells": {
+      "train": [
+        "R424",
+        "R158"
+      ],
+      "test": [
+        "R155"
+      ]
+    },
+    "isolates": {
+      "train": [
+        "R365",
+        "R571"
+      ],
+      "test": [
+        "R22"
+      ]
+    },
+    "samba": {
+      "train": [
+        "R425",
+        "R470"
+      ],
+      "test": [
+        "R847"
+      ]
+    },
+    "simple": {
+      "train": [
+        "R515",
+        "R654"
+      ],
+      "test": [
+        "R71"
+      ]
+    }
+  },
+  "summary": {
+    "train": {
+      "birds": 8,
+      "directories": 8,
+      "files": 7974,
+      "by_regime": {
+        "bells": {
+          "birds": 2,
+          "directories": 2,
+          "files": 850
+        },
+        "isolates": {
+          "birds": 2,
+          "directories": 2,
+          "files": 3426
+        },
+        "samba": {
+          "birds": 2,
+          "directories": 2,
+          "files": 1404
+        },
+        "simple": {
+          "birds": 2,
+          "directories": 2,
+          "files": 2294
+        }
+      }
+    },
+    "test": {
+      "birds": 4,
+      "directories": 4,
+      "files": 3679,
+      "by_regime": {
+        "bells": {
+          "birds": 1,
+          "directories": 1,
+          "files": 602
+        },
+        "isolates": {
+          "birds": 1,
+          "directories": 1,
+          "files": 333
+        },
+        "samba": {
+          "birds": 1,
+          "directories": 1,
+          "files": 1336
+        },
+        "simple": {
+          "birds": 1,
+          "directories": 1,
+          "files": 1408
+        }
+      }
+    }
+  },
+  "train": [
+    {
+      "audio_dir_rel": "day43 Bells/R158/43",
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day43 Bells/R158/43",
+      "roi_dir": "/tmp/ava_roi_medium_autoencoded-vocal-analysis-381.2-default/day43 Bells/R158/43",
+      "bird_id_norm": "R158",
+      "bird_id_raw": "R158",
+      "regime": "bells",
+      "top_dir": "day43 Bells",
+      "pre_bird_path": null,
+      "dph": 43.0,
+      "session_label": null,
+      "num_files": 306,
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R424/119",
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day 75 bells/R424/119",
+      "roi_dir": "/tmp/ava_roi_medium_autoencoded-vocal-analysis-381.2-default/day 75 bells/R424/119",
+      "bird_id_norm": "R424",
+      "bird_id_raw": "R424",
+      "regime": "bells",
+      "top_dir": "day 75 bells",
+      "pre_bird_path": null,
+      "dph": 119.0,
+      "session_label": null,
+      "num_files": 544,
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 365/97",
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/isolates/R 365/97",
+      "roi_dir": "/tmp/ava_roi_medium_autoencoded-vocal-analysis-381.2-default/isolates/R 365/97",
+      "bird_id_norm": "R365",
+      "bird_id_raw": "R 365",
+      "regime": "isolates",
+      "top_dir": "isolates",
+      "pre_bird_path": null,
+      "dph": 97.0,
+      "session_label": null,
+      "num_files": 2548,
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R571/83",
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/isolates/R571/83",
+      "roi_dir": "/tmp/ava_roi_medium_autoencoded-vocal-analysis-381.2-default/isolates/R571/83",
+      "bird_id_norm": "R571",
+      "bird_id_raw": "R571",
+      "regime": "isolates",
+      "top_dir": "isolates",
+      "pre_bird_path": null,
+      "dph": 83.0,
+      "session_label": null,
+      "num_files": 878,
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/116",
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day 90 samba/R425/116",
+      "roi_dir": "/tmp/ava_roi_medium_autoencoded-vocal-analysis-381.2-default/day 90 samba/R425/116",
+      "bird_id_norm": "R425",
+      "bird_id_raw": "R425",
+      "regime": "samba",
+      "top_dir": "day 90 samba",
+      "pre_bird_path": null,
+      "dph": 116.0,
+      "session_label": null,
+      "num_files": 765,
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/Later/100",
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day 90 samba/R470/Later/100",
+      "roi_dir": "/tmp/ava_roi_medium_autoencoded-vocal-analysis-381.2-default/day 90 samba/R470/Later/100",
+      "bird_id_norm": "R470",
+      "bird_id_raw": "R470",
+      "regime": "samba",
+      "top_dir": "day 90 samba",
+      "pre_bird_path": null,
+      "dph": 100.0,
+      "session_label": "Later",
+      "num_files": 639,
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R515/Later/118",
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day 90 simple/R515/Later/118",
+      "roi_dir": "/tmp/ava_roi_medium_autoencoded-vocal-analysis-381.2-default/day 90 simple/R515/Later/118",
+      "bird_id_norm": "R515",
+      "bird_id_raw": "R515",
+      "regime": "simple",
+      "top_dir": "day 90 simple",
+      "pre_bird_path": null,
+      "dph": 118.0,
+      "session_label": "Later",
+      "num_files": 870,
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 43 simple/R654/58",
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day 43 simple/R654/58",
+      "roi_dir": "/tmp/ava_roi_medium_autoencoded-vocal-analysis-381.2-default/day 43 simple/R654/58",
+      "bird_id_norm": "R654",
+      "bird_id_raw": "R654",
+      "regime": "simple",
+      "top_dir": "day 43 simple",
+      "pre_bird_path": null,
+      "dph": 58.0,
+      "session_label": null,
+      "num_files": 1424,
+      "split": "train"
+    }
+  ],
+  "test": [
+    {
+      "audio_dir_rel": "day43 Bells/R155/later/107",
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day43 Bells/R155/later/107",
+      "roi_dir": "/tmp/ava_roi_medium_autoencoded-vocal-analysis-381.2-default/day43 Bells/R155/later/107",
+      "bird_id_norm": "R155",
+      "bird_id_raw": "R155",
+      "regime": "bells",
+      "top_dir": "day43 Bells",
+      "pre_bird_path": null,
+      "dph": 107.0,
+      "session_label": "later",
+      "num_files": 602,
+      "split": "test"
+    },
+    {
+      "audio_dir_rel": "isolates/R22/71",
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/isolates/R22/71",
+      "roi_dir": "/tmp/ava_roi_medium_autoencoded-vocal-analysis-381.2-default/isolates/R22/71",
+      "bird_id_norm": "R22",
+      "bird_id_raw": "R22",
+      "regime": "isolates",
+      "top_dir": "isolates",
+      "pre_bird_path": null,
+      "dph": 71.0,
+      "session_label": null,
+      "num_files": 333,
+      "split": "test"
+    },
+    {
+      "audio_dir_rel": "day 43 samba/switching/R847/73",
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day 43 samba/switching/R847/73",
+      "roi_dir": "/tmp/ava_roi_medium_autoencoded-vocal-analysis-381.2-default/day 43 samba/switching/R847/73",
+      "bird_id_norm": "R847",
+      "bird_id_raw": "R847",
+      "regime": "samba",
+      "top_dir": "day 43 samba",
+      "pre_bird_path": "switching",
+      "dph": 73.0,
+      "session_label": null,
+      "num_files": 1336,
+      "split": "test"
+    },
+    {
+      "audio_dir_rel": "day 43 simple/R 71/90",
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day 43 simple/R 71/90",
+      "roi_dir": "/tmp/ava_roi_medium_autoencoded-vocal-analysis-381.2-default/day 43 simple/R 71/90",
+      "bird_id_norm": "R71",
+      "bird_id_raw": "R 71",
+      "regime": "simple",
+      "top_dir": "day 43 simple",
+      "pre_bird_path": null,
+      "dph": 90.0,
+      "session_label": null,
+      "num_files": 1408,
+      "split": "test"
+    }
+  ]
+}

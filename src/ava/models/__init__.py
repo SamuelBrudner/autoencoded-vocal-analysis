@@ -15,11 +15,17 @@ Contains
 	Structured configuration for fixed-window VAE experiments.
 `ava.models.window_vae_dataset`
 	Legacy name for shotgun VAE datasets.
+`ava.models.blocks`
+	Residual block primitives for spectrogram models.
+`ava.models.latent_metrics`
+	Latent invariance and self-retrieval metrics.
 `ava.models.utils`
 	Useful functions related to the `ava.models` subpackage.
 """
 
 __all__ = [
+	"blocks",
+	"latent_metrics",
 	"lightning_vae",
 	"fixed_window_config",
 	"optuna_sweep",

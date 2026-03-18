@@ -1,0 +1,107 @@
+{
+  "directories_checked": 12,
+  "wav_files_checked": 11653,
+  "missing_roi_dirs": 0,
+  "missing_roi_files": 0,
+  "empty_roi_files": 71,
+  "per_directory": [
+    {
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day43 Bells/R158/43",
+      "roi_dir": "/tmp/ava_roi_medium_autoencoded-vocal-analysis-381.2-tuned/day43 Bells/R158/43",
+      "wav_files": 306,
+      "missing_roi_dir": false,
+      "missing_roi_files": 0,
+      "empty_roi_files": 1
+    },
+    {
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day 75 bells/R424/119",
+      "roi_dir": "/tmp/ava_roi_medium_autoencoded-vocal-analysis-381.2-tuned/day 75 bells/R424/119",
+      "wav_files": 544,
+      "missing_roi_dir": false,
+      "missing_roi_files": 0,
+      "empty_roi_files": 2
+    },
+    {
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/isolates/R 365/97",
+      "roi_dir": "/tmp/ava_roi_medium_autoencoded-vocal-analysis-381.2-tuned/isolates/R 365/97",
+      "wav_files": 2548,
+      "missing_roi_dir": false,
+      "missing_roi_files": 0,
+      "empty_roi_files": 57
+    },
+    {
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/isolates/R571/83",
+      "roi_dir": "/tmp/ava_roi_medium_autoencoded-vocal-analysis-381.2-tuned/isolates/R571/83",
+      "wav_files": 878,
+      "missing_roi_dir": false,
+      "missing_roi_files": 0,
+      "empty_roi_files": 0
+    },
+    {
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day 90 samba/R425/116",
+      "roi_dir": "/tmp/ava_roi_medium_autoencoded-vocal-analysis-381.2-tuned/day 90 samba/R425/116",
+      "wav_files": 765,
+      "missing_roi_dir": false,
+      "missing_roi_files": 0,
+      "empty_roi_files": 2
+    },
+    {
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day 90 samba/R470/Later/100",
+      "roi_dir": "/tmp/ava_roi_medium_autoencoded-vocal-analysis-381.2-tuned/day 90 samba/R470/Later/100",
+      "wav_files": 639,
+      "missing_roi_dir": false,
+      "missing_roi_files": 0,
+      "empty_roi_files": 0
+    },
+    {
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day 90 simple/R515/Later/118",
+      "roi_dir": "/tmp/ava_roi_medium_autoencoded-vocal-analysis-381.2-tuned/day 90 simple/R515/Later/118",
+      "wav_files": 870,
+      "missing_roi_dir": false,
+      "missing_roi_files": 0,
+      "empty_roi_files": 1
+    },
+    {
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day 43 simple/R654/58",
+      "roi_dir": "/tmp/ava_roi_medium_autoencoded-vocal-analysis-381.2-tuned/day 43 simple/R654/58",
+      "wav_files": 1424,
+      "missing_roi_dir": false,
+      "missing_roi_files": 0,
+      "empty_roi_files": 3
+    },
+    {
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day43 Bells/R155/later/107",
+      "roi_dir": "/tmp/ava_roi_medium_autoencoded-vocal-analysis-381.2-tuned/day43 Bells/R155/later/107",
+      "wav_files": 602,
+      "missing_roi_dir": false,
+      "missing_roi_files": 0,
+      "empty_roi_files": 3
+    },
+    {
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/isolates/R22/71",
+      "roi_dir": "/tmp/ava_roi_medium_autoencoded-vocal-analysis-381.2-tuned/isolates/R22/71",
+      "wav_files": 333,
+      "missing_roi_dir": false,
+      "missing_roi_files": 0,
+      "empty_roi_files": 1
+    },
+    {
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day 43 samba/switching/R847/73",
+      "roi_dir": "/tmp/ava_roi_medium_autoencoded-vocal-analysis-381.2-tuned/day 43 samba/switching/R847/73",
+      "wav_files": 1336,
+      "missing_roi_dir": false,
+      "missing_roi_files": 0,
+      "empty_roi_files": 0
+    },
+    {
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day 43 simple/R 71/90",
+      "roi_dir": "/tmp/ava_roi_medium_autoencoded-vocal-analysis-381.2-tuned/day 43 simple/R 71/90",
+      "wav_files": 1408,
+      "missing_roi_dir": false,
+      "missing_roi_files": 0,
+      "empty_roi_files": 1
+    }
+  ],
+  "manifest": "docs/runs/artifacts/autoencoded-vocal-analysis-381.2/manifest_medium_tuned.json",
+  "split": "all"
+}

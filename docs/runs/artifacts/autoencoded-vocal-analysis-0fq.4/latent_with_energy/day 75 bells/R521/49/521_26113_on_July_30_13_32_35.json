@@ -1,0 +1,21 @@
+{
+  "schema_version": "ava_latent_sequence_v1",
+  "created_utc": "2026-02-11T18:36:34Z",
+  "clip_id": "day 75 bells/R521/49/521_26113_on_July_30_13_32_35",
+  "audio_path": "/Volumes/samsung_ssd/data/birdsong/day 75 bells/R521/49/521_26113_on_July_30_13_32_35.wav",
+  "audio_sha256": null,
+  "sample_rate_hz": 44100,
+  "roi_path": "/tmp/ava_roi_smoke_autoencoded-vocal-analysis-0fq.2-s332/day 75 bells/R521/49/521_26113_on_July_30_13_32_35.txt",
+  "config_path": "docs/runs/artifacts/autoencoded-vocal-analysis-0fq.3/fixed_window_smoke_config.yaml",
+  "checkpoint_path": "docs/runs/artifacts/autoencoded-vocal-analysis-0fq.3/training_run/checkpoint_001.tar",
+  "manifest_path": "docs/runs/artifacts/autoencoded-vocal-analysis-0fq.2/manifest.json",
+  "entry": {
+    "audio_dir_rel": "day 75 bells/R521/49",
+    "bird_id_norm": "R521",
+    "bird_id_raw": "R521",
+    "regime": "bells",
+    "dph": 49.0,
+    "session_label": null,
+    "split": "train"
+  }
+}

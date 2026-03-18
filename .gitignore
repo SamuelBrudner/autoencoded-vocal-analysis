@@ -4,3 +4,5 @@
 build
 data/metadata/
 .beads/
+# Large training checkpoints (use LFS or keep local-only)
+docs/runs/artifacts/**/checkpoint_*.tar
