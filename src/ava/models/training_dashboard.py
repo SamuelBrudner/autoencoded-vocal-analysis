@@ -1,7 +1,9 @@
 """Utilities for writing lightweight HTML dashboards for training runs."""
 from __future__ import annotations
 
+import base64
 import html
+import io
 import json
 import math
 import os
@@ -11,10 +13,17 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
 
+import numpy as np
+
 try:
     import pytorch_lightning as pl
 except ImportError:  # pragma: no cover - optional for backfill/render utilities
     pl = None
+
+try:
+    import torch
+except ImportError:  # pragma: no cover - torch is a project dependency
+    torch = None
 
 if pl is not None:
     _LightningCallbackBase = pl.Callback
@@ -27,6 +36,8 @@ DASHBOARD_JSON_NAME = "training_dashboard.json"
 DASHBOARD_HTML_NAME = "training_dashboard.html"
 MAX_VISIBLE_POINTS = 200
 REFRESH_SECONDS = 30
+MAX_VALIDATION_EMBEDDING_POINTS = 256
+MAX_VALIDATION_EXEMPLARS = 12
 
 SERIES_COLORS = {
     "train": "#0f766e",
@@ -368,6 +379,294 @@ def _render_svg_chart(series_list: list[dict[str, Any]]) -> str:
     )
 
 
+def _format_percent(value: Optional[float]) -> str:
+    if value is None:
+        return "n/a"
+    return f"{100.0 * float(value):.1f}%"
+
+
+def _tensor_to_numpy(value: Any) -> np.ndarray:
+    if hasattr(value, "detach"):
+        value = value.detach()
+    if hasattr(value, "cpu"):
+        value = value.cpu()
+    try:
+        return np.asarray(value.numpy())
+    except AttributeError:
+        return np.asarray(value)
+    except RuntimeError as exc:
+        if "Numpy is not available" not in str(exc):
+            raise
+        return np.asarray(value.tolist(), dtype=np.float32)
+
+
+def _extract_batch_tensor(batch: Any) -> Optional[Any]:
+    if torch is None:
+        return None
+    if torch.is_tensor(batch):
+        return batch
+    if isinstance(batch, dict):
+        base = batch.get("x")
+        if torch.is_tensor(base):
+            return base
+        for value in batch.values():
+            if torch.is_tensor(value):
+                return value
+        return None
+    if isinstance(batch, (list, tuple)):
+        if (
+            len(batch) == 2
+            and torch.is_tensor(batch[0])
+            and torch.is_tensor(batch[1])
+            and tuple(batch[0].shape) == tuple(batch[1].shape)
+        ):
+            return batch[0]
+        for item in batch:
+            if torch.is_tensor(item):
+                return item
+    return None
+
+
+def _pca_projection(latents: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    latents = np.asarray(latents, dtype=np.float64)
+    if latents.ndim != 2 or latents.shape[0] == 0:
+        raise ValueError("Latents must have shape [n_samples, latent_dim].")
+    centered = latents - np.mean(latents, axis=0, keepdims=True)
+    if latents.shape[0] == 1:
+        return np.zeros((1, 2), dtype=np.float64), np.zeros((latents.shape[1],), dtype=np.float64)
+    _, singular_values, vt = np.linalg.svd(centered, full_matrices=False)
+    explained_variance = np.square(singular_values) / max(1, latents.shape[0] - 1)
+    components = vt[:2]
+    coords = centered @ components.T
+    if coords.shape[1] < 2:
+        coords = np.pad(coords, ((0, 0), (0, 2 - coords.shape[1])), mode="constant")
+    return coords[:, :2], explained_variance
+
+
+def _effective_dimensionality(explained_variance: np.ndarray) -> float:
+    values = np.asarray(explained_variance, dtype=np.float64)
+    values = values[np.isfinite(values) & (values > 0)]
+    if values.size == 0:
+        return 0.0
+    total = float(np.sum(values))
+    denom = float(np.sum(np.square(values)))
+    if total <= 0 or denom <= 0:
+        return 0.0
+    return float((total**2) / denom)
+
+
+def _select_diverse_indices(points: np.ndarray, count: int) -> list[int]:
+    points = np.asarray(points, dtype=np.float64)
+    if points.ndim != 2 or points.shape[0] == 0 or count <= 0:
+        return []
+    if points.shape[0] <= count:
+        return list(range(points.shape[0]))
+    center = np.mean(points, axis=0, keepdims=True)
+    distances = np.sum(np.square(points - center), axis=1)
+    first = int(np.argmax(distances))
+    selected = [first]
+    nearest = np.sum(np.square(points - points[first]), axis=1)
+    while len(selected) < count:
+        candidate = int(np.argmax(nearest))
+        if candidate in selected:
+            break
+        selected.append(candidate)
+        candidate_dist = np.sum(np.square(points - points[candidate]), axis=1)
+        nearest = np.minimum(nearest, candidate_dist)
+    return selected
+
+
+def _spectrogram_data_uri(spec: np.ndarray) -> str:
+    from matplotlib import pyplot as plt
+
+    spec_array = np.asarray(spec, dtype=np.float32)
+    spec_array = np.squeeze(spec_array)
+    if spec_array.ndim != 2:
+        spec_array = np.reshape(spec_array, (spec_array.shape[-2], spec_array.shape[-1]))
+    spec_array = np.nan_to_num(spec_array, nan=0.0, posinf=0.0, neginf=0.0)
+    buffer = io.BytesIO()
+    plt.imsave(buffer, np.flipud(spec_array), cmap="magma", format="png")
+    return "data:image/png;base64," + base64.b64encode(buffer.getvalue()).decode("ascii")
+
+
+def build_validation_embedding(
+    latents: np.ndarray,
+    specs: np.ndarray,
+    num_exemplars: int = MAX_VALIDATION_EXEMPLARS,
+) -> Optional[dict[str, Any]]:
+    latents = np.asarray(latents, dtype=np.float64)
+    specs = np.asarray(specs, dtype=np.float32)
+    if latents.ndim != 2 or latents.shape[0] == 0:
+        return None
+    if specs.shape[0] != latents.shape[0]:
+        raise ValueError("Validation specs and latents must have matching first dimensions.")
+    coords, explained_variance = _pca_projection(latents)
+    total_variance = float(np.sum(explained_variance))
+    if total_variance > 0:
+        explained_ratio = [float(value / total_variance) for value in explained_variance[:4]]
+    else:
+        explained_ratio = [0.0 for _ in range(min(4, len(explained_variance)))]
+    selected_indices = _select_diverse_indices(coords, min(int(num_exemplars), len(coords)))
+    selected_lookup = {index: order + 1 for order, index in enumerate(selected_indices)}
+    points = []
+    for index, (x_value, y_value) in enumerate(coords):
+        label = selected_lookup.get(index)
+        points.append(
+            {
+                "index": int(index),
+                "x": float(x_value),
+                "y": float(y_value),
+                "label": int(label) if label is not None else None,
+            }
+        )
+    exemplars = []
+    for index in selected_indices:
+        label = selected_lookup[index]
+        exemplars.append(
+            {
+                "index": int(index),
+                "label": int(label),
+                "x": float(coords[index, 0]),
+                "y": float(coords[index, 1]),
+                "image_data_uri": _spectrogram_data_uri(specs[index]),
+            }
+        )
+    return {
+        "kind": "validation_spectrogram_windows",
+        "projection_method": "pca",
+        "sample_size": int(latents.shape[0]),
+        "latent_dim": int(latents.shape[1]),
+        "effective_dimensionality": _effective_dimensionality(explained_variance),
+        "explained_variance_ratio": explained_ratio,
+        "points": points,
+        "exemplars": exemplars,
+    }
+
+
+def _render_validation_embedding_svg(embedding: dict[str, Any]) -> str:
+    points = embedding.get("points") or []
+    if not points:
+        return "<p class=\"chart-empty\">Validation embedding will appear after the first validation pass.</p>"
+    width = 760
+    height = 360
+    padding_left = 44
+    padding_right = 24
+    padding_top = 24
+    padding_bottom = 32
+    xs = [float(point["x"]) for point in points]
+    ys = [float(point["y"]) for point in points]
+    min_x, max_x = min(xs), max(xs)
+    min_y, max_y = min(ys), max(ys)
+    if math.isclose(min_x, max_x):
+        min_x -= 1.0
+        max_x += 1.0
+    if math.isclose(min_y, max_y):
+        min_y -= 1.0
+        max_y += 1.0
+    plot_width = width - padding_left - padding_right
+    plot_height = height - padding_top - padding_bottom
+
+    def x_to_px(value: float) -> float:
+        return padding_left + ((value - min_x) / (max_x - min_x)) * plot_width
+
+    def y_to_px(value: float) -> float:
+        return padding_top + (1.0 - ((value - min_y) / (max_y - min_y))) * plot_height
+
+    grid = (
+        f"<line x1=\"{padding_left}\" y1=\"{padding_top + plot_height / 2:.2f}\" "
+        f"x2=\"{padding_left + plot_width:.2f}\" y2=\"{padding_top + plot_height / 2:.2f}\" "
+        "stroke=\"#d8e2dc\" stroke-width=\"1\" />"
+        f"<line x1=\"{padding_left + plot_width / 2:.2f}\" y1=\"{padding_top}\" "
+        f"x2=\"{padding_left + plot_width / 2:.2f}\" y2=\"{padding_top + plot_height:.2f}\" "
+        "stroke=\"#d8e2dc\" stroke-width=\"1\" />"
+    )
+    point_circles = []
+    selected_labels = []
+    for point in points:
+        x_px = x_to_px(float(point["x"]))
+        y_px = y_to_px(float(point["y"]))
+        label = point.get("label")
+        if label is None:
+            point_circles.append(
+                f"<circle cx=\"{x_px:.2f}\" cy=\"{y_px:.2f}\" r=\"3.2\" fill=\"#94a3b8\" opacity=\"0.55\" />"
+            )
+            continue
+        point_circles.append(
+            f"<circle cx=\"{x_px:.2f}\" cy=\"{y_px:.2f}\" r=\"7.5\" fill=\"#0f766e\" opacity=\"0.95\" />"
+        )
+        selected_labels.append(
+            f"<text x=\"{x_px:.2f}\" y=\"{y_px + 3:.2f}\" text-anchor=\"middle\" "
+            "font-size=\"10\" font-weight=\"700\" fill=\"#fffdf8\">"
+            f"{int(label)}</text>"
+        )
+    return (
+        "<svg viewBox=\"0 0 760 360\" class=\"chart-svg\" role=\"img\">"
+        + grid
+        + (
+            f"<rect x=\"{padding_left}\" y=\"{padding_top}\" width=\"{plot_width:.2f}\" "
+            f"height=\"{plot_height:.2f}\" fill=\"transparent\" stroke=\"#7d8f87\" "
+            "stroke-width=\"1.25\" />"
+        )
+        + "".join(point_circles)
+        + "".join(selected_labels)
+        + (
+            f"<text x=\"{padding_left + plot_width / 2:.2f}\" y=\"{height - 6}\" "
+            "text-anchor=\"middle\">Validation latent projection (PCA)</text>"
+        )
+        + "</svg>"
+    )
+
+
+def _render_validation_embedding_section(payload: dict[str, Any]) -> str:
+    embedding = payload.get("validation_embedding")
+    if not embedding:
+        return ""
+    explained = embedding.get("explained_variance_ratio") or []
+    stats = [
+        ("Sampled Windows", str(embedding.get("sample_size", "n/a"))),
+        ("Effective Dim", _format_metric(embedding.get("effective_dimensionality"))),
+        ("Latent Width", str(embedding.get("latent_dim", "n/a"))),
+        ("PC1", _format_percent(explained[0] if len(explained) > 0 else None)),
+        ("PC2", _format_percent(explained[1] if len(explained) > 1 else None)),
+    ]
+    stat_cards = "".join(
+        (
+            "<article class=\"mini-stat\">"
+            f"<h3>{html.escape(title)}</h3>"
+            f"<p>{html.escape(value)}</p>"
+            "</article>"
+        )
+        for title, value in stats
+    )
+    exemplar_cards = "".join(
+        (
+            "<figure class=\"spectrogram-card\">"
+            f"<span class=\"spectrogram-label\">{int(exemplar['label'])}</span>"
+            f"<img src=\"{html.escape(exemplar['image_data_uri'])}\" "
+            f"alt=\"Validation spectrogram {int(exemplar['label'])}\" />"
+            "<figcaption>"
+            f"Validation window #{int(exemplar['index']) + 1}"
+            "</figcaption>"
+            "</figure>"
+        )
+        for exemplar in embedding.get("exemplars", [])
+    )
+    return (
+        "<section class=\"chart-card embedding-card\">"
+        "<div class=\"chart-header\">"
+        "<h2>Validation Latent Geometry</h2>"
+        "<p class=\"embedding-caption\">"
+        "Effective dimensionality is computed from the covariance spectrum of sampled "
+        "validation latents. Numbered points correspond to spectrogram windows below."
+        "</p>"
+        "</div>"
+        f"<section class=\"mini-stat-grid\">{stat_cards}</section>"
+        f"{_render_validation_embedding_svg(embedding)}"
+        f"<section class=\"spectrogram-gallery\">{exemplar_cards}</section>"
+        "</section>"
+    )
+
+
 def _render_artifact_links(payload: dict[str, Any]) -> str:
     artifacts = payload.get("artifacts", {})
     links = []
@@ -419,6 +718,10 @@ def _render_summary_cards(payload: dict[str, Any]) -> str:
             _format_metric(summary.get("best_metrics", {}).get("val_loss", {}).get("value")),
         ),
         (
+            "Val Eff. Dim",
+            _format_metric(summary.get("validation_effective_dimensionality")),
+        ),
+        (
             "Checkpoints",
             str(summary.get("checkpoint_count", 0)),
         ),
@@ -450,6 +753,7 @@ def render_training_dashboard_html(
     groups = _metric_groups(history)
     summary = payload.get("summary", {})
     metadata = payload.get("run_metadata") or {}
+    validation_section = _render_validation_embedding_section(payload)
     latest_update = payload.get("updated_at") or "unknown"
     refresh_tag = ""
     if payload.get("status") == "running" and refresh_seconds > 0:
@@ -616,6 +920,9 @@ def render_training_dashboard_html(
     .chart-card {{
       padding: 18px 18px 12px;
     }}
+    .embedding-card {{
+      padding-bottom: 18px;
+    }}
     .chart-header {{
       display: flex;
       justify-content: space-between;
@@ -661,6 +968,79 @@ def render_training_dashboard_html(
     .chart-empty {{
       margin: 0;
       color: var(--muted);
+    }}
+    .embedding-caption {{
+      margin: 0;
+      color: var(--muted);
+      max-width: 44rem;
+    }}
+    .mini-stat-grid {{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }}
+    .mini-stat {{
+      border: 1px solid rgba(91, 107, 102, 0.14);
+      border-radius: 14px;
+      padding: 12px 14px;
+      background: rgba(246, 241, 232, 0.55);
+    }}
+    .mini-stat h3 {{
+      margin: 0 0 0.4rem;
+      color: var(--muted);
+      font-size: 0.78rem;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }}
+    .mini-stat p {{
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 700;
+    }}
+    .spectrogram-gallery {{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }}
+    .spectrogram-card {{
+      margin: 0;
+      position: relative;
+      padding: 12px;
+      border-radius: 14px;
+      background: rgba(246, 241, 232, 0.65);
+      border: 1px solid rgba(91, 107, 102, 0.14);
+    }}
+    .spectrogram-card img {{
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 10px;
+      background: #111827;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+    }}
+    .spectrogram-card figcaption {{
+      margin-top: 8px;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }}
+    .spectrogram-label {{
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 1.9rem;
+      height: 1.9rem;
+      border-radius: 999px;
+      background: rgba(15, 118, 110, 0.92);
+      color: #fffdf8;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.92rem;
+      box-shadow: 0 8px 18px rgba(15, 118, 110, 0.2);
     }}
     .detail-card {{
       padding: 18px;
@@ -733,6 +1113,7 @@ def render_training_dashboard_html(
     {_render_summary_cards(payload)}
     <section class="dashboard-grid">
       {''.join(chart_sections)}
+      {validation_section}
       <section class="detail-card">
         <h2>Run Details</h2>
         <dl class="detail-grid">
@@ -883,6 +1264,7 @@ def _build_summary(
     current_epoch: Optional[int] = None,
     latest_step: Optional[int] = None,
     device: Optional[str] = None,
+    validation_embedding: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
     checkpoints = _checkpoint_entries(save_dir)
     if current_epoch is None:
@@ -924,6 +1306,16 @@ def _build_summary(
         "latest_checkpoint": checkpoints[-1] if checkpoints else None,
         "latest_metrics": latest_metrics,
         "best_metrics": best_metrics,
+        "validation_effective_dimensionality": (
+            validation_embedding.get("effective_dimensionality")
+            if validation_embedding
+            else None
+        ),
+        "validation_embedding_sample_size": (
+            validation_embedding.get("sample_size")
+            if validation_embedding
+            else None
+        ),
     }
 
 
@@ -937,6 +1329,7 @@ def build_dashboard_payload(
     latest_step: Optional[int] = None,
     device: Optional[str] = None,
     error: Optional[str] = None,
+    validation_embedding: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
     dashboard_dir = _dashboard_dir(save_dir)
     return {
@@ -946,6 +1339,7 @@ def build_dashboard_payload(
         "error": error,
         "run_metadata": _load_json(dashboard_dir / "run_metadata.json") or {},
         "history": history,
+        "validation_embedding": validation_embedding,
         "summary": _build_summary(
             history=history,
             save_dir=dashboard_dir,
@@ -953,6 +1347,7 @@ def build_dashboard_payload(
             current_epoch=current_epoch,
             latest_step=latest_step,
             device=device,
+            validation_embedding=validation_embedding,
         ),
     }
 
@@ -964,6 +1359,8 @@ class TrainingDashboardCallback(_LightningCallbackBase):
         self,
         save_dir: str,
         refresh_seconds: int = REFRESH_SECONDS,
+        validation_sample_size: int = MAX_VALIDATION_EMBEDDING_POINTS,
+        validation_num_exemplars: int = MAX_VALIDATION_EXEMPLARS,
     ):
         if pl is None:
             raise ImportError(
@@ -975,6 +1372,18 @@ class TrainingDashboardCallback(_LightningCallbackBase):
         self.started_at = _utc_now_iso()
         self.history: dict[str, list[dict[str, Any]]] = {}
         self.error: Optional[str] = None
+        self.validation_sample_size = int(validation_sample_size)
+        self.validation_num_exemplars = int(validation_num_exemplars)
+        self.validation_embedding: Optional[dict[str, Any]] = None
+        self._validation_specs: list[np.ndarray] = []
+        self._validation_latents: list[np.ndarray] = []
+
+    def _reset_validation_samples(self) -> None:
+        self._validation_specs = []
+        self._validation_latents = []
+
+    def _validation_sample_count(self) -> int:
+        return int(sum(chunk.shape[0] for chunk in self._validation_latents))
 
     def _append_metric(
         self,
@@ -1021,6 +1430,7 @@ class TrainingDashboardCallback(_LightningCallbackBase):
             latest_step=int(getattr(trainer, "global_step", 0)),
             device=device,
             error=self.error,
+            validation_embedding=self.validation_embedding,
         )
         write_training_dashboard(
             save_dir=self.save_dir,
@@ -1029,6 +1439,7 @@ class TrainingDashboardCallback(_LightningCallbackBase):
         )
 
     def on_fit_start(self, trainer, pl_module) -> None:
+        self._reset_validation_samples()
         self._write(trainer, status="running")
 
     def on_train_epoch_end(self, trainer, pl_module) -> None:
@@ -1041,7 +1452,52 @@ class TrainingDashboardCallback(_LightningCallbackBase):
             self._append_metric(str(metric_name), value, epoch=epoch, step=step)
         self._write(trainer, status="running")
 
+    def on_validation_start(self, trainer, pl_module) -> None:
+        if getattr(trainer, "sanity_checking", False):
+            return
+        self._reset_validation_samples()
+
+    def on_validation_batch_end(
+        self,
+        trainer,
+        pl_module,
+        outputs,
+        batch,
+        batch_idx,
+        dataloader_idx=0,
+    ) -> None:
+        if getattr(trainer, "sanity_checking", False):
+            return
+        if not getattr(trainer, "is_global_zero", True):
+            return
+        if torch is None:
+            return
+        if self.validation_sample_size <= 0:
+            return
+        current_count = self._validation_sample_count()
+        remaining = self.validation_sample_size - current_count
+        if remaining <= 0:
+            return
+        batch_tensor = _extract_batch_tensor(batch)
+        if batch_tensor is None:
+            return
+        batch_tensor = batch_tensor[:remaining]
+        if batch_tensor.shape[0] == 0:
+            return
+        device = getattr(pl_module, "device", None)
+        if device is None:
+            try:
+                device = next(pl_module.parameters()).device
+            except StopIteration:
+                device = torch.device("cpu")
+        with torch.inference_mode():
+            mu, _, _ = pl_module.vae.encode(batch_tensor.to(device))
+        self._validation_specs.append(_tensor_to_numpy(batch_tensor))
+        self._validation_latents.append(_tensor_to_numpy(mu))
+
     def on_validation_epoch_end(self, trainer, pl_module) -> None:
+        if getattr(trainer, "sanity_checking", False):
+            return
         metrics = dict(getattr(trainer, "callback_metrics", {}))
         epoch = int(getattr(trainer, "current_epoch", 0)) + 1
         step = int(getattr(trainer, "global_step", 0))
@@ -1049,6 +1505,12 @@ class TrainingDashboardCallback(_LightningCallbackBase):
             if not str(metric_name).startswith("val_"):
                 continue
             self._append_metric(str(metric_name), value, epoch=epoch, step=step)
+        if self._validation_latents and self._validation_specs:
+            self.validation_embedding = build_validation_embedding(
+                latents=np.concatenate(self._validation_latents, axis=0),
+                specs=np.concatenate(self._validation_specs, axis=0),
+                num_exemplars=self.validation_num_exemplars,
+            )
         self._write(trainer, status="running")
 
     def on_exception(self, trainer, pl_module, exception: BaseException) -> None:

@@ -14,6 +14,7 @@ from torch.utils.data import DataLoader, Dataset
 from ava.models.training_dashboard import (
     backfill_training_dashboard,
     build_dashboard_payload,
+    build_validation_embedding,
     write_training_dashboard,
 )
 
@@ -66,6 +67,43 @@ def test_write_training_dashboard_outputs_html_and_json(tmp_path):
     html_text = run_dir.joinpath("training_dashboard.html").read_text(encoding="utf-8")
     assert "AVA Training Dashboard" in html_text
     assert "Latest Val Loss" in html_text
+
+
+def test_validation_embedding_renders_in_dashboard(tmp_path):
+    run_dir = tmp_path / "run_with_embedding"
+    run_dir.mkdir()
+    latents = np.array(
+        [
+            [0.0, 1.0, 0.2],
+            [0.5, 1.4, 0.1],
+            [1.0, 0.2, -0.1],
+            [1.6, -0.4, -0.3],
+        ],
+        dtype=np.float32,
+    )
+    specs = np.linspace(0.0, 1.0, num=4 * 16 * 16, dtype=np.float32).reshape(4, 16, 16)
+    validation_embedding = build_validation_embedding(latents, specs, num_exemplars=3)
+
+    assert validation_embedding is not None
+    assert validation_embedding["effective_dimensionality"] > 0.0
+    assert len(validation_embedding["exemplars"]) == 3
+
+    payload = build_dashboard_payload(
+        save_dir=run_dir.as_posix(),
+        history={"val_loss": [{"epoch": 1, "step": 4, "value": 3.25}]},
+        status="completed",
+        started_at="2026-03-18T10:00:00+00:00",
+        current_epoch=1,
+        latest_step=4,
+        validation_embedding=validation_embedding,
+    )
+    _, html_path = write_training_dashboard(run_dir.as_posix(), payload)
+    html_text = run_dir.joinpath("training_dashboard.html").read_text(encoding="utf-8")
+
+    assert html_path.endswith("training_dashboard.html")
+    assert "Validation Latent Geometry" in html_text
+    assert "Val Eff. Dim" in html_text
+    assert "data:image/png;base64" in html_text
 
 
 def test_backfill_training_dashboard_from_tensorboard_logs(tmp_path):

@@ -56,6 +56,16 @@ to be easy to inspect from a remote machine. Because it is plain static HTML,
 you can serve it with any simple file server, copy it off a cloud instance, or
 sync it to object storage from an AWS job directory without running TensorBoard.
 
+When validation runs are enabled, the dashboard also includes a sampled latent
+geometry panel for the validation set:
+
+- an effective dimensionality estimate of the validation latent cloud
+- a 2D PCA projection of sampled validation windows
+- numbered validation spectrogram thumbnails linked to points in that projection
+
+This is intentionally window-level rather than whole-audio-level, because the
+training/validation loaders operate on spectrogram windows.
+
 For older runs that only have :code:`lightning_logs/`, you can backfill the
 same dashboard view from the saved TensorBoard event files:
 
