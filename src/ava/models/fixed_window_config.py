@@ -269,6 +269,8 @@ class FixedWindowTrainConfig:
 	learn_observation_scale: bool = False
 	log_precision_min: Optional[float] = None
 	log_precision_max: Optional[float] = None
+	posterior_logvar_min: Optional[float] = None
+	posterior_logvar_max: Optional[float] = None
 	epochs: int = 100
 	test_freq: Optional[int] = 2
 	save_freq: Optional[int] = 10
@@ -282,6 +284,9 @@ class FixedWindowTrainConfig:
 	decoder_type: str = "upsample"
 	kl_beta: float = 1.0
 	kl_warmup_epochs: int = 0
+	kl_capacity_target: Optional[float] = None
+	kl_capacity_warmup_epochs: int = 0
+	kl_capacity_penalty: float = 1.0
 	invariance_weight: float = 0.0
 	invariance_warmup_epochs: int = 0
 	invariance_loss: str = "mse"
@@ -299,6 +304,8 @@ class FixedWindowTrainConfig:
 			"learn_observation_scale": self.learn_observation_scale,
 			"log_precision_min": self.log_precision_min,
 			"log_precision_max": self.log_precision_max,
+			"posterior_logvar_min": self.posterior_logvar_min,
+			"posterior_logvar_max": self.posterior_logvar_max,
 			"epochs": self.epochs,
 			"test_freq": self.test_freq,
 			"save_freq": self.save_freq,
@@ -314,6 +321,9 @@ class FixedWindowTrainConfig:
 			"decoder_type": self.decoder_type,
 			"kl_beta": self.kl_beta,
 			"kl_warmup_epochs": self.kl_warmup_epochs,
+			"kl_capacity_target": self.kl_capacity_target,
+			"kl_capacity_warmup_epochs": self.kl_capacity_warmup_epochs,
+			"kl_capacity_penalty": self.kl_capacity_penalty,
 			"invariance_weight": self.invariance_weight,
 			"invariance_warmup_epochs": self.invariance_warmup_epochs,
 			"invariance_loss": self.invariance_loss,
@@ -330,6 +340,8 @@ class FixedWindowTrainConfig:
 			"learn_observation_scale": self.learn_observation_scale,
 			"log_precision_min": self.log_precision_min,
 			"log_precision_max": self.log_precision_max,
+			"posterior_logvar_min": self.posterior_logvar_min,
+			"posterior_logvar_max": self.posterior_logvar_max,
 			"epochs": self.epochs,
 			"test_freq": self.test_freq,
 			"save_freq": self.save_freq,
@@ -343,6 +355,9 @@ class FixedWindowTrainConfig:
 			"decoder_type": self.decoder_type,
 			"kl_beta": self.kl_beta,
 			"kl_warmup_epochs": self.kl_warmup_epochs,
+			"kl_capacity_target": self.kl_capacity_target,
+			"kl_capacity_warmup_epochs": self.kl_capacity_warmup_epochs,
+			"kl_capacity_penalty": self.kl_capacity_penalty,
 			"invariance_weight": self.invariance_weight,
 			"invariance_warmup_epochs": self.invariance_warmup_epochs,
 			"invariance_loss": self.invariance_loss,

@@ -112,7 +112,9 @@ class VAE(nn.Module):
 		decoder_type="upsample",
 		build_optimizer=True,
 		log_precision_min=None,
-		log_precision_max=None):
+		log_precision_max=None,
+		posterior_logvar_min=None,
+		posterior_logvar_max=None):
 		"""Construct a VAE.
 
 		Parameters
@@ -185,6 +187,10 @@ class VAE(nn.Module):
 		self.set_log_precision_bounds(
 			log_precision_min=log_precision_min,
 			log_precision_max=log_precision_max,
+		)
+		self.set_logvar_bounds(
+			posterior_logvar_min=posterior_logvar_min,
+			posterior_logvar_max=posterior_logvar_max,
 		)
 		self.input_shape = self._normalize_input_shape(input_shape)
 		self.input_dim = int(np.prod(self.input_shape))
@@ -269,6 +275,49 @@ class VAE(nn.Module):
 
 	def _precision_tensor(self):
 		return torch.exp(self._log_precision_tensor())
+
+
+	def set_logvar_bounds(
+			self,
+			posterior_logvar_min=None,
+			posterior_logvar_max=None,
+	) -> None:
+		"""Optionally clamp posterior log-variance for numerical stability."""
+		posterior_logvar_min = self._coerce_optional_float(
+			posterior_logvar_min, "posterior_logvar_min"
+		)
+		posterior_logvar_max = self._coerce_optional_float(
+			posterior_logvar_max, "posterior_logvar_max"
+		)
+		if (posterior_logvar_min is not None and posterior_logvar_max is not None
+				and posterior_logvar_min > posterior_logvar_max):
+			raise ValueError(
+				"posterior_logvar_min must be <= posterior_logvar_max."
+			)
+		self.posterior_logvar_min = posterior_logvar_min
+		self.posterior_logvar_max = posterior_logvar_max
+
+
+	def _clamp_logvar_tensor(self, logvar):
+		if (self.posterior_logvar_min is None
+				and self.posterior_logvar_max is None):
+			return logvar
+		if (self.posterior_logvar_min is not None
+				and self.posterior_logvar_max is not None):
+			return torch.clamp(
+				logvar,
+				min=float(self.posterior_logvar_min),
+				max=float(self.posterior_logvar_max),
+			)
+		if self.posterior_logvar_min is not None:
+			return torch.clamp(
+				logvar,
+				min=float(self.posterior_logvar_min),
+			)
+		return torch.clamp(
+			logvar,
+			max=float(self.posterior_logvar_max),
+		)
 
 
 	@staticmethod
@@ -409,6 +458,7 @@ class VAE(nn.Module):
 
 
 	def _posterior_distribution(self, mu, logvar, u):
+		logvar = self._clamp_logvar_tensor(logvar)
 		if self.posterior_type == "diag":
 			scale = torch.exp(0.5 * logvar)
 			base_dist = torch.distributions.Normal(mu, scale)
@@ -422,6 +472,7 @@ class VAE(nn.Module):
 
 
 	def _latent_variance_mean(self, u, logvar):
+		logvar = self._clamp_logvar_tensor(logvar)
 		if self.posterior_type == "diag":
 			return torch.exp(logvar).mean()
 		return (u.squeeze(-1) ** 2 + torch.exp(logvar)).mean()
@@ -578,6 +629,7 @@ class VAE(nn.Module):
 			u = None
 		logvar = self._act(self.fc33(x))
 		logvar = self.fc43(logvar)
+		logvar = self._clamp_logvar_tensor(logvar)
 		return mu, logvar, u
 
 
@@ -678,7 +730,7 @@ class VAE(nn.Module):
 		log_precision = self._log_precision_tensor()
 		precision = self._precision_tensor()
 		log_two_pi = math.log(2 * math.pi)
-		pxz_term = -0.5 * x_flat.shape[1] * (
+		pxz_term = -0.5 * x.shape[0] * x_flat.shape[1] * (
 			log_two_pi - log_precision
 		)
 		l2s = torch.sum(torch.pow(x_flat - recon_flat, 2), dim=1)
@@ -831,6 +883,8 @@ class VAE(nn.Module):
 		state['log_precision'] = float(self.log_precision.detach().cpu())
 		state['log_precision_min'] = self.log_precision_min
 		state['log_precision_max'] = self.log_precision_max
+		state['posterior_logvar_min'] = self.posterior_logvar_min
+		state['posterior_logvar_max'] = self.posterior_logvar_max
 		state['learn_observation_scale'] = self.learn_observation_scale
 		state['decoder_type'] = self.decoder_type
 		filename = os.path.join(self.save_dir, filename)
@@ -922,6 +976,12 @@ class VAE(nn.Module):
 			self.set_log_precision_bounds(
 				log_precision_min=checkpoint.get("log_precision_min"),
 				log_precision_max=checkpoint.get("log_precision_max"),
+			)
+		if ("posterior_logvar_min" in checkpoint
+				or "posterior_logvar_max" in checkpoint):
+			self.set_logvar_bounds(
+				posterior_logvar_min=checkpoint.get("posterior_logvar_min"),
+				posterior_logvar_max=checkpoint.get("posterior_logvar_max"),
 			)
 		layers = self._get_layers()
 		for layer_name in layers:

@@ -56,16 +56,76 @@ def test_lightning_metrics_match_legacy_forward():
 	assert torch.isfinite(stats["recon_mse"]).item()
 	assert torch.isfinite(stats["recon_nll"]).item()
 	assert torch.isfinite(stats["kl"]).item()
+	assert torch.isfinite(stats["kl_per_dim"]).item()
 	assert torch.isfinite(stats["kl_weight"]).item()
+	assert torch.isfinite(stats["weighted_kl"]).item()
+	assert torch.isfinite(stats["kl_regularizer"]).item()
+	assert torch.isfinite(stats["kl_to_recon_ratio"]).item()
+	assert torch.isfinite(stats["weighted_kl_to_recon_ratio"]).item()
+	assert torch.isfinite(stats["kl_regularizer_to_recon_ratio"]).item()
 	assert torch.isfinite(stats["log_precision"]).item()
 	assert torch.isfinite(stats["model_precision"]).item()
 	assert stats["model_precision"].item() > 0
 	assert torch.isfinite(stats["latent_mean_abs"]).item()
 	assert torch.isfinite(stats["latent_var_mean"]).item()
+	assert torch.isfinite(stats["latent_max_abs_mu"]).item()
+	assert torch.isfinite(stats["latent_max_abs_logvar"]).item()
+	assert torch.isfinite(stats["recon_nll_per_dim"]).item()
 	expected = stats["recon_nll"] + stats["kl_weight"] * stats["kl"]
 	assert torch.allclose(
 		lightning_loss / batch.shape[0],
 		expected,
+		rtol=1e-4,
+		atol=1e-4,
+	)
+	assert torch.allclose(
+		stats["weighted_kl"],
+		stats["kl_weight"] * stats["kl"],
+		rtol=1e-6,
+		atol=1e-6,
+	)
+	assert torch.allclose(
+		stats["recon_nll_per_dim"],
+		stats["recon_nll"] / batch[0].numel(),
+		rtol=1e-6,
+		atol=1e-6,
+	)
+	assert torch.allclose(
+		stats["kl_regularizer"],
+		stats["weighted_kl"],
+		rtol=1e-6,
+		atol=1e-6,
+	)
+
+
+def test_lightning_capacity_schedule_regularizes_to_target():
+	_set_seed(29)
+	batch = torch.randn(2, 64, 64)
+	vae = VAE(save_dir="", device_name="cpu", input_shape=(64, 64), z_dim=8)
+	module = VAELightningModule(
+		vae=vae,
+		kl_capacity_target=1.5,
+		kl_capacity_warmup_epochs=0,
+		kl_capacity_penalty=2.0,
+	)
+
+	loss, stats = module._compute_loss_and_stats(batch)
+
+	assert torch.isfinite(stats["kl_capacity_target"]).item()
+	assert torch.isfinite(stats["kl_capacity_error"]).item()
+	assert torch.isfinite(stats["kl_capacity_penalty"]).item()
+	expected_regularizer = (
+		stats["kl_capacity_penalty"] * torch.abs(stats["kl"] - stats["kl_capacity_target"])
+	)
+	assert torch.allclose(
+		stats["kl_regularizer"],
+		expected_regularizer,
+		rtol=1e-6,
+		atol=1e-6,
+	)
+	assert torch.allclose(
+		loss / batch.shape[0],
+		stats["recon_nll"] + stats["kl_regularizer"],
 		rtol=1e-4,
 		atol=1e-4,
 	)
