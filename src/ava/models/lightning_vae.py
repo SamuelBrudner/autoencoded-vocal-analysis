@@ -560,10 +560,11 @@ class VAECheckpointCallback(pl.Callback):
 			return
 		if self.save_freq is None:
 			return
-		epoch = int(trainer.current_epoch)
-		if epoch <= 0 or epoch % self.save_freq != 0:
+		completed_epoch = int(trainer.current_epoch) + 1
+		if completed_epoch % self.save_freq != 0:
 			return
-		filename = f"checkpoint_{epoch:03d}.tar"
+		pl_module.vae.epoch = completed_epoch
+		filename = f"checkpoint_{completed_epoch:03d}.tar"
 		pl_module.vae.save_state(filename)
 
 

@@ -189,6 +189,30 @@ def test_lightning_checkpoint_loads_legacy(tmp_path):
 	assert 0 in loaded.loss["train"]
 
 
+def test_lightning_saves_checkpoint_after_first_completed_epoch(tmp_path):
+	_set_seed(211)
+	data = torch.randn(6, 128, 128)
+	loaders = _make_loaders(data)
+	save_dir = tmp_path / "lightning_first_epoch_ckpt"
+
+	train_vae(
+		loaders,
+		save_dir=str(save_dir),
+		epochs=1,
+		test_freq=None,
+		save_freq=1,
+		vis_freq=None,
+		trainer_kwargs={
+			"accelerator": "cpu",
+			"devices": 1,
+			"enable_progress_bar": False,
+			"enable_model_summary": False,
+		},
+	)
+
+	assert (save_dir / "checkpoint_001.tar").exists()
+
+
 def test_mps_mixed_precision_is_overridden_to_fp32(tmp_path):
 	if not (hasattr(torch.backends, "mps") and torch.backends.mps.is_available()):
 		pytest.skip("MPS not available for this test.")

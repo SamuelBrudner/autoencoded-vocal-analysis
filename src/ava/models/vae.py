@@ -854,9 +854,9 @@ class VAE(nn.Module):
 				loss = self.test_epoch(loaders['test'])
 				self.loss['test'][epoch] = loss
 			# Save the model.
-			if (save_freq is not None) and (epoch % save_freq == 0) and \
-					(epoch > 0):
-				filename = "checkpoint_"+str(epoch).zfill(3)+'.tar'
+			completed_epoch = epoch + 1
+			if (save_freq is not None) and (completed_epoch % save_freq == 0):
+				filename = "checkpoint_"+str(completed_epoch).zfill(3)+'.tar'
 				self.save_state(filename)
 			# Plot reconstructions.
 			if (vis_freq is not None) and (epoch % vis_freq == 0):
