@@ -284,6 +284,9 @@ class FixedWindowTrainConfig:
 	decoder_type: str = "upsample"
 	kl_beta: float = 1.0
 	kl_warmup_epochs: int = 0
+	kl_capacity_target: Optional[float] = None
+	kl_capacity_warmup_epochs: int = 0
+	kl_capacity_penalty: float = 1.0
 	invariance_weight: float = 0.0
 	invariance_warmup_epochs: int = 0
 	invariance_loss: str = "mse"
@@ -318,6 +321,9 @@ class FixedWindowTrainConfig:
 			"decoder_type": self.decoder_type,
 			"kl_beta": self.kl_beta,
 			"kl_warmup_epochs": self.kl_warmup_epochs,
+			"kl_capacity_target": self.kl_capacity_target,
+			"kl_capacity_warmup_epochs": self.kl_capacity_warmup_epochs,
+			"kl_capacity_penalty": self.kl_capacity_penalty,
 			"invariance_weight": self.invariance_weight,
 			"invariance_warmup_epochs": self.invariance_warmup_epochs,
 			"invariance_loss": self.invariance_loss,
@@ -349,6 +355,9 @@ class FixedWindowTrainConfig:
 			"decoder_type": self.decoder_type,
 			"kl_beta": self.kl_beta,
 			"kl_warmup_epochs": self.kl_warmup_epochs,
+			"kl_capacity_target": self.kl_capacity_target,
+			"kl_capacity_warmup_epochs": self.kl_capacity_warmup_epochs,
+			"kl_capacity_penalty": self.kl_capacity_penalty,
 			"invariance_weight": self.invariance_weight,
 			"invariance_warmup_epochs": self.invariance_warmup_epochs,
 			"invariance_loss": self.invariance_loss,

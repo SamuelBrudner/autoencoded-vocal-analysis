@@ -108,6 +108,9 @@ class VAELightningModule(pl.LightningModule):
 		compile_model: bool = False,
 		compile_kwargs: Optional[dict] = None, kl_beta: float = 1.0,
 		kl_warmup_epochs: int = 0,
+		kl_capacity_target: Optional[float] = None,
+		kl_capacity_warmup_epochs: int = 0,
+		kl_capacity_penalty: float = 1.0,
 		invariance_weight: float = 0.0,
 		invariance_warmup_epochs: int = 0,
 		invariance_loss: str = "mse",
@@ -151,6 +154,9 @@ class VAELightningModule(pl.LightningModule):
 		self._val_loss_count = 0
 		self.kl_beta = kl_beta
 		self.kl_warmup_epochs = kl_warmup_epochs
+		self.kl_capacity_target = kl_capacity_target
+		self.kl_capacity_warmup_epochs = int(kl_capacity_warmup_epochs)
+		self.kl_capacity_penalty = float(kl_capacity_penalty)
 		self.invariance_weight = float(invariance_weight)
 		self.invariance_warmup_epochs = int(invariance_warmup_epochs)
 		self.invariance_loss = self._normalize_invariance_loss(invariance_loss)
@@ -159,6 +165,12 @@ class VAELightningModule(pl.LightningModule):
 			raise ValueError("invariance_weight must be non-negative.")
 		if self.invariance_warmup_epochs < 0:
 			raise ValueError("invariance_warmup_epochs must be non-negative.")
+		if self.kl_capacity_target is not None and float(self.kl_capacity_target) < 0:
+			raise ValueError("kl_capacity_target must be non-negative.")
+		if self.kl_capacity_warmup_epochs < 0:
+			raise ValueError("kl_capacity_warmup_epochs must be non-negative.")
+		if self.kl_capacity_penalty < 0:
+			raise ValueError("kl_capacity_penalty must be non-negative.")
 		self._compiled_loss_fn = None
 		if compile_model:
 			if not hasattr(torch, "compile"):
@@ -193,7 +205,6 @@ class VAELightningModule(pl.LightningModule):
 		entropy = torch.sum(latent_dist.entropy())
 		kl = -(log_pz + entropy)
 		kl_weight = batch.new_tensor(self._kl_weight())
-		loss = -(pxz_term + kl_weight * (log_pz + entropy))
 		recon_mse = F.mse_loss(recon_flat, x_flat, reduction="mean")
 		latent_mean_abs = mu.abs().mean()
 		latent_var_mean = self.vae._latent_variance_mean(u, logvar)
@@ -204,14 +215,27 @@ class VAELightningModule(pl.LightningModule):
 		kl_mean = kl / batch.shape[0]
 		kl_per_dim = kl_mean / self.vae.z_dim
 		weighted_kl = kl_weight * kl_mean
+		capacity_target_value = self._kl_capacity_target()
+		capacity_target_tensor = None
+		capacity_penalty = None
+		capacity_error = None
+		if capacity_target_value is None:
+			kl_regularizer = weighted_kl
+		else:
+			capacity_target_tensor = batch.new_tensor(capacity_target_value)
+			capacity_error = kl_mean - capacity_target_tensor
+			capacity_penalty = batch.new_tensor(self.kl_capacity_penalty)
+			kl_regularizer = capacity_penalty * torch.abs(capacity_error)
+		loss = (-pxz_term) + batch.shape[0] * kl_regularizer
 		recon_denom = torch.clamp(
 			recon_nll.abs(),
 			min=torch.finfo(recon_nll.dtype).eps,
 		)
 		kl_to_recon_ratio = kl_mean / recon_denom
 		weighted_kl_to_recon_ratio = weighted_kl / recon_denom
+		kl_regularizer_to_recon_ratio = kl_regularizer / recon_denom
 		if return_mu:
-			return (
+			items = [
 				loss,
 				recon_mse,
 				latent_mean_abs,
@@ -225,10 +249,15 @@ class VAELightningModule(pl.LightningModule):
 				weighted_kl,
 				kl_to_recon_ratio,
 				weighted_kl_to_recon_ratio,
+				kl_regularizer,
+				kl_regularizer_to_recon_ratio,
 				kl_weight,
-				mu,
-			)
-		return (
+			]
+			if capacity_target_tensor is not None:
+				items.extend([capacity_target_tensor, capacity_error, capacity_penalty])
+			items.append(mu)
+			return tuple(items)
+		items = [
 			loss,
 			recon_mse,
 			latent_mean_abs,
@@ -242,8 +271,13 @@ class VAELightningModule(pl.LightningModule):
 			weighted_kl,
 			kl_to_recon_ratio,
 			weighted_kl_to_recon_ratio,
+			kl_regularizer,
+			kl_regularizer_to_recon_ratio,
 			kl_weight,
-		)
+		]
+		if capacity_target_tensor is not None:
+			items.extend([capacity_target_tensor, capacity_error, capacity_penalty])
+		return tuple(items)
 
 	def _compute_loss_and_stats(self, batch):
 		base, aug = self._split_batch(batch)
@@ -252,32 +286,67 @@ class VAELightningModule(pl.LightningModule):
 				"invariance_weight > 0 requires paired batches with x and x_aug."
 			)
 		if aug is None and self._compiled_loss_fn is not None:
-			(loss, recon_mse, latent_mean_abs, latent_var_mean,
-				latent_max_abs_mu, latent_max_abs_logvar, recon_nll,
-				recon_nll_per_dim, kl_mean, kl_per_dim, weighted_kl,
-				kl_to_recon_ratio, weighted_kl_to_recon_ratio,
-				kl_weight) = (
-				self._compiled_loss_fn(base)
-			)
-			mu_base = None
-		else:
-			if aug is None:
+			outputs = self._compiled_loss_fn(base)
+			if self.kl_capacity_target is None:
 				(loss, recon_mse, latent_mean_abs, latent_var_mean,
 					latent_max_abs_mu, latent_max_abs_logvar, recon_nll,
 					recon_nll_per_dim, kl_mean, kl_per_dim, weighted_kl,
 					kl_to_recon_ratio, weighted_kl_to_recon_ratio,
-					kl_weight) = (
-					self._compute_loss_and_stats_impl(base)
-				)
-				mu_base = None
+					kl_regularizer, kl_regularizer_to_recon_ratio,
+					kl_weight) = outputs
+				capacity_target = None
+				capacity_error = None
+				capacity_penalty = None
 			else:
 				(loss, recon_mse, latent_mean_abs, latent_var_mean,
 					latent_max_abs_mu, latent_max_abs_logvar, recon_nll,
 					recon_nll_per_dim, kl_mean, kl_per_dim, weighted_kl,
 					kl_to_recon_ratio, weighted_kl_to_recon_ratio,
-					kl_weight, mu_base) = (
-					self._compute_loss_and_stats_impl(base, return_mu=True)
-				)
+					kl_regularizer, kl_regularizer_to_recon_ratio,
+					kl_weight, capacity_target, capacity_error,
+					capacity_penalty) = outputs
+			mu_base = None
+		else:
+			if aug is None:
+				outputs = self._compute_loss_and_stats_impl(base)
+				mu_base = None
+			else:
+				outputs = self._compute_loss_and_stats_impl(base, return_mu=True)
+			if self.kl_capacity_target is None:
+				if aug is None:
+					(loss, recon_mse, latent_mean_abs, latent_var_mean,
+						latent_max_abs_mu, latent_max_abs_logvar, recon_nll,
+						recon_nll_per_dim, kl_mean, kl_per_dim, weighted_kl,
+						kl_to_recon_ratio, weighted_kl_to_recon_ratio,
+						kl_regularizer, kl_regularizer_to_recon_ratio,
+						kl_weight) = outputs
+				else:
+					(loss, recon_mse, latent_mean_abs, latent_var_mean,
+						latent_max_abs_mu, latent_max_abs_logvar, recon_nll,
+						recon_nll_per_dim, kl_mean, kl_per_dim, weighted_kl,
+						kl_to_recon_ratio, weighted_kl_to_recon_ratio,
+						kl_regularizer, kl_regularizer_to_recon_ratio,
+						kl_weight, mu_base) = outputs
+				capacity_target = None
+				capacity_error = None
+				capacity_penalty = None
+			else:
+				if aug is None:
+					(loss, recon_mse, latent_mean_abs, latent_var_mean,
+						latent_max_abs_mu, latent_max_abs_logvar, recon_nll,
+						recon_nll_per_dim, kl_mean, kl_per_dim, weighted_kl,
+						kl_to_recon_ratio, weighted_kl_to_recon_ratio,
+						kl_regularizer, kl_regularizer_to_recon_ratio,
+						kl_weight, capacity_target, capacity_error,
+						capacity_penalty) = outputs
+				else:
+					(loss, recon_mse, latent_mean_abs, latent_var_mean,
+						latent_max_abs_mu, latent_max_abs_logvar, recon_nll,
+						recon_nll_per_dim, kl_mean, kl_per_dim, weighted_kl,
+						kl_to_recon_ratio, weighted_kl_to_recon_ratio,
+						kl_regularizer, kl_regularizer_to_recon_ratio,
+						kl_weight, capacity_target, capacity_error,
+						capacity_penalty, mu_base) = outputs
 		stats = {
 			"recon_mse": recon_mse,
 			"recon_nll": recon_nll,
@@ -288,11 +357,17 @@ class VAELightningModule(pl.LightningModule):
 			"weighted_kl": weighted_kl,
 			"kl_to_recon_ratio": kl_to_recon_ratio,
 			"weighted_kl_to_recon_ratio": weighted_kl_to_recon_ratio,
+			"kl_regularizer": kl_regularizer,
+			"kl_regularizer_to_recon_ratio": kl_regularizer_to_recon_ratio,
 			"latent_mean_abs": latent_mean_abs,
 			"latent_var_mean": latent_var_mean,
 			"latent_max_abs_mu": latent_max_abs_mu,
 			"latent_max_abs_logvar": latent_max_abs_logvar,
 		}
+		if capacity_target is not None:
+			stats["kl_capacity_target"] = capacity_target
+			stats["kl_capacity_error"] = capacity_error
+			stats["kl_capacity_penalty"] = capacity_penalty
 		precision = self.vae._precision_tensor().detach()
 		stats["log_precision"] = torch.log(precision)
 		stats["model_precision"] = precision
@@ -325,6 +400,15 @@ class VAELightningModule(pl.LightningModule):
 		else:
 			progress = 1.0
 		return float(self.kl_beta) * progress
+
+	def _kl_capacity_target(self) -> Optional[float]:
+		if self.kl_capacity_target is None:
+			return None
+		if self.kl_capacity_warmup_epochs and self.kl_capacity_warmup_epochs > 0:
+			progress = min(1.0, self.current_epoch / self.kl_capacity_warmup_epochs)
+		else:
+			progress = 1.0
+		return float(self.kl_capacity_target) * progress
 
 	def _invariance_weight(self) -> float:
 		if self.invariance_warmup_epochs and self.invariance_warmup_epochs > 0:
@@ -685,6 +769,9 @@ def train_vae(loaders: dict, save_dir: str = "", lr: float = 1e-3,
 	compile_model: bool = False,
 	compile_kwargs: Optional[dict] = None, kl_beta: float = 1.0,
 	kl_warmup_epochs: int = 0,
+	kl_capacity_target: Optional[float] = None,
+	kl_capacity_warmup_epochs: int = 0,
+	kl_capacity_penalty: float = 1.0,
 	invariance_weight: float = 0.0,
 	invariance_warmup_epochs: int = 0,
 	invariance_loss: str = "mse",
@@ -716,6 +803,9 @@ def train_vae(loaders: dict, save_dir: str = "", lr: float = 1e-3,
 		compile_kwargs=compile_kwargs,
 		kl_beta=kl_beta,
 		kl_warmup_epochs=kl_warmup_epochs,
+		kl_capacity_target=kl_capacity_target,
+		kl_capacity_warmup_epochs=kl_capacity_warmup_epochs,
+		kl_capacity_penalty=kl_capacity_penalty,
 		invariance_weight=invariance_weight,
 		invariance_warmup_epochs=invariance_warmup_epochs,
 		invariance_loss=invariance_loss,
