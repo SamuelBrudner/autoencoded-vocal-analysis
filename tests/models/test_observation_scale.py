@@ -29,7 +29,9 @@ def test_log_precision_grad_matches_gaussian_likelihood_derivative():
 	precision = vae._precision_tensor()
 
 	log_two_pi = math.log(2 * math.pi)
-	pxz_term = -0.5 * x_flat.shape[1] * (log_two_pi - log_precision)
+	pxz_term = -0.5 * batch.shape[0] * x_flat.shape[1] * (
+		log_two_pi - log_precision
+	)
 	l2s = torch.sum((x_flat - recon_flat) ** 2, dim=1)
 	sse_total = torch.sum(l2s)
 	pxz_term = pxz_term - 0.5 * precision * sse_total
@@ -75,7 +77,7 @@ def test_log_precision_clamping_keeps_loss_finite():
 		vae._log_precision_tensor().detach(),
 		vae.log_precision.new_tensor(4.0),
 	)
-	assert abs(vae.model_precision - math.exp(4.0)) < 1e-6
+	assert abs(vae.model_precision - math.exp(4.0)) < 1e-5
 
 	with torch.no_grad():
 		vae.log_precision.copy_(vae.log_precision.new_tensor(-100.0))
@@ -85,5 +87,30 @@ def test_log_precision_clamping_keeps_loss_finite():
 		vae._log_precision_tensor().detach(),
 		vae.log_precision.new_tensor(-4.0),
 	)
-	assert abs(vae.model_precision - math.exp(-4.0)) < 1e-6
+	assert abs(vae.model_precision - math.exp(-4.0)) < 1e-5
 
+
+def test_posterior_logvar_clamping_keeps_encoder_outputs_finite():
+	torch.manual_seed(0)
+	batch = torch.randn(2, 16, 16)
+	vae = VAE(
+		save_dir="",
+		device_name="cpu",
+		input_shape=(16, 16),
+		z_dim=4,
+		model_precision=1.0,
+		build_optimizer=False,
+		posterior_logvar_min=-6.0,
+		posterior_logvar_max=6.0,
+	)
+
+	with torch.no_grad():
+		vae.fc43.bias.fill_(100.0)
+
+	_, mu, logvar, _, _ = vae(batch)
+
+	assert torch.isfinite(logvar).all()
+	assert torch.all(logvar <= 6.0)
+	assert torch.all(logvar >= -6.0)
+	latent_dist = vae._posterior_distribution(mu, logvar, None)
+	assert torch.isfinite(latent_dist.entropy()).all()

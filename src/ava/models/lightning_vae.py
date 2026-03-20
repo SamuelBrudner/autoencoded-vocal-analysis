@@ -100,6 +100,8 @@ class VAELightningModule(pl.LightningModule):
 		learn_observation_scale: bool = False,
 		log_precision_min: Optional[float] = None,
 		log_precision_max: Optional[float] = None,
+		posterior_logvar_min: Optional[float] = None,
+		posterior_logvar_max: Optional[float] = None,
 		input_shape: Optional[tuple[int, int]] = None,
 		posterior_type: str = "diag", conv_arch: str = "plain",
 		decoder_type: str = "upsample",
@@ -120,6 +122,8 @@ class VAELightningModule(pl.LightningModule):
 				learn_observation_scale=learn_observation_scale,
 				log_precision_min=log_precision_min,
 				log_precision_max=log_precision_max,
+				posterior_logvar_min=posterior_logvar_min,
+				posterior_logvar_max=posterior_logvar_max,
 				device_name="cpu",
 				posterior_type=posterior_type,
 				conv_arch=conv_arch,
@@ -133,6 +137,10 @@ class VAELightningModule(pl.LightningModule):
 		vae.set_log_precision_bounds(
 			log_precision_min=log_precision_min,
 			log_precision_max=log_precision_max,
+		)
+		vae.set_logvar_bounds(
+			posterior_logvar_min=posterior_logvar_min,
+			posterior_logvar_max=posterior_logvar_max,
 		)
 		self.vae = vae
 		self.save_dir = self.vae.save_dir
@@ -174,7 +182,9 @@ class VAELightningModule(pl.LightningModule):
 		precision = self.vae._precision_tensor()
 		log_precision = torch.log(precision)
 		log_two_pi = math.log(2 * math.pi)
-		pxz_term = -0.5 * x_flat.shape[1] * (log_two_pi - log_precision)
+		pxz_term = -0.5 * batch.shape[0] * x_flat.shape[1] * (
+			log_two_pi - log_precision
+		)
 		l2s = torch.sum((x_flat - recon_flat) ** 2, dim=1)
 		pxz_term = pxz_term - 0.5 * precision * torch.sum(l2s)
 		log_pz = -0.5 * (
@@ -187,20 +197,53 @@ class VAELightningModule(pl.LightningModule):
 		recon_mse = F.mse_loss(recon_flat, x_flat, reduction="mean")
 		latent_mean_abs = mu.abs().mean()
 		latent_var_mean = self.vae._latent_variance_mean(u, logvar)
+		latent_max_abs_mu = mu.abs().max()
+		latent_max_abs_logvar = logvar.abs().max()
 		recon_nll = (-pxz_term) / batch.shape[0]
+		recon_nll_per_dim = recon_nll / x_flat.shape[1]
 		kl_mean = kl / batch.shape[0]
+		kl_per_dim = kl_mean / self.vae.z_dim
+		weighted_kl = kl_weight * kl_mean
+		recon_denom = torch.clamp(
+			recon_nll.abs(),
+			min=torch.finfo(recon_nll.dtype).eps,
+		)
+		kl_to_recon_ratio = kl_mean / recon_denom
+		weighted_kl_to_recon_ratio = weighted_kl / recon_denom
 		if return_mu:
 			return (
 				loss,
 				recon_mse,
 				latent_mean_abs,
 				latent_var_mean,
+				latent_max_abs_mu,
+				latent_max_abs_logvar,
 				recon_nll,
+				recon_nll_per_dim,
 				kl_mean,
+				kl_per_dim,
+				weighted_kl,
+				kl_to_recon_ratio,
+				weighted_kl_to_recon_ratio,
 				kl_weight,
 				mu,
 			)
-		return loss, recon_mse, latent_mean_abs, latent_var_mean, recon_nll, kl_mean, kl_weight
+		return (
+			loss,
+			recon_mse,
+			latent_mean_abs,
+			latent_var_mean,
+			latent_max_abs_mu,
+			latent_max_abs_logvar,
+			recon_nll,
+			recon_nll_per_dim,
+			kl_mean,
+			kl_per_dim,
+			weighted_kl,
+			kl_to_recon_ratio,
+			weighted_kl_to_recon_ratio,
+			kl_weight,
+		)
 
 	def _compute_loss_and_stats(self, batch):
 		base, aug = self._split_batch(batch)
@@ -209,30 +252,46 @@ class VAELightningModule(pl.LightningModule):
 				"invariance_weight > 0 requires paired batches with x and x_aug."
 			)
 		if aug is None and self._compiled_loss_fn is not None:
-			(loss, recon_mse, latent_mean_abs, latent_var_mean, recon_nll,
-				kl_mean, kl_weight) = (
+			(loss, recon_mse, latent_mean_abs, latent_var_mean,
+				latent_max_abs_mu, latent_max_abs_logvar, recon_nll,
+				recon_nll_per_dim, kl_mean, kl_per_dim, weighted_kl,
+				kl_to_recon_ratio, weighted_kl_to_recon_ratio,
+				kl_weight) = (
 				self._compiled_loss_fn(base)
 			)
 			mu_base = None
 		else:
 			if aug is None:
-				(loss, recon_mse, latent_mean_abs, latent_var_mean, recon_nll,
-					kl_mean, kl_weight) = (
+				(loss, recon_mse, latent_mean_abs, latent_var_mean,
+					latent_max_abs_mu, latent_max_abs_logvar, recon_nll,
+					recon_nll_per_dim, kl_mean, kl_per_dim, weighted_kl,
+					kl_to_recon_ratio, weighted_kl_to_recon_ratio,
+					kl_weight) = (
 					self._compute_loss_and_stats_impl(base)
 				)
 				mu_base = None
 			else:
-				(loss, recon_mse, latent_mean_abs, latent_var_mean, recon_nll,
-					kl_mean, kl_weight, mu_base) = (
+				(loss, recon_mse, latent_mean_abs, latent_var_mean,
+					latent_max_abs_mu, latent_max_abs_logvar, recon_nll,
+					recon_nll_per_dim, kl_mean, kl_per_dim, weighted_kl,
+					kl_to_recon_ratio, weighted_kl_to_recon_ratio,
+					kl_weight, mu_base) = (
 					self._compute_loss_and_stats_impl(base, return_mu=True)
 				)
 		stats = {
 			"recon_mse": recon_mse,
 			"recon_nll": recon_nll,
+			"recon_nll_per_dim": recon_nll_per_dim,
 			"kl": kl_mean,
+			"kl_per_dim": kl_per_dim,
 			"kl_weight": kl_weight,
+			"weighted_kl": weighted_kl,
+			"kl_to_recon_ratio": kl_to_recon_ratio,
+			"weighted_kl_to_recon_ratio": weighted_kl_to_recon_ratio,
 			"latent_mean_abs": latent_mean_abs,
 			"latent_var_mean": latent_var_mean,
+			"latent_max_abs_mu": latent_max_abs_mu,
+			"latent_max_abs_logvar": latent_max_abs_logvar,
 		}
 		precision = self.vae._precision_tensor().detach()
 		stats["log_precision"] = torch.log(precision)
@@ -613,6 +672,8 @@ def train_vae(loaders: dict, save_dir: str = "", lr: float = 1e-3,
 	learn_observation_scale: bool = False, epochs: int = 100,
 	log_precision_min: Optional[float] = None,
 	log_precision_max: Optional[float] = None,
+	posterior_logvar_min: Optional[float] = None,
+	posterior_logvar_max: Optional[float] = None,
 	test_freq: Optional[int] = 2, save_freq: Optional[int] = 10,
 	vis_freq: Optional[int] = 1, num_specs: int = 5, gap=(2, 6),
 	vis_filename: str = "reconstruction.pdf", trainer_kwargs: Optional[dict] = None,
@@ -645,6 +706,8 @@ def train_vae(loaders: dict, save_dir: str = "", lr: float = 1e-3,
 		learn_observation_scale=learn_observation_scale,
 		log_precision_min=log_precision_min,
 		log_precision_max=log_precision_max,
+		posterior_logvar_min=posterior_logvar_min,
+		posterior_logvar_max=posterior_logvar_max,
 		input_shape=input_shape,
 		posterior_type=posterior_type,
 		conv_arch=conv_arch,

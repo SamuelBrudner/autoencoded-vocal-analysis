@@ -56,18 +56,37 @@ def test_lightning_metrics_match_legacy_forward():
 	assert torch.isfinite(stats["recon_mse"]).item()
 	assert torch.isfinite(stats["recon_nll"]).item()
 	assert torch.isfinite(stats["kl"]).item()
+	assert torch.isfinite(stats["kl_per_dim"]).item()
 	assert torch.isfinite(stats["kl_weight"]).item()
+	assert torch.isfinite(stats["weighted_kl"]).item()
+	assert torch.isfinite(stats["kl_to_recon_ratio"]).item()
+	assert torch.isfinite(stats["weighted_kl_to_recon_ratio"]).item()
 	assert torch.isfinite(stats["log_precision"]).item()
 	assert torch.isfinite(stats["model_precision"]).item()
 	assert stats["model_precision"].item() > 0
 	assert torch.isfinite(stats["latent_mean_abs"]).item()
 	assert torch.isfinite(stats["latent_var_mean"]).item()
+	assert torch.isfinite(stats["latent_max_abs_mu"]).item()
+	assert torch.isfinite(stats["latent_max_abs_logvar"]).item()
+	assert torch.isfinite(stats["recon_nll_per_dim"]).item()
 	expected = stats["recon_nll"] + stats["kl_weight"] * stats["kl"]
 	assert torch.allclose(
 		lightning_loss / batch.shape[0],
 		expected,
 		rtol=1e-4,
 		atol=1e-4,
+	)
+	assert torch.allclose(
+		stats["weighted_kl"],
+		stats["kl_weight"] * stats["kl"],
+		rtol=1e-6,
+		atol=1e-6,
+	)
+	assert torch.allclose(
+		stats["recon_nll_per_dim"],
+		stats["recon_nll"] / batch[0].numel(),
+		rtol=1e-6,
+		atol=1e-6,
 	)
 
 
