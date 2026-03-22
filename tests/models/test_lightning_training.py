@@ -70,7 +70,14 @@ def test_lightning_metrics_match_legacy_forward():
 	assert torch.isfinite(stats["latent_var_mean"]).item()
 	assert torch.isfinite(stats["latent_max_abs_mu"]).item()
 	assert torch.isfinite(stats["latent_max_abs_logvar"]).item()
+	assert torch.isfinite(stats["latent_raw_max_abs_logvar"]).item()
+	assert torch.isfinite(stats["latent_logvar_lower_clamp_fraction"]).item()
+	assert torch.isfinite(stats["latent_logvar_upper_clamp_fraction"]).item()
+	assert torch.isfinite(stats["latent_logvar_clamp_fraction"]).item()
 	assert torch.isfinite(stats["recon_nll_per_dim"]).item()
+	assert 0.0 <= stats["latent_logvar_lower_clamp_fraction"].item() <= 1.0
+	assert 0.0 <= stats["latent_logvar_upper_clamp_fraction"].item() <= 1.0
+	assert 0.0 <= stats["latent_logvar_clamp_fraction"].item() <= 1.0
 	expected = stats["recon_nll"] + stats["kl_weight"] * stats["kl"]
 	assert torch.allclose(
 		lightning_loss / batch.shape[0],
@@ -96,6 +103,29 @@ def test_lightning_metrics_match_legacy_forward():
 		rtol=1e-6,
 		atol=1e-6,
 	)
+
+
+def test_lightning_logs_clamp_hit_fractions_when_logvar_overflows():
+	_set_seed(41)
+	batch = torch.randn(2, 64, 64)
+	vae = VAE(
+		save_dir="",
+		device_name="cpu",
+		input_shape=(64, 64),
+		z_dim=8,
+		posterior_logvar_min=-2.0,
+		posterior_logvar_max=2.0,
+	)
+	with torch.no_grad():
+		vae.fc43.bias.fill_(5.0)
+	module = VAELightningModule(vae=vae)
+
+	_, stats = module._compute_loss_and_stats(batch)
+
+	assert stats["latent_raw_max_abs_logvar"].item() > stats["latent_max_abs_logvar"].item()
+	assert stats["latent_logvar_upper_clamp_fraction"].item() > 0.0
+	assert stats["latent_logvar_lower_clamp_fraction"].item() == 0.0
+	assert stats["latent_logvar_clamp_fraction"].item() > 0.0
 
 
 def test_lightning_capacity_schedule_regularizes_to_target():

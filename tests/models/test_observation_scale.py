@@ -114,3 +114,29 @@ def test_posterior_logvar_clamping_keeps_encoder_outputs_finite():
 	assert torch.all(logvar >= -6.0)
 	latent_dist = vae._posterior_distribution(mu, logvar, None)
 	assert torch.isfinite(latent_dist.entropy()).all()
+
+
+def test_logvar_clamp_hit_fractions_reflect_raw_encoder_overflow():
+	torch.manual_seed(0)
+	vae = VAE(
+		save_dir="",
+		device_name="cpu",
+		input_shape=(16, 16),
+		z_dim=4,
+		model_precision=1.0,
+		build_optimizer=False,
+		posterior_logvar_min=-2.0,
+		posterior_logvar_max=2.0,
+	)
+	raw_logvar = torch.tensor(
+		[
+			[-3.0, -2.0, -1.0, 0.0],
+			[1.0, 2.0, 3.0, 4.0],
+		],
+		dtype=torch.float32,
+	)
+	lower_frac, upper_frac, any_frac = vae._logvar_clamp_hit_fractions(raw_logvar)
+
+	assert torch.allclose(lower_frac, torch.tensor(1.0 / 8.0))
+	assert torch.allclose(upper_frac, torch.tensor(2.0 / 8.0))
+	assert torch.allclose(any_frac, torch.tensor(3.0 / 8.0))

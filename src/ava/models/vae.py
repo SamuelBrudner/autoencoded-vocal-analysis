@@ -319,6 +319,23 @@ class VAE(nn.Module):
 			max=float(self.posterior_logvar_max),
 		)
 
+	def _logvar_clamp_hit_fractions(self, raw_logvar):
+		"""Return fractions of posterior logvar entries clipped by each bound."""
+		zero = raw_logvar.new_zeros(())
+		if raw_logvar.numel() == 0:
+			return zero, zero, zero
+		lower_hits = torch.zeros_like(raw_logvar, dtype=torch.bool)
+		upper_hits = torch.zeros_like(raw_logvar, dtype=torch.bool)
+		if self.posterior_logvar_min is not None:
+			lower_hits = raw_logvar < float(self.posterior_logvar_min)
+		if self.posterior_logvar_max is not None:
+			upper_hits = raw_logvar > float(self.posterior_logvar_max)
+		dtype = raw_logvar.dtype
+		lower_fraction = lower_hits.to(dtype=dtype).mean()
+		upper_fraction = upper_hits.to(dtype=dtype).mean()
+		any_fraction = (lower_hits | upper_hits).to(dtype=dtype).mean()
+		return lower_fraction, upper_fraction, any_fraction
+
 
 	@staticmethod
 	def _normalize_input_shape(input_shape):
@@ -585,7 +602,7 @@ class VAE(nn.Module):
 		return layers
 
 
-	def encode(self, x):
+	def encode_with_raw_logvar(self, x):
 		"""
 		Compute :math:`q(z|x)`.
 
@@ -611,6 +628,8 @@ class VAE(nn.Module):
 			Posterior covariance factor, as defined above. Shape:
 			``[batch_size, self.z_dim, 1]``. For diagonal posteriors, this is
 			returned as ``None``.
+		raw_logvar : torch.Tensor
+			Unclamped posterior log-variance prior to optional bounds.
 		"""
 		self._check_input(x)
 		x = x.unsqueeze(1)
@@ -627,9 +646,13 @@ class VAE(nn.Module):
 			u = self.fc42(u).unsqueeze(-1) # Last dimension is rank \Sigma = 1.
 		else:
 			u = None
-		logvar = self._act(self.fc33(x))
-		logvar = self.fc43(logvar)
-		logvar = self._clamp_logvar_tensor(logvar)
+		raw_logvar = self._act(self.fc33(x))
+		raw_logvar = self.fc43(raw_logvar)
+		logvar = self._clamp_logvar_tensor(raw_logvar)
+		return mu, logvar, u, raw_logvar
+
+	def encode(self, x):
+		mu, logvar, u, _ = self.encode_with_raw_logvar(x)
 		return mu, logvar, u
 
 
@@ -710,6 +733,20 @@ class VAE(nn.Module):
 				self._to_numpy(x_rec),
 			)
 		return x_rec, mu, logvar, z, u
+
+	def forward_with_raw_logvar(self, x, return_latent_rec=False):
+		"""Forward pass that also returns unclamped posterior log-variance."""
+		mu, logvar, u, raw_logvar = self.encode_with_raw_logvar(x)
+		latent_dist = self._posterior_distribution(mu, logvar, u)
+		z = latent_dist.rsample()
+		x_rec = self.decode(z).view(-1, *self.input_shape)
+		if return_latent_rec:
+			return (
+				self._to_numpy(z),
+				self._to_numpy(x_rec),
+				self._to_numpy(raw_logvar),
+			)
+		return x_rec, mu, logvar, z, u, raw_logvar
 
 	def _to_numpy(self, tensor: "torch.Tensor") -> np.ndarray:
 		tensor = tensor.detach().cpu()

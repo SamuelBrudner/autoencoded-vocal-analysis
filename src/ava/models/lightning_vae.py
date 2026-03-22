@@ -187,7 +187,7 @@ class VAELightningModule(pl.LightningModule):
 		return self.vae(x, return_latent_rec=return_latent_rec)
 
 	def _compute_loss_and_stats_impl(self, batch, return_mu: bool = False):
-		recon, mu, logvar, z, u = self.vae(batch)
+		recon, mu, logvar, z, u, raw_logvar = self.vae.forward_with_raw_logvar(batch)
 		latent_dist = self.vae._posterior_distribution(mu, logvar, u)
 		x_flat = batch.view(batch.shape[0], -1)
 		recon_flat = recon.view(batch.shape[0], -1)
@@ -210,6 +210,12 @@ class VAELightningModule(pl.LightningModule):
 		latent_var_mean = self.vae._latent_variance_mean(u, logvar)
 		latent_max_abs_mu = mu.abs().max()
 		latent_max_abs_logvar = logvar.abs().max()
+		latent_raw_max_abs_logvar = raw_logvar.abs().max()
+		(
+			latent_logvar_lower_clamp_fraction,
+			latent_logvar_upper_clamp_fraction,
+			latent_logvar_clamp_fraction,
+		) = self.vae._logvar_clamp_hit_fractions(raw_logvar)
 		recon_nll = (-pxz_term) / batch.shape[0]
 		recon_nll_per_dim = recon_nll / x_flat.shape[1]
 		kl_mean = kl / batch.shape[0]
@@ -242,6 +248,10 @@ class VAELightningModule(pl.LightningModule):
 				latent_var_mean,
 				latent_max_abs_mu,
 				latent_max_abs_logvar,
+				latent_raw_max_abs_logvar,
+				latent_logvar_lower_clamp_fraction,
+				latent_logvar_upper_clamp_fraction,
+				latent_logvar_clamp_fraction,
 				recon_nll,
 				recon_nll_per_dim,
 				kl_mean,
@@ -264,6 +274,10 @@ class VAELightningModule(pl.LightningModule):
 			latent_var_mean,
 			latent_max_abs_mu,
 			latent_max_abs_logvar,
+			latent_raw_max_abs_logvar,
+			latent_logvar_lower_clamp_fraction,
+			latent_logvar_upper_clamp_fraction,
+			latent_logvar_clamp_fraction,
 			recon_nll,
 			recon_nll_per_dim,
 			kl_mean,
@@ -289,7 +303,12 @@ class VAELightningModule(pl.LightningModule):
 			outputs = self._compiled_loss_fn(base)
 			if self.kl_capacity_target is None:
 				(loss, recon_mse, latent_mean_abs, latent_var_mean,
-					latent_max_abs_mu, latent_max_abs_logvar, recon_nll,
+					latent_max_abs_mu, latent_max_abs_logvar,
+					latent_raw_max_abs_logvar,
+					latent_logvar_lower_clamp_fraction,
+					latent_logvar_upper_clamp_fraction,
+					latent_logvar_clamp_fraction,
+					recon_nll,
 					recon_nll_per_dim, kl_mean, kl_per_dim, weighted_kl,
 					kl_to_recon_ratio, weighted_kl_to_recon_ratio,
 					kl_regularizer, kl_regularizer_to_recon_ratio,
@@ -299,7 +318,12 @@ class VAELightningModule(pl.LightningModule):
 				capacity_penalty = None
 			else:
 				(loss, recon_mse, latent_mean_abs, latent_var_mean,
-					latent_max_abs_mu, latent_max_abs_logvar, recon_nll,
+					latent_max_abs_mu, latent_max_abs_logvar,
+					latent_raw_max_abs_logvar,
+					latent_logvar_lower_clamp_fraction,
+					latent_logvar_upper_clamp_fraction,
+					latent_logvar_clamp_fraction,
+					recon_nll,
 					recon_nll_per_dim, kl_mean, kl_per_dim, weighted_kl,
 					kl_to_recon_ratio, weighted_kl_to_recon_ratio,
 					kl_regularizer, kl_regularizer_to_recon_ratio,
@@ -315,14 +339,24 @@ class VAELightningModule(pl.LightningModule):
 			if self.kl_capacity_target is None:
 				if aug is None:
 					(loss, recon_mse, latent_mean_abs, latent_var_mean,
-						latent_max_abs_mu, latent_max_abs_logvar, recon_nll,
+						latent_max_abs_mu, latent_max_abs_logvar,
+						latent_raw_max_abs_logvar,
+						latent_logvar_lower_clamp_fraction,
+						latent_logvar_upper_clamp_fraction,
+						latent_logvar_clamp_fraction,
+						recon_nll,
 						recon_nll_per_dim, kl_mean, kl_per_dim, weighted_kl,
 						kl_to_recon_ratio, weighted_kl_to_recon_ratio,
 						kl_regularizer, kl_regularizer_to_recon_ratio,
 						kl_weight) = outputs
 				else:
 					(loss, recon_mse, latent_mean_abs, latent_var_mean,
-						latent_max_abs_mu, latent_max_abs_logvar, recon_nll,
+						latent_max_abs_mu, latent_max_abs_logvar,
+						latent_raw_max_abs_logvar,
+						latent_logvar_lower_clamp_fraction,
+						latent_logvar_upper_clamp_fraction,
+						latent_logvar_clamp_fraction,
+						recon_nll,
 						recon_nll_per_dim, kl_mean, kl_per_dim, weighted_kl,
 						kl_to_recon_ratio, weighted_kl_to_recon_ratio,
 						kl_regularizer, kl_regularizer_to_recon_ratio,
@@ -333,7 +367,12 @@ class VAELightningModule(pl.LightningModule):
 			else:
 				if aug is None:
 					(loss, recon_mse, latent_mean_abs, latent_var_mean,
-						latent_max_abs_mu, latent_max_abs_logvar, recon_nll,
+						latent_max_abs_mu, latent_max_abs_logvar,
+						latent_raw_max_abs_logvar,
+						latent_logvar_lower_clamp_fraction,
+						latent_logvar_upper_clamp_fraction,
+						latent_logvar_clamp_fraction,
+						recon_nll,
 						recon_nll_per_dim, kl_mean, kl_per_dim, weighted_kl,
 						kl_to_recon_ratio, weighted_kl_to_recon_ratio,
 						kl_regularizer, kl_regularizer_to_recon_ratio,
@@ -341,7 +380,12 @@ class VAELightningModule(pl.LightningModule):
 						capacity_penalty) = outputs
 				else:
 					(loss, recon_mse, latent_mean_abs, latent_var_mean,
-						latent_max_abs_mu, latent_max_abs_logvar, recon_nll,
+						latent_max_abs_mu, latent_max_abs_logvar,
+						latent_raw_max_abs_logvar,
+						latent_logvar_lower_clamp_fraction,
+						latent_logvar_upper_clamp_fraction,
+						latent_logvar_clamp_fraction,
+						recon_nll,
 						recon_nll_per_dim, kl_mean, kl_per_dim, weighted_kl,
 						kl_to_recon_ratio, weighted_kl_to_recon_ratio,
 						kl_regularizer, kl_regularizer_to_recon_ratio,
@@ -363,6 +407,10 @@ class VAELightningModule(pl.LightningModule):
 			"latent_var_mean": latent_var_mean,
 			"latent_max_abs_mu": latent_max_abs_mu,
 			"latent_max_abs_logvar": latent_max_abs_logvar,
+			"latent_raw_max_abs_logvar": latent_raw_max_abs_logvar,
+			"latent_logvar_lower_clamp_fraction": latent_logvar_lower_clamp_fraction,
+			"latent_logvar_upper_clamp_fraction": latent_logvar_upper_clamp_fraction,
+			"latent_logvar_clamp_fraction": latent_logvar_clamp_fraction,
 		}
 		if capacity_target is not None:
 			stats["kl_capacity_target"] = capacity_target
