@@ -76,6 +76,8 @@ class FixedWindowPreprocessConfig:
 	file_weight_mode: str = "duration"
 	file_weight_cap: Optional[float] = None
 	roi_weight_mode: str = "duration"
+	sequence_hop_length: Optional[float] = None
+	sequence_shoulder: float = 0.05
 	sampling_seed: Optional[int] = None
 	log_window_indices: bool = False
 	real_preprocess_params: tuple = (
@@ -111,6 +113,8 @@ class FixedWindowPreprocessConfig:
 			"file_weight_mode": self.file_weight_mode,
 			"file_weight_cap": self.file_weight_cap,
 			"roi_weight_mode": self.roi_weight_mode,
+			"sequence_hop_length": self.sequence_hop_length,
+			"sequence_shoulder": self.sequence_shoulder,
 			"sampling_seed": self.sampling_seed,
 			"log_window_indices": self.log_window_indices,
 			"real_preprocess_params": self.real_preprocess_params,
@@ -142,6 +146,8 @@ class FixedWindowPreprocessConfig:
 			"file_weight_mode": self.file_weight_mode,
 			"file_weight_cap": self.file_weight_cap,
 			"roi_weight_mode": self.roi_weight_mode,
+			"sequence_hop_length": self.sequence_hop_length,
+			"sequence_shoulder": self.sequence_shoulder,
 			"sampling_seed": self.sampling_seed,
 			"log_window_indices": self.log_window_indices,
 			"real_preprocess_params": list(self.real_preprocess_params),
@@ -293,6 +299,9 @@ class FixedWindowTrainConfig:
 	invariance_stop_grad: str = "none"
 	compile_model: bool = False
 	compile_kwargs: Optional[dict] = None
+	sequence_hidden_dim: int = 256
+	sequence_x_feature_dim: int = 256
+	sequence_z_feature_dim: int = 128
 	trainer_kwargs: dict = field(default_factory=dict)
 	stopping_kwargs: Optional[dict] = None
 
@@ -332,6 +341,27 @@ class FixedWindowTrainConfig:
 			"compile_kwargs": self.compile_kwargs,
 		}
 
+	def to_sequence_train_kwargs(self) -> dict:
+		return {
+			"lr": self.lr,
+			"z_dim": self.z_dim,
+			"hidden_dim": self.sequence_hidden_dim,
+			"x_feature_dim": self.sequence_x_feature_dim,
+			"z_feature_dim": self.sequence_z_feature_dim,
+			"model_precision": self.model_precision,
+			"learn_observation_scale": self.learn_observation_scale,
+			"log_precision_min": self.log_precision_min,
+			"log_precision_max": self.log_precision_max,
+			"posterior_logvar_min": self.posterior_logvar_min,
+			"posterior_logvar_max": self.posterior_logvar_max,
+			"epochs": self.epochs,
+			"test_freq": self.test_freq,
+			"save_freq": self.save_freq,
+			"trainer_kwargs": self.trainer_kwargs,
+			"kl_beta": self.kl_beta,
+			"kl_warmup_epochs": self.kl_warmup_epochs,
+		}
+
 	def to_dict(self) -> dict:
 		return {
 			"lr": self.lr,
@@ -364,6 +394,9 @@ class FixedWindowTrainConfig:
 			"invariance_stop_grad": self.invariance_stop_grad,
 			"compile_model": self.compile_model,
 			"compile_kwargs": self.compile_kwargs,
+			"sequence_hidden_dim": self.sequence_hidden_dim,
+			"sequence_x_feature_dim": self.sequence_x_feature_dim,
+			"sequence_z_feature_dim": self.sequence_z_feature_dim,
 			"trainer_kwargs": self.trainer_kwargs,
 			"stopping_kwargs": self.stopping_kwargs,
 		}

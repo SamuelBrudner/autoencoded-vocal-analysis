@@ -443,6 +443,25 @@ def _extract_batch_tensor(batch: Any) -> Optional[Any]:
     return None
 
 
+def _extract_dashboard_latents(pl_module: Any, batch_tensor: Any) -> Optional[Any]:
+    if torch is None or batch_tensor is None:
+        return None
+    if batch_tensor.ndim != 3:
+        return None
+    vae = getattr(pl_module, "vae", None)
+    if vae is None or not hasattr(vae, "encode"):
+        return None
+    device = getattr(pl_module, "device", None)
+    if device is None:
+        try:
+            device = next(pl_module.parameters()).device
+        except StopIteration:
+            device = torch.device("cpu")
+    with torch.inference_mode():
+        mu, _, _ = vae.encode(batch_tensor.to(device))
+    return mu
+
+
 def _pca_projection(latents: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     latents = np.asarray(latents, dtype=np.float64)
     if latents.ndim != 2 or latents.shape[0] == 0:
@@ -1500,14 +1519,9 @@ class TrainingDashboardCallback(_LightningCallbackBase):
         batch_tensor = batch_tensor[:remaining]
         if batch_tensor.shape[0] == 0:
             return
-        device = getattr(pl_module, "device", None)
-        if device is None:
-            try:
-                device = next(pl_module.parameters()).device
-            except StopIteration:
-                device = torch.device("cpu")
-        with torch.inference_mode():
-            mu, _, _ = pl_module.vae.encode(batch_tensor.to(device))
+        mu = _extract_dashboard_latents(pl_module, batch_tensor)
+        if mu is None:
+            return
         self._validation_specs.append(_tensor_to_numpy(batch_tensor))
         self._validation_latents.append(_tensor_to_numpy(mu))
 
