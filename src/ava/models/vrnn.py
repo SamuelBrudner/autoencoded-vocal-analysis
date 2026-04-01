@@ -65,6 +65,13 @@ class VRNN(nn.Module):
         log_precision_max: Optional[float] = None,
         posterior_logvar_min: Optional[float] = None,
         posterior_logvar_max: Optional[float] = None,
+        oscillator_weight: float = 0.0,
+        oscillator_frequency_hz: Optional[float] = None,
+        oscillator_start_dim: int = 0,
+        oscillator_radius_weight: float = 0.0,
+        oscillator_radius_target: float = 1.0,
+        oscillator_center_weight: float = 0.0,
+        sequence_hop_length_sec: Optional[float] = None,
     ) -> None:
         if _TORCH_IMPORT_ERROR is not None:
             raise ImportError(
@@ -99,6 +106,35 @@ class VRNN(nn.Module):
             posterior_logvar_min=posterior_logvar_min,
             posterior_logvar_max=posterior_logvar_max,
         )
+        self.oscillator_weight = self._coerce_nonnegative_float(
+            oscillator_weight,
+            "oscillator_weight",
+        )
+        self.oscillator_frequency_hz = self._coerce_optional_positive_float(
+            oscillator_frequency_hz,
+            "oscillator_frequency_hz",
+        )
+        self.oscillator_start_dim = self._coerce_nonnegative_int(
+            oscillator_start_dim,
+            "oscillator_start_dim",
+        )
+        self.oscillator_radius_weight = self._coerce_nonnegative_float(
+            oscillator_radius_weight,
+            "oscillator_radius_weight",
+        )
+        self.oscillator_radius_target = self._coerce_nonnegative_float(
+            oscillator_radius_target,
+            "oscillator_radius_target",
+        )
+        self.oscillator_center_weight = self._coerce_nonnegative_float(
+            oscillator_center_weight,
+            "oscillator_center_weight",
+        )
+        self.sequence_hop_length_sec = self._coerce_optional_positive_float(
+            sequence_hop_length_sec,
+            "sequence_hop_length_sec",
+        )
+        self._validate_oscillator_config()
         if device_name == "auto":
             device_name = "cuda" if torch.cuda.is_available() else "cpu"
         if device_name == "cuda" and not torch.cuda.is_available():
@@ -136,6 +172,44 @@ class VRNN(nn.Module):
         if not math.isfinite(value) or value <= 0:
             raise ValueError(f"{name} must be a positive float.")
         return value
+
+    @staticmethod
+    def _coerce_nonnegative_float(value, name: str) -> float:
+        try:
+            value = float(value)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"{name} must be a non-negative float.") from exc
+        if not math.isfinite(value) or value < 0:
+            raise ValueError(f"{name} must be a non-negative float.")
+        return value
+
+    @staticmethod
+    def _coerce_optional_positive_float(value, name: str) -> Optional[float]:
+        if value is None:
+            return None
+        return VRNN._coerce_positive_float(value, name)
+
+    @staticmethod
+    def _coerce_nonnegative_int(value, name: str) -> int:
+        try:
+            value = int(value)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"{name} must be a non-negative integer.") from exc
+        if value < 0:
+            raise ValueError(f"{name} must be a non-negative integer.")
+        return value
+
+    def _validate_oscillator_config(self) -> None:
+        if self.oscillator_weight <= 0 and self.oscillator_radius_weight <= 0 and self.oscillator_center_weight <= 0:
+            return
+        if self.oscillator_frequency_hz is None:
+            raise ValueError(
+                "oscillator_frequency_hz must be provided when oscillator regularization is enabled."
+            )
+        if self.oscillator_start_dim + 1 >= self.z_dim:
+            raise ValueError(
+                "Oscillator regularization requires two latent dimensions within z_dim."
+            )
 
     @property
     def device(self):
@@ -357,10 +431,81 @@ class VRNN(nn.Module):
         denom = torch.clamp(weights.sum(), min=torch.finfo(values.dtype).eps)
         return torch.sum(values * weights) / denom
 
+    def _oscillator_stats(
+        self,
+        posterior_mu: "torch.Tensor",
+        mask: "torch.Tensor",
+        start_times: Optional["torch.Tensor"] = None,
+    ) -> dict[str, "torch.Tensor"]:
+        zero = posterior_mu.new_zeros(())
+        if (
+            self.oscillator_weight <= 0
+            and self.oscillator_radius_weight <= 0
+            and self.oscillator_center_weight <= 0
+        ):
+            return {
+                "oscillator_dyn_loss": zero,
+                "oscillator_radius_loss": zero,
+                "oscillator_center_loss": zero,
+                "oscillator_loss": zero,
+            }
+
+        osc = posterior_mu[
+            ...,
+            self.oscillator_start_dim : self.oscillator_start_dim + 2,
+        ]
+        mask_bool = mask.to(dtype=torch.bool)
+        valid_pairs = mask_bool[:, 1:] & mask_bool[:, :-1]
+
+        if start_times is not None:
+            dt = (start_times[:, 1:] - start_times[:, :-1]).to(dtype=osc.dtype)
+        elif self.sequence_hop_length_sec is not None:
+            dt = osc.new_full(valid_pairs.shape, float(self.sequence_hop_length_sec))
+        else:
+            raise ValueError(
+                "start_times or sequence_hop_length_sec is required when oscillator regularization is enabled."
+            )
+        dt = torch.clamp(dt, min=torch.finfo(osc.dtype).eps)
+        theta = dt * (2.0 * math.pi * float(self.oscillator_frequency_hz))
+        cos_theta = torch.cos(theta)
+        sin_theta = torch.sin(theta)
+
+        osc_prev = osc[:, :-1, :]
+        osc_next = osc[:, 1:, :]
+        pred_x = cos_theta * osc_prev[..., 0] - sin_theta * osc_prev[..., 1]
+        pred_y = sin_theta * osc_prev[..., 0] + cos_theta * osc_prev[..., 1]
+        dyn_error = (osc_next[..., 0] - pred_x) ** 2 + (osc_next[..., 1] - pred_y) ** 2
+        dyn_loss = self._masked_mean(dyn_error, valid_pairs)
+
+        radius = torch.linalg.vector_norm(osc, dim=-1)
+        radius_error = (radius - float(self.oscillator_radius_target)) ** 2
+        radius_loss = self._masked_mean(radius_error, mask_bool)
+
+        osc_mean = (osc * mask_bool.unsqueeze(-1).to(dtype=osc.dtype)).sum(dim=1)
+        denom = torch.clamp(
+            mask_bool.sum(dim=1, keepdim=True).to(dtype=osc.dtype),
+            min=torch.finfo(osc.dtype).eps,
+        )
+        osc_mean = osc_mean / denom
+        center_loss = torch.mean(torch.sum(osc_mean ** 2, dim=-1))
+
+        total = (
+            float(self.oscillator_weight) * dyn_loss
+            + float(self.oscillator_radius_weight) * radius_loss
+            + float(self.oscillator_center_weight) * center_loss
+        )
+        return {
+            "oscillator_dyn_loss": dyn_loss,
+            "oscillator_radius_loss": radius_loss,
+            "oscillator_center_loss": center_loss,
+            "oscillator_loss": total,
+        }
+
     def compute_loss(
         self,
         x: "torch.Tensor",
         mask: Optional["torch.Tensor"] = None,
+        start_times: Optional["torch.Tensor"] = None,
         kl_beta: float = 1.0,
     ) -> tuple["torch.Tensor", dict[str, "torch.Tensor"]]:
         x_flat, mask = self._split_sequence(x, mask=mask)
@@ -393,6 +538,12 @@ class VRNN(nn.Module):
         kl_weight = x_flat.new_tensor(float(kl_beta))
         weighted_kl = kl_weight * kl
         loss = recon_nll + weighted_kl
+        oscillator_stats = self._oscillator_stats(
+            outputs["posterior_mu"],
+            mask,
+            start_times=start_times,
+        )
+        loss = loss + oscillator_stats["oscillator_loss"]
 
         recon_mse = self._masked_mean((x_flat - recon_flat) ** 2, mask)
         latent_mean_abs = self._masked_mean(outputs["posterior_mu"].abs(), mask)
@@ -413,6 +564,7 @@ class VRNN(nn.Module):
             "log_precision": log_precision,
             "model_precision": precision,
         }
+        stats.update(oscillator_stats)
         return loss, stats
 
     def sample(
@@ -461,6 +613,13 @@ class VRNN(nn.Module):
             "posterior_logvar_min": self.posterior_logvar_min,
             "posterior_logvar_max": self.posterior_logvar_max,
             "learn_observation_scale": self.learn_observation_scale,
+            "oscillator_weight": self.oscillator_weight,
+            "oscillator_frequency_hz": self.oscillator_frequency_hz,
+            "oscillator_start_dim": self.oscillator_start_dim,
+            "oscillator_radius_weight": self.oscillator_radius_weight,
+            "oscillator_radius_target": self.oscillator_radius_target,
+            "oscillator_center_weight": self.oscillator_center_weight,
+            "sequence_hop_length_sec": self.sequence_hop_length_sec,
         }
         filename = os.path.join(self.save_dir, filename)
         torch.save(state, filename)
@@ -480,6 +639,31 @@ class VRNN(nn.Module):
             checkpoint_value = checkpoint.get(key, value)
             if key == "input_shape":
                 checkpoint_value = tuple(checkpoint_value)
+            if checkpoint_value != value:
+                raise ValueError(
+                    f"Checkpoint {key} {checkpoint_value!r} does not match model {value!r}."
+                )
+        optional_expected = {
+            "oscillator_frequency_hz": self.oscillator_frequency_hz,
+            "sequence_hop_length_sec": self.sequence_hop_length_sec,
+        }
+        for key, value in optional_expected.items():
+            if key not in checkpoint:
+                continue
+            checkpoint_value = checkpoint.get(key)
+            if checkpoint_value != value:
+                raise ValueError(
+                    f"Checkpoint {key} {checkpoint_value!r} does not match model {value!r}."
+                )
+        exact_expected = {
+            "oscillator_weight": self.oscillator_weight,
+            "oscillator_start_dim": self.oscillator_start_dim,
+            "oscillator_radius_weight": self.oscillator_radius_weight,
+            "oscillator_radius_target": self.oscillator_radius_target,
+            "oscillator_center_weight": self.oscillator_center_weight,
+        }
+        for key, value in exact_expected.items():
+            checkpoint_value = checkpoint.get(key, value)
             if checkpoint_value != value:
                 raise ValueError(
                     f"Checkpoint {key} {checkpoint_value!r} does not match model {value!r}."

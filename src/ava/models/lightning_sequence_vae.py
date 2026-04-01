@@ -29,23 +29,29 @@ from ava.models.vrnn import VRNN
 
 def _extract_sequence_batch(batch):
     if torch.is_tensor(batch):
-        return batch, None
+        return batch, None, None
     if isinstance(batch, dict):
         x = batch.get("x")
         mask = batch.get("mask")
+        start_times = batch.get("start_times")
         if not torch.is_tensor(x):
             raise ValueError("Sequence batches must provide a tensor under 'x'.")
         if mask is not None and not torch.is_tensor(mask):
             raise ValueError("Sequence batch mask must be a tensor when provided.")
-        return x, mask
+        if start_times is not None and not torch.is_tensor(start_times):
+            raise ValueError("Sequence batch start_times must be a tensor when provided.")
+        return x, mask, start_times
     if isinstance(batch, (list, tuple)) and batch:
         x = batch[0]
         mask = batch[1] if len(batch) > 1 else None
+        start_times = batch[2] if len(batch) > 2 else None
         if not torch.is_tensor(x):
             raise ValueError("Sequence batches must start with a tensor.")
         if mask is not None and not torch.is_tensor(mask):
             mask = None
-        return x, mask
+        if start_times is not None and not torch.is_tensor(start_times):
+            start_times = None
+        return x, mask, start_times
     raise ValueError("Unsupported batch format for sequence VAE training.")
 
 
@@ -54,7 +60,7 @@ def _infer_input_shape(loaders: dict) -> tuple[int, int]:
     if loader is None:
         raise ValueError("Cannot infer input_shape without a train dataloader.")
     batch = next(iter(loader))
-    x, _ = _extract_sequence_batch(batch)
+    x, _, _ = _extract_sequence_batch(batch)
     if x.dim() != 4:
         raise ValueError("Sequence batches must have shape [batch, steps, height, width].")
     return tuple(x.shape[2:])
@@ -95,6 +101,13 @@ class SequenceVAELightningModule(pl.LightningModule):
         input_shape: Optional[tuple[int, int]] = None,
         kl_beta: float = 1.0,
         kl_warmup_epochs: int = 0,
+        oscillator_weight: float = 0.0,
+        oscillator_frequency_hz: Optional[float] = None,
+        oscillator_start_dim: int = 0,
+        oscillator_radius_weight: float = 0.0,
+        oscillator_radius_target: float = 1.0,
+        oscillator_center_weight: float = 0.0,
+        sequence_hop_length_sec: Optional[float] = None,
     ) -> None:
         super().__init__()
         if vrnn is None:
@@ -115,6 +128,13 @@ class SequenceVAELightningModule(pl.LightningModule):
                 log_precision_max=log_precision_max,
                 posterior_logvar_min=posterior_logvar_min,
                 posterior_logvar_max=posterior_logvar_max,
+                oscillator_weight=oscillator_weight,
+                oscillator_frequency_hz=oscillator_frequency_hz,
+                oscillator_start_dim=oscillator_start_dim,
+                oscillator_radius_weight=oscillator_radius_weight,
+                oscillator_radius_target=oscillator_radius_target,
+                oscillator_center_weight=oscillator_center_weight,
+                sequence_hop_length_sec=sequence_hop_length_sec,
             )
         elif save_dir:
             vrnn.save_dir = save_dir
@@ -135,8 +155,13 @@ class SequenceVAELightningModule(pl.LightningModule):
         return self.kl_beta * progress
 
     def _compute_loss_and_stats(self, batch):
-        x, mask = _extract_sequence_batch(batch)
-        return self.vrnn.compute_loss(x, mask=mask, kl_beta=self._kl_weight())
+        x, mask, start_times = _extract_sequence_batch(batch)
+        return self.vrnn.compute_loss(
+            x,
+            mask=mask,
+            start_times=start_times,
+            kl_beta=self._kl_weight(),
+        )
 
     def _log_stats(self, stats: dict, prefix: str, batch_size: int) -> None:
         for name, value in stats.items():
@@ -151,7 +176,7 @@ class SequenceVAELightningModule(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         loss, stats = self._compute_loss_and_stats(batch)
-        x, _ = _extract_sequence_batch(batch)
+        x, _, _ = _extract_sequence_batch(batch)
         batch_size = int(x.shape[0])
         self._train_loss_sum += float(loss.detach().item()) * batch_size
         self._train_loss_count += batch_size
@@ -168,7 +193,7 @@ class SequenceVAELightningModule(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         loss, stats = self._compute_loss_and_stats(batch)
-        x, _ = _extract_sequence_batch(batch)
+        x, _, _ = _extract_sequence_batch(batch)
         batch_size = int(x.shape[0])
         self._val_loss_sum += float(loss.detach().item()) * batch_size
         self._val_loss_count += batch_size
@@ -295,6 +320,13 @@ def train_sequence_vae(
     input_shape: Optional[tuple[int, int]] = None,
     kl_beta: float = 1.0,
     kl_warmup_epochs: int = 0,
+    oscillator_weight: float = 0.0,
+    oscillator_frequency_hz: Optional[float] = None,
+    oscillator_start_dim: int = 0,
+    oscillator_radius_weight: float = 0.0,
+    oscillator_radius_target: float = 1.0,
+    oscillator_center_weight: float = 0.0,
+    sequence_hop_length_sec: Optional[float] = None,
     config_path: Optional[str] = None,
     manifest_path: Optional[str] = None,
     dataset_root: Optional[str] = None,
@@ -321,6 +353,13 @@ def train_sequence_vae(
         input_shape=input_shape,
         kl_beta=kl_beta,
         kl_warmup_epochs=kl_warmup_epochs,
+        oscillator_weight=oscillator_weight,
+        oscillator_frequency_hz=oscillator_frequency_hz,
+        oscillator_start_dim=oscillator_start_dim,
+        oscillator_radius_weight=oscillator_radius_weight,
+        oscillator_radius_target=oscillator_radius_target,
+        oscillator_center_weight=oscillator_center_weight,
+        sequence_hop_length_sec=sequence_hop_length_sec,
     )
     trainer = build_sequence_trainer(
         save_dir=module.save_dir,

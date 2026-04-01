@@ -165,6 +165,10 @@ def main() -> None:
     )
 
     train_kwargs = train_config.to_sequence_train_kwargs()
+    sequence_hop_length_sec = params.get("sequence_hop_length")
+    if sequence_hop_length_sec is None:
+        sequence_hop_length_sec = float(params["window_length"]) / 2.0
+    train_kwargs.setdefault("sequence_hop_length_sec", float(sequence_hop_length_sec))
     if args.epochs is not None:
         train_kwargs["epochs"] = args.epochs
     trainer_kwargs = dict(train_kwargs.get("trainer_kwargs") or {})

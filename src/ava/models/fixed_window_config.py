@@ -302,6 +302,12 @@ class FixedWindowTrainConfig:
 	sequence_hidden_dim: int = 256
 	sequence_x_feature_dim: int = 256
 	sequence_z_feature_dim: int = 128
+	oscillator_weight: float = 0.0
+	oscillator_frequency_hz: Optional[float] = None
+	oscillator_start_dim: int = 0
+	oscillator_radius_weight: float = 0.0
+	oscillator_radius_target: float = 1.0
+	oscillator_center_weight: float = 0.0
 	trainer_kwargs: dict = field(default_factory=dict)
 	stopping_kwargs: Optional[dict] = None
 
@@ -360,6 +366,12 @@ class FixedWindowTrainConfig:
 			"trainer_kwargs": self.trainer_kwargs,
 			"kl_beta": self.kl_beta,
 			"kl_warmup_epochs": self.kl_warmup_epochs,
+			"oscillator_weight": self.oscillator_weight,
+			"oscillator_frequency_hz": self.oscillator_frequency_hz,
+			"oscillator_start_dim": self.oscillator_start_dim,
+			"oscillator_radius_weight": self.oscillator_radius_weight,
+			"oscillator_radius_target": self.oscillator_radius_target,
+			"oscillator_center_weight": self.oscillator_center_weight,
 		}
 
 	def to_dict(self) -> dict:
@@ -397,6 +409,12 @@ class FixedWindowTrainConfig:
 			"sequence_hidden_dim": self.sequence_hidden_dim,
 			"sequence_x_feature_dim": self.sequence_x_feature_dim,
 			"sequence_z_feature_dim": self.sequence_z_feature_dim,
+			"oscillator_weight": self.oscillator_weight,
+			"oscillator_frequency_hz": self.oscillator_frequency_hz,
+			"oscillator_start_dim": self.oscillator_start_dim,
+			"oscillator_radius_weight": self.oscillator_radius_weight,
+			"oscillator_radius_target": self.oscillator_radius_target,
+			"oscillator_center_weight": self.oscillator_center_weight,
 			"trainer_kwargs": self.trainer_kwargs,
 			"stopping_kwargs": self.stopping_kwargs,
 		}
