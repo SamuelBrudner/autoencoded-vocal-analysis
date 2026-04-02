@@ -854,6 +854,20 @@ class ManifestFixedWindowDataset(Dataset):
         return (base, aug)
 
     def __getitem__(self, index: int, seed: Optional[int] = None, shoulder: float = 0.05) -> Any:
+        try:
+            iterator = iter(index)
+        except TypeError:
+            iterator = None
+        else:
+            if isinstance(index, (str, bytes)):
+                iterator = None
+        if iterator is not None:
+            result = []
+            for offset, item in enumerate(iterator):
+                item_seed = None if seed is None else int(seed) + offset
+                result.append(self.__getitem__(int(item), seed=item_seed, shoulder=shoulder))
+            return result
+
         epoch = int(self._epoch)
         if seed is not None:
             rng = np.random.RandomState(int(seed))
@@ -987,4 +1001,3 @@ def get_manifest_fixed_window_data_loaders(
     )
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=bool(shuffle[1]), **loader_kwargs)
     return {"train": train_loader, "test": test_loader}
-

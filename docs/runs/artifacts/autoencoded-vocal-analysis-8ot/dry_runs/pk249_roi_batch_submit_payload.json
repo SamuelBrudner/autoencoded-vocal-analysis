@@ -1,0 +1,52 @@
+{
+  "jobName": "pk249-33-90-roi",
+  "jobQueue": "example-queue",
+  "jobDefinition": "example-job-definition",
+  "arrayProperties": {
+    "size": 8
+  },
+  "containerOverrides": {
+    "environment": [
+      {
+        "name": "AVA_MANIFEST_S3_URI",
+        "value": "s3://example-bucket/autoencoded-vocal-analysis/pk249-33-90/manifest_pk249_33_90.json"
+      },
+      {
+        "name": "AVA_SEGMENT_CONFIG_S3_URI",
+        "value": "s3://example-bucket/autoencoded-vocal-analysis/pk249-33-90/birdsong_roi_medium_pilot.yaml"
+      },
+      {
+        "name": "AVA_S3_AUDIO_ROOT",
+        "value": "s3://example-bucket/autoencoded-vocal-analysis/pk249-33-90/audio"
+      },
+      {
+        "name": "AVA_S3_ROI_ROOT",
+        "value": "s3://example-bucket/autoencoded-vocal-analysis/pk249-33-90/roi"
+      },
+      {
+        "name": "AVA_SPLIT",
+        "value": "all"
+      },
+      {
+        "name": "AVA_NUM_SHARDS",
+        "value": "8"
+      },
+      {
+        "name": "AVA_ROI_OUTPUT_FORMAT",
+        "value": "parquet"
+      },
+      {
+        "name": "AVA_ROI_PARQUET_NAME",
+        "value": "roi.parquet"
+      },
+      {
+        "name": "AVA_DOWNLOAD_JOBS",
+        "value": "8"
+      },
+      {
+        "name": "AVA_SKIP_EXISTING",
+        "value": "1"
+      }
+    ]
+  }
+}

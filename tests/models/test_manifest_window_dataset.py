@@ -83,3 +83,8 @@ def test_manifest_dataset_parquet_is_lazy_about_roi(tmp_path: Path) -> None:
     sample = dataset[0]
     assert hasattr(sample, "shape")
     assert tuple(sample.shape) == (p["num_freq_bins"], p["num_time_bins"])
+
+    sampled_batch = dataset[np.array([0, 1])]
+    assert isinstance(sampled_batch, list)
+    assert len(sampled_batch) == 2
+    assert all(tuple(spec.shape) == (p["num_freq_bins"], p["num_time_bins"]) for spec in sampled_batch)

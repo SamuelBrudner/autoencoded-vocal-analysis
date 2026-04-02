@@ -1,0 +1,18 @@
+{
+  "created_utc": "2026-04-02T20:37:04Z",
+  "manifest_path": "docs/runs/artifacts/autoencoded-vocal-analysis-8ot/manifest_pk249_33_37_smoke.json",
+  "segment_config": "examples/configs/birdsong_roi_medium_pilot.yaml",
+  "split": "all",
+  "audio_root": null,
+  "roi_root": "/tmp/ava_roi_autoencoded-vocal-analysis-8ot_smoke",
+  "num_shards": 1,
+  "shard_index": 0,
+  "planned_total": 5,
+  "skipped_existing": 0,
+  "total": 5,
+  "ok": 5,
+  "failed": 0,
+  "elapsed_sec": 12.761132717132568,
+  "dirs_per_sec": 0.39181474801897537,
+  "errors": []
+}

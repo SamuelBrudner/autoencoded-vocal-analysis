@@ -1,0 +1,6 @@
+bird_id_norm,regime,dph,session_label,split,directories,wav_files_checked,roi_files_present,missing_roi_files,empty_roi_files,segments_total,segment_duration_total_sec,roi_parse_errors,segment_duration_mean_sec_weighted
+PK249,bells,33.0,,train,1,140,140,0,5,836,82.88362672179937,0,0.09914309416483179
+PK249,bells,34.0,,train,1,328,328,0,0,3722,452.4466117778793,0,0.12156007839276714
+PK249,bells,35.0,,train,1,471,471,0,11,5225,700.9872106686234,0,0.13416023170691357
+PK249,bells,36.0,,train,1,764,764,0,1,21104,1990.4609175631776,0,0.0943167606881718
+PK249,bells,37.0,,test,1,592,592,0,3,8212,1027.8719304073602,0,0.12516706410221143

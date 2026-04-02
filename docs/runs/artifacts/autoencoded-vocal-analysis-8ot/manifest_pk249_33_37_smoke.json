@@ -1,0 +1,117 @@
+{
+  "created_utc": "2026-04-02T20:36:33Z",
+  "source_manifest_path": "data/manifests/birdsong_manifest.json",
+  "metadata_path": "data/metadata/birdsong/birdsong_files.parquet",
+  "root": "/Volumes/samsung_ssd/data/birdsong",
+  "roi_root": "/Volumes/samsung_ssd/data/ava_roi_birdsong_full",
+  "seed": 0,
+  "train_fraction": 0.8,
+  "filters": {
+    "bird_id_norm": "PK249",
+    "min_dph": 33,
+    "max_dph": 37,
+    "test_every_n": 5,
+    "test_offset": 4,
+    "split_strategy": "deterministic_directory_stride"
+  },
+  "summary": {
+    "train": {
+      "birds": 1,
+      "directories": 4,
+      "files": 1703,
+      "by_regime": {
+        "bells": {
+          "birds": 1,
+          "directories": 4,
+          "files": 1703
+        }
+      }
+    },
+    "test": {
+      "birds": 1,
+      "directories": 1,
+      "files": 592,
+      "by_regime": {
+        "bells": {
+          "birds": 1,
+          "directories": 1,
+          "files": 592
+        }
+      }
+    }
+  },
+  "train": [
+    {
+      "audio_dir_rel": "day43 Bells/pk249/33",
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day43 Bells/pk249/33",
+      "roi_dir": "/Volumes/samsung_ssd/data/ava_roi_birdsong_full/day43 Bells/pk249/33",
+      "bird_id_norm": "PK249",
+      "bird_id_raw": "pk249",
+      "regime": "bells",
+      "top_dir": "day43 Bells",
+      "pre_bird_path": null,
+      "dph": 33.0,
+      "session_label": null,
+      "num_files": 140,
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/34",
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day43 Bells/pk249/34",
+      "roi_dir": "/Volumes/samsung_ssd/data/ava_roi_birdsong_full/day43 Bells/pk249/34",
+      "bird_id_norm": "PK249",
+      "bird_id_raw": "pk249",
+      "regime": "bells",
+      "top_dir": "day43 Bells",
+      "pre_bird_path": null,
+      "dph": 34.0,
+      "session_label": null,
+      "num_files": 328,
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/35",
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day43 Bells/pk249/35",
+      "roi_dir": "/Volumes/samsung_ssd/data/ava_roi_birdsong_full/day43 Bells/pk249/35",
+      "bird_id_norm": "PK249",
+      "bird_id_raw": "pk249",
+      "regime": "bells",
+      "top_dir": "day43 Bells",
+      "pre_bird_path": null,
+      "dph": 35.0,
+      "session_label": null,
+      "num_files": 471,
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/36",
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day43 Bells/pk249/36",
+      "roi_dir": "/Volumes/samsung_ssd/data/ava_roi_birdsong_full/day43 Bells/pk249/36",
+      "bird_id_norm": "PK249",
+      "bird_id_raw": "pk249",
+      "regime": "bells",
+      "top_dir": "day43 Bells",
+      "pre_bird_path": null,
+      "dph": 36.0,
+      "session_label": null,
+      "num_files": 764,
+      "split": "train"
+    }
+  ],
+  "test": [
+    {
+      "audio_dir_rel": "day43 Bells/pk249/37",
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day43 Bells/pk249/37",
+      "roi_dir": "/Volumes/samsung_ssd/data/ava_roi_birdsong_full/day43 Bells/pk249/37",
+      "bird_id_norm": "PK249",
+      "bird_id_raw": "pk249",
+      "regime": "bells",
+      "top_dir": "day43 Bells",
+      "pre_bird_path": null,
+      "dph": 37.0,
+      "session_label": null,
+      "num_files": 592,
+      "split": "test"
+    }
+  ]
+}

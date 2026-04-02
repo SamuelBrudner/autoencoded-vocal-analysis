@@ -1,0 +1,249 @@
+{
+  "bird_id_norm": "PK249",
+  "regime": "bells",
+  "dph_range": {
+    "min": 33,
+    "max": 90
+  },
+  "distinct_dph": 58,
+  "missing_dph": [],
+  "total_files": 95402,
+  "min_files_per_day": 140,
+  "days_lt_250": 1,
+  "days_lt_500": 3,
+  "days_ge_1000": 53,
+  "per_dph_num_files": [
+    {
+      "dph": 33,
+      "num_files": 140
+    },
+    {
+      "dph": 34,
+      "num_files": 328
+    },
+    {
+      "dph": 35,
+      "num_files": 471
+    },
+    {
+      "dph": 36,
+      "num_files": 764
+    },
+    {
+      "dph": 37,
+      "num_files": 592
+    },
+    {
+      "dph": 38,
+      "num_files": 1538
+    },
+    {
+      "dph": 39,
+      "num_files": 2121
+    },
+    {
+      "dph": 40,
+      "num_files": 2467
+    },
+    {
+      "dph": 41,
+      "num_files": 2248
+    },
+    {
+      "dph": 42,
+      "num_files": 2005
+    },
+    {
+      "dph": 43,
+      "num_files": 1658
+    },
+    {
+      "dph": 44,
+      "num_files": 1838
+    },
+    {
+      "dph": 45,
+      "num_files": 2267
+    },
+    {
+      "dph": 46,
+      "num_files": 1475
+    },
+    {
+      "dph": 47,
+      "num_files": 1731
+    },
+    {
+      "dph": 48,
+      "num_files": 1468
+    },
+    {
+      "dph": 49,
+      "num_files": 1324
+    },
+    {
+      "dph": 50,
+      "num_files": 1439
+    },
+    {
+      "dph": 51,
+      "num_files": 1709
+    },
+    {
+      "dph": 52,
+      "num_files": 1727
+    },
+    {
+      "dph": 53,
+      "num_files": 1619
+    },
+    {
+      "dph": 54,
+      "num_files": 1898
+    },
+    {
+      "dph": 55,
+      "num_files": 1811
+    },
+    {
+      "dph": 56,
+      "num_files": 1969
+    },
+    {
+      "dph": 57,
+      "num_files": 1961
+    },
+    {
+      "dph": 58,
+      "num_files": 1996
+    },
+    {
+      "dph": 59,
+      "num_files": 1711
+    },
+    {
+      "dph": 60,
+      "num_files": 2037
+    },
+    {
+      "dph": 61,
+      "num_files": 1941
+    },
+    {
+      "dph": 62,
+      "num_files": 1995
+    },
+    {
+      "dph": 63,
+      "num_files": 1713
+    },
+    {
+      "dph": 64,
+      "num_files": 1991
+    },
+    {
+      "dph": 65,
+      "num_files": 1807
+    },
+    {
+      "dph": 66,
+      "num_files": 1803
+    },
+    {
+      "dph": 67,
+      "num_files": 2141
+    },
+    {
+      "dph": 68,
+      "num_files": 2107
+    },
+    {
+      "dph": 69,
+      "num_files": 2032
+    },
+    {
+      "dph": 70,
+      "num_files": 1657
+    },
+    {
+      "dph": 71,
+      "num_files": 1945
+    },
+    {
+      "dph": 72,
+      "num_files": 1921
+    },
+    {
+      "dph": 73,
+      "num_files": 1497
+    },
+    {
+      "dph": 74,
+      "num_files": 1774
+    },
+    {
+      "dph": 75,
+      "num_files": 1568
+    },
+    {
+      "dph": 76,
+      "num_files": 1760
+    },
+    {
+      "dph": 77,
+      "num_files": 1769
+    },
+    {
+      "dph": 78,
+      "num_files": 1573
+    },
+    {
+      "dph": 79,
+      "num_files": 1071
+    },
+    {
+      "dph": 80,
+      "num_files": 1295
+    },
+    {
+      "dph": 81,
+      "num_files": 1442
+    },
+    {
+      "dph": 82,
+      "num_files": 1437
+    },
+    {
+      "dph": 83,
+      "num_files": 1680
+    },
+    {
+      "dph": 84,
+      "num_files": 1585
+    },
+    {
+      "dph": 85,
+      "num_files": 1789
+    },
+    {
+      "dph": 86,
+      "num_files": 1572
+    },
+    {
+      "dph": 87,
+      "num_files": 1749
+    },
+    {
+      "dph": 88,
+      "num_files": 1428
+    },
+    {
+      "dph": 89,
+      "num_files": 1667
+    },
+    {
+      "dph": 90,
+      "num_files": 1381
+    }
+  ]
+}

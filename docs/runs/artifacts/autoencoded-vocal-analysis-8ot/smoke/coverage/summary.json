@@ -1,0 +1,16 @@
+{
+  "created_utc": "2026-04-02T20:37:34Z",
+  "manifest_path": "docs/runs/artifacts/autoencoded-vocal-analysis-8ot/manifest_pk249_33_37_smoke.json",
+  "split": "all",
+  "num_shards": 1,
+  "shard_index": 0,
+  "directories": 5,
+  "missing_roi_dirs": 0,
+  "missing_roi_files": 0,
+  "empty_roi_files": 20,
+  "roi_parse_errors": 0,
+  "segments_total": 39099,
+  "segment_duration_total_sec": 4254.65029713884,
+  "elapsed_sec": 0.8629529476165771,
+  "dirs_per_sec": 5.794058660799169
+}

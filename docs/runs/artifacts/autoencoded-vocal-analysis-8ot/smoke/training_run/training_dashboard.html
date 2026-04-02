@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  
+  <title>AVA Training Dashboard</title>
+  <style>
+    :root {
+      --bg: #f6f1e8;
+      --panel: #fffdf8;
+      --ink: #1f2933;
+      --muted: #5b6b66;
+      --line: #d8e2dc;
+      --accent: #0f766e;
+      --accent-2: #b45309;
+      --shadow: 0 20px 60px rgba(31, 41, 51, 0.08);
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+      background:
+        radial-gradient(circle at top left, rgba(15, 118, 110, 0.15), transparent 30rem),
+        radial-gradient(circle at top right, rgba(180, 83, 9, 0.12), transparent 28rem),
+        var(--bg);
+      color: var(--ink);
+      line-height: 1.45;
+    }
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 32px 20px 56px;
+    }
+    .hero {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(2rem, 3vw, 3.2rem);
+      line-height: 1.05;
+    }
+    .hero p {
+      margin: 0;
+      max-width: 54rem;
+      color: var(--muted);
+      font-size: 1.02rem;
+    }
+    .status-pill {
+      display: inline-flex;
+      width: fit-content;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.45rem 0.85rem;
+      border-radius: 999px;
+      background: rgba(15, 118, 110, 0.1);
+      color: var(--accent);
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      text-transform: uppercase;
+      font-size: 0.78rem;
+    }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 14px;
+      margin: 24px 0 30px;
+    }
+    .summary-card,
+    .chart-card,
+    .detail-card,
+    .failure-card {
+      background: var(--panel);
+      border: 1px solid rgba(91, 107, 102, 0.14);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .summary-card {
+      padding: 16px 18px;
+      min-height: 112px;
+    }
+    .summary-card h3 {
+      margin: 0 0 0.6rem;
+      color: var(--muted);
+      font-size: 0.84rem;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+    .summary-card p {
+      margin: 0;
+      font-size: 1.35rem;
+      line-height: 1.1;
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+    .dashboard-grid {
+      display: grid;
+      gap: 16px;
+    }
+    .chart-card {
+      padding: 18px 18px 12px;
+    }
+    .embedding-card {
+      padding-bottom: 18px;
+    }
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .chart-card h2,
+    .detail-card h2,
+    .failure-card h2 {
+      margin: 0;
+      font-size: 1.18rem;
+    }
+    .legend {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+    .legend li {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+    .legend-swatch {
+      width: 0.9rem;
+      height: 0.9rem;
+      border-radius: 999px;
+      display: inline-block;
+    }
+    .chart-svg {
+      width: 100%;
+      height: auto;
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .chart-empty {
+      margin: 0;
+      color: var(--muted);
+    }
+    .embedding-caption {
+      margin: 0;
+      color: var(--muted);
+      max-width: 44rem;
+    }
+    .mini-stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .mini-stat {
+      border: 1px solid rgba(91, 107, 102, 0.14);
+      border-radius: 14px;
+      padding: 12px 14px;
+      background: rgba(246, 241, 232, 0.55);
+    }
+    .mini-stat h3 {
+      margin: 0 0 0.4rem;
+      color: var(--muted);
+      font-size: 0.78rem;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+    .mini-stat p {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+    .spectrogram-gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .spectrogram-card {
+      margin: 0;
+      position: relative;
+      padding: 12px;
+      border-radius: 14px;
+      background: rgba(246, 241, 232, 0.65);
+      border: 1px solid rgba(91, 107, 102, 0.14);
+    }
+    .spectrogram-card img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 10px;
+      background: #111827;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+    }
+    .spectrogram-card figcaption {
+      margin-top: 8px;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+    .spectrogram-label {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 1.9rem;
+      height: 1.9rem;
+      border-radius: 999px;
+      background: rgba(15, 118, 110, 0.92);
+      color: #fffdf8;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.92rem;
+      box-shadow: 0 8px 18px rgba(15, 118, 110, 0.2);
+    }
+    .detail-card {
+      padding: 18px;
+    }
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 12px 24px;
+      margin-top: 14px;
+    }
+    .detail-row {
+      display: grid;
+      gap: 0.25rem;
+    }
+    .detail-row dt {
+      color: var(--muted);
+      font-size: 0.86rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .detail-row dd {
+      margin: 0;
+      overflow-wrap: anywhere;
+    }
+    .artifact-links {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+    .artifact-links a {
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(15, 118, 110, 0.25);
+      padding-bottom: 1px;
+    }
+    .artifact-note {
+      color: var(--muted);
+    }
+    .failure-card {
+      padding: 18px;
+    }
+    .failure-card pre {
+      white-space: pre-wrap;
+      font-family: Menlo, Consolas, monospace;
+      margin: 12px 0 0;
+      color: #7f1d1d;
+    }
+    @media (max-width: 700px) {
+      main {
+        padding: 24px 14px 40px;
+      }
+      .summary-card p {
+        font-size: 1.15rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="hero">
+      <span class="status-pill">completed</span>
+      <h1>AVA Training Dashboard</h1>
+      <p>
+        Lightweight progress view for local or remote runs. This page is self-contained,
+        refreshes automatically while the job is running, and can be served from any
+        static host or copied out of an AWS run directory.
+      </p>
+    </section>
+    <section class="summary-grid"><article class="summary-card"><h3>Status</h3><p>completed</p></article><article class="summary-card"><h3>Epoch</h3><p>2 / 2</p></article><article class="summary-card"><h3>Latest Train Loss</h3><p>1.644e+04</p></article><article class="summary-card"><h3>Latest Val Loss</h3><p>n/a</p></article><article class="summary-card"><h3>Best Val Loss</h3><p>n/a</p></article><article class="summary-card"><h3>Val Eff. Dim</h3><p>n/a</p></article><article class="summary-card"><h3>Checkpoints</h3><p>0</p></article><article class="summary-card"><h3>Host</h3><p>home-mini.local</p></article><article class="summary-card"><h3>Device</h3><p>cpu</p></article></section>
+    <section class="dashboard-grid">
+      <section class="chart-card"><div class="chart-header"><h2>Loss</h2><ul class="legend"><li><span class="legend-swatch" style="background:#0f766e"></span>Train Loss</li></ul></div><svg viewBox="0 0 760 260" class="chart-svg" role="img"><line x1="56.00" y1="20" x2="56.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="228.00" y1="20" x2="228.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="400.00" y1="20" x2="400.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="572.00" y1="20" x2="572.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="744.00" y1="20" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="224.00" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="173.00" x2="744.00" y2="173.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="122.00" x2="744.00" y2="122.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="71.00" x2="744.00" y2="71.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="20.00" x2="744.00" y2="20.00" stroke="#d8e2dc" stroke-width="1" /><rect x="56" y="20" width="688.00" height="204.00" fill="transparent" stroke="#7d8f87" stroke-width="1.25" /><polyline fill="none" stroke="#0f766e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="56.00,34.07 744.00,209.93" /><circle cx="744.00" cy="209.93" r="4.5" fill="#0f766e" /><text x="56.00" y="250" text-anchor="middle">1</text><text x="228.00" y="250" text-anchor="middle">1</text><text x="400.00" y="250" text-anchor="middle">2</text><text x="572.00" y="250" text-anchor="middle">2</text><text x="744.00" y="250" text-anchor="middle">2</text><text x="48" y="228.00" text-anchor="end">1.6e+04</text><text x="48" y="177.00" text-anchor="end">1.77e+04</text><text x="48" y="126.00" text-anchor="end">1.94e+04</text><text x="48" y="75.00" text-anchor="end">2.12e+04</text><text x="48" y="24.00" text-anchor="end">2.29e+04</text><text x="400.00" y="258" text-anchor="middle">Epoch</text></svg></section><section class="chart-card"><div class="chart-header"><h2>Recon MSE</h2><ul class="legend"><li><span class="legend-swatch" style="background:#0f766e"></span>Train Recon MSE</li></ul></div><svg viewBox="0 0 760 260" class="chart-svg" role="img"><line x1="56.00" y1="20" x2="56.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="228.00" y1="20" x2="228.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="400.00" y1="20" x2="400.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="572.00" y1="20" x2="572.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="744.00" y1="20" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="224.00" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="173.00" x2="744.00" y2="173.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="122.00" x2="744.00" y2="122.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="71.00" x2="744.00" y2="71.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="20.00" x2="744.00" y2="20.00" stroke="#d8e2dc" stroke-width="1" /><rect x="56" y="20" width="688.00" height="204.00" fill="transparent" stroke="#7d8f87" stroke-width="1.25" /><polyline fill="none" stroke="#0f766e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="56.00,34.07 744.00,209.93" /><circle cx="744.00" cy="209.93" r="4.5" fill="#0f766e" /><text x="56.00" y="250" text-anchor="middle">1</text><text x="228.00" y="250" text-anchor="middle">1</text><text x="400.00" y="250" text-anchor="middle">2</text><text x="572.00" y="250" text-anchor="middle">2</text><text x="744.00" y="250" text-anchor="middle">2</text><text x="48" y="228.00" text-anchor="end">0.436</text><text x="48" y="177.00" text-anchor="end">0.479</text><text x="48" y="126.00" text-anchor="end">0.521</text><text x="48" y="75.00" text-anchor="end">0.564</text><text x="48" y="24.00" text-anchor="end">0.606</text><text x="400.00" y="258" text-anchor="middle">Epoch</text></svg></section><section class="chart-card"><div class="chart-header"><h2>Recon NLL</h2><ul class="legend"><li><span class="legend-swatch" style="background:#0f766e"></span>Train Recon NLL</li></ul></div><svg viewBox="0 0 760 260" class="chart-svg" role="img"><line x1="56.00" y1="20" x2="56.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="228.00" y1="20" x2="228.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="400.00" y1="20" x2="400.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="572.00" y1="20" x2="572.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="744.00" y1="20" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="224.00" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="173.00" x2="744.00" y2="173.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="122.00" x2="744.00" y2="122.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="71.00" x2="744.00" y2="71.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="20.00" x2="744.00" y2="20.00" stroke="#d8e2dc" stroke-width="1" /><rect x="56" y="20" width="688.00" height="204.00" fill="transparent" stroke="#7d8f87" stroke-width="1.25" /><polyline fill="none" stroke="#0f766e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="56.00,34.07 744.00,209.93" /><circle cx="744.00" cy="209.93" r="4.5" fill="#0f766e" /><text x="56.00" y="250" text-anchor="middle">1</text><text x="228.00" y="250" text-anchor="middle">1</text><text x="400.00" y="250" text-anchor="middle">2</text><text x="572.00" y="250" text-anchor="middle">2</text><text x="744.00" y="250" text-anchor="middle">2</text><text x="48" y="228.00" text-anchor="end">1.6e+04</text><text x="48" y="177.00" text-anchor="end">1.77e+04</text><text x="48" y="126.00" text-anchor="end">1.94e+04</text><text x="48" y="75.00" text-anchor="end">2.12e+04</text><text x="48" y="24.00" text-anchor="end">2.29e+04</text><text x="400.00" y="258" text-anchor="middle">Epoch</text></svg></section><section class="chart-card"><div class="chart-header"><h2>Recon NLL Per Dim</h2><ul class="legend"><li><span class="legend-swatch" style="background:#0f766e"></span>Train Recon NLL Per Dim</li></ul></div><svg viewBox="0 0 760 260" class="chart-svg" role="img"><line x1="56.00" y1="20" x2="56.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="228.00" y1="20" x2="228.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="400.00" y1="20" x2="400.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="572.00" y1="20" x2="572.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="744.00" y1="20" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="224.00" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="173.00" x2="744.00" y2="173.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="122.00" x2="744.00" y2="122.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="71.00" x2="744.00" y2="71.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="20.00" x2="744.00" y2="20.00" stroke="#d8e2dc" stroke-width="1" /><rect x="56" y="20" width="688.00" height="204.00" fill="transparent" stroke="#7d8f87" stroke-width="1.25" /><polyline fill="none" stroke="#0f766e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="56.00,34.07 744.00,209.93" /><circle cx="744.00" cy="209.93" r="4.5" fill="#0f766e" /><text x="56.00" y="250" text-anchor="middle">1</text><text x="228.00" y="250" text-anchor="middle">1</text><text x="400.00" y="250" text-anchor="middle">2</text><text x="572.00" y="250" text-anchor="middle">2</text><text x="744.00" y="250" text-anchor="middle">2</text><text x="48" y="228.00" text-anchor="end">1.95</text><text x="48" y="177.00" text-anchor="end">2.16</text><text x="48" y="126.00" text-anchor="end">2.37</text><text x="48" y="75.00" text-anchor="end">2.59</text><text x="48" y="24.00" text-anchor="end">2.8</text><text x="400.00" y="258" text-anchor="middle">Epoch</text></svg></section><section class="chart-card"><div class="chart-header"><h2>KL</h2><ul class="legend"><li><span class="legend-swatch" style="background:#0f766e"></span>Train KL</li></ul></div><svg viewBox="0 0 760 260" class="chart-svg" role="img"><line x1="56.00" y1="20" x2="56.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="228.00" y1="20" x2="228.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="400.00" y1="20" x2="400.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="572.00" y1="20" x2="572.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="744.00" y1="20" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="224.00" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="173.00" x2="744.00" y2="173.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="122.00" x2="744.00" y2="122.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="71.00" x2="744.00" y2="71.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="20.00" x2="744.00" y2="20.00" stroke="#d8e2dc" stroke-width="1" /><rect x="56" y="20" width="688.00" height="204.00" fill="transparent" stroke="#7d8f87" stroke-width="1.25" /><polyline fill="none" stroke="#0f766e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="56.00,209.93 744.00,34.07" /><circle cx="744.00" cy="34.07" r="4.5" fill="#0f766e" /><text x="56.00" y="250" text-anchor="middle">1</text><text x="228.00" y="250" text-anchor="middle">1</text><text x="400.00" y="250" text-anchor="middle">2</text><text x="572.00" y="250" text-anchor="middle">2</text><text x="744.00" y="250" text-anchor="middle">2</text><text x="48" y="228.00" text-anchor="end">-28.6</text><text x="48" y="177.00" text-anchor="end">-27.8</text><text x="48" y="126.00" text-anchor="end">-27</text><text x="48" y="75.00" text-anchor="end">-26.2</text><text x="48" y="24.00" text-anchor="end">-25.4</text><text x="400.00" y="258" text-anchor="middle">Epoch</text></svg></section><section class="chart-card"><div class="chart-header"><h2>KL Per Dim</h2><ul class="legend"><li><span class="legend-swatch" style="background:#0f766e"></span>Train KL Per Dim</li></ul></div><svg viewBox="0 0 760 260" class="chart-svg" role="img"><line x1="56.00" y1="20" x2="56.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="228.00" y1="20" x2="228.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="400.00" y1="20" x2="400.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="572.00" y1="20" x2="572.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="744.00" y1="20" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="224.00" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="173.00" x2="744.00" y2="173.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="122.00" x2="744.00" y2="122.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="71.00" x2="744.00" y2="71.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="20.00" x2="744.00" y2="20.00" stroke="#d8e2dc" stroke-width="1" /><rect x="56" y="20" width="688.00" height="204.00" fill="transparent" stroke="#7d8f87" stroke-width="1.25" /><polyline fill="none" stroke="#0f766e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="56.00,209.93 744.00,34.07" /><circle cx="744.00" cy="34.07" r="4.5" fill="#0f766e" /><text x="56.00" y="250" text-anchor="middle">1</text><text x="228.00" y="250" text-anchor="middle">1</text><text x="400.00" y="250" text-anchor="middle">2</text><text x="572.00" y="250" text-anchor="middle">2</text><text x="744.00" y="250" text-anchor="middle">2</text><text x="48" y="228.00" text-anchor="end">-0.894</text><text x="48" y="177.00" text-anchor="end">-0.869</text><text x="48" y="126.00" text-anchor="end">-0.844</text><text x="48" y="75.00" text-anchor="end">-0.819</text><text x="48" y="24.00" text-anchor="end">-0.793</text><text x="400.00" y="258" text-anchor="middle">Epoch</text></svg></section><section class="chart-card"><div class="chart-header"><h2>KL Weight</h2><ul class="legend"><li><span class="legend-swatch" style="background:#0f766e"></span>Train KL Weight</li></ul></div><svg viewBox="0 0 760 260" class="chart-svg" role="img"><line x1="56.00" y1="20" x2="56.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="228.00" y1="20" x2="228.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="400.00" y1="20" x2="400.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="572.00" y1="20" x2="572.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="744.00" y1="20" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="224.00" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="173.00" x2="744.00" y2="173.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="122.00" x2="744.00" y2="122.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="71.00" x2="744.00" y2="71.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="20.00" x2="744.00" y2="20.00" stroke="#d8e2dc" stroke-width="1" /><rect x="56" y="20" width="688.00" height="204.00" fill="transparent" stroke="#7d8f87" stroke-width="1.25" /><polyline fill="none" stroke="#0f766e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="56.00,209.93 744.00,34.07" /><circle cx="744.00" cy="34.07" r="4.5" fill="#0f766e" /><text x="56.00" y="250" text-anchor="middle">1</text><text x="228.00" y="250" text-anchor="middle">1</text><text x="400.00" y="250" text-anchor="middle">2</text><text x="572.00" y="250" text-anchor="middle">2</text><text x="744.00" y="250" text-anchor="middle">2</text><text x="48" y="228.00" text-anchor="end">-0.004</text><text x="48" y="177.00" text-anchor="end">0.0105</text><text x="48" y="126.00" text-anchor="end">0.025</text><text x="48" y="75.00" text-anchor="end">0.0395</text><text x="48" y="24.00" text-anchor="end">0.054</text><text x="400.00" y="258" text-anchor="middle">Epoch</text></svg></section><section class="chart-card"><div class="chart-header"><h2>Weighted KL</h2><ul class="legend"><li><span class="legend-swatch" style="background:#0f766e"></span>Train Weighted KL</li></ul></div><svg viewBox="0 0 760 260" class="chart-svg" role="img"><line x1="56.00" y1="20" x2="56.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="228.00" y1="20" x2="228.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="400.00" y1="20" x2="400.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="572.00" y1="20" x2="572.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="744.00" y1="20" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="224.00" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="173.00" x2="744.00" y2="173.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="122.00" x2="744.00" y2="122.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="71.00" x2="744.00" y2="71.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="20.00" x2="744.00" y2="20.00" stroke="#d8e2dc" stroke-width="1" /><rect x="56" y="20" width="688.00" height="204.00" fill="transparent" stroke="#7d8f87" stroke-width="1.25" /><polyline fill="none" stroke="#0f766e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="56.00,34.07 744.00,209.93" /><circle cx="744.00" cy="209.93" r="4.5" fill="#0f766e" /><text x="56.00" y="250" text-anchor="middle">1</text><text x="228.00" y="250" text-anchor="middle">1</text><text x="400.00" y="250" text-anchor="middle">2</text><text x="572.00" y="250" text-anchor="middle">2</text><text x="744.00" y="250" text-anchor="middle">2</text><text x="48" y="228.00" text-anchor="end">-1.38</text><text x="48" y="177.00" text-anchor="end">-1.01</text><text x="48" y="126.00" text-anchor="end">-0.64</text><text x="48" y="75.00" text-anchor="end">-0.269</text><text x="48" y="24.00" text-anchor="end">0.102</text><text x="400.00" y="258" text-anchor="middle">Epoch</text></svg></section><section class="chart-card"><div class="chart-header"><h2>KL Regularizer</h2><ul class="legend"><li><span class="legend-swatch" style="background:#0f766e"></span>Train KL Regularizer</li></ul></div><svg viewBox="0 0 760 260" class="chart-svg" role="img"><line x1="56.00" y1="20" x2="56.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="228.00" y1="20" x2="228.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="400.00" y1="20" x2="400.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="572.00" y1="20" x2="572.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="744.00" y1="20" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="224.00" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="173.00" x2="744.00" y2="173.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="122.00" x2="744.00" y2="122.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="71.00" x2="744.00" y2="71.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="20.00" x2="744.00" y2="20.00" stroke="#d8e2dc" stroke-width="1" /><rect x="56" y="20" width="688.00" height="204.00" fill="transparent" stroke="#7d8f87" stroke-width="1.25" /><polyline fill="none" stroke="#0f766e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="56.00,34.07 744.00,209.93" /><circle cx="744.00" cy="209.93" r="4.5" fill="#0f766e" /><text x="56.00" y="250" text-anchor="middle">1</text><text x="228.00" y="250" text-anchor="middle">1</text><text x="400.00" y="250" text-anchor="middle">2</text><text x="572.00" y="250" text-anchor="middle">2</text><text x="744.00" y="250" text-anchor="middle">2</text><text x="48" y="228.00" text-anchor="end">-1.38</text><text x="48" y="177.00" text-anchor="end">-1.01</text><text x="48" y="126.00" text-anchor="end">-0.64</text><text x="48" y="75.00" text-anchor="end">-0.269</text><text x="48" y="24.00" text-anchor="end">0.102</text><text x="400.00" y="258" text-anchor="middle">Epoch</text></svg></section><section class="chart-card"><div class="chart-header"><h2>KL To Recon Ratio</h2><ul class="legend"><li><span class="legend-swatch" style="background:#0f766e"></span>Train KL To Recon Ratio</li></ul></div><svg viewBox="0 0 760 260" class="chart-svg" role="img"><line x1="56.00" y1="20" x2="56.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="228.00" y1="20" x2="228.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="400.00" y1="20" x2="400.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="572.00" y1="20" x2="572.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="744.00" y1="20" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="224.00" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="173.00" x2="744.00" y2="173.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="122.00" x2="744.00" y2="122.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="71.00" x2="744.00" y2="71.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="20.00" x2="744.00" y2="20.00" stroke="#d8e2dc" stroke-width="1" /><rect x="56" y="20" width="688.00" height="204.00" fill="transparent" stroke="#7d8f87" stroke-width="1.25" /><polyline fill="none" stroke="#0f766e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="56.00,34.07 744.00,209.93" /><circle cx="744.00" cy="209.93" r="4.5" fill="#0f766e" /><text x="56.00" y="250" text-anchor="middle">1</text><text x="228.00" y="250" text-anchor="middle">1</text><text x="400.00" y="250" text-anchor="middle">2</text><text x="572.00" y="250" text-anchor="middle">2</text><text x="744.00" y="250" text-anchor="middle">2</text><text x="48" y="228.00" text-anchor="end">-0.00159</text><text x="48" y="177.00" text-anchor="end">-0.00152</text><text x="48" y="126.00" text-anchor="end">-0.00146</text><text x="48" y="75.00" text-anchor="end">-0.00139</text><text x="48" y="24.00" text-anchor="end">-0.00132</text><text x="400.00" y="258" text-anchor="middle">Epoch</text></svg></section><section class="chart-card"><div class="chart-header"><h2>Weighted KL To Recon Ratio</h2><ul class="legend"><li><span class="legend-swatch" style="background:#0f766e"></span>Train Weighted KL To Recon Ratio</li></ul></div><svg viewBox="0 0 760 260" class="chart-svg" role="img"><line x1="56.00" y1="20" x2="56.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="228.00" y1="20" x2="228.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="400.00" y1="20" x2="400.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="572.00" y1="20" x2="572.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="744.00" y1="20" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="224.00" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="173.00" x2="744.00" y2="173.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="122.00" x2="744.00" y2="122.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="71.00" x2="744.00" y2="71.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="20.00" x2="744.00" y2="20.00" stroke="#d8e2dc" stroke-width="1" /><rect x="56" y="20" width="688.00" height="204.00" fill="transparent" stroke="#7d8f87" stroke-width="1.25" /><polyline fill="none" stroke="#0f766e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="56.00,34.07 744.00,209.93" /><circle cx="744.00" cy="209.93" r="4.5" fill="#0f766e" /><text x="56.00" y="250" text-anchor="middle">1</text><text x="228.00" y="250" text-anchor="middle">1</text><text x="400.00" y="250" text-anchor="middle">2</text><text x="572.00" y="250" text-anchor="middle">2</text><text x="744.00" y="250" text-anchor="middle">2</text><text x="48" y="228.00" text-anchor="end">-8.49e-05</text><text x="48" y="177.00" text-anchor="end">-6.21e-05</text><text x="48" y="126.00" text-anchor="end">-3.93e-05</text><text x="48" y="75.00" text-anchor="end">-1.65e-05</text><text x="48" y="24.00" text-anchor="end">6.29e-06</text><text x="400.00" y="258" text-anchor="middle">Epoch</text></svg></section><section class="chart-card"><div class="chart-header"><h2>KL Regularizer To Recon Ratio</h2><ul class="legend"><li><span class="legend-swatch" style="background:#0f766e"></span>Train KL Regularizer To Recon Ratio</li></ul></div><svg viewBox="0 0 760 260" class="chart-svg" role="img"><line x1="56.00" y1="20" x2="56.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="228.00" y1="20" x2="228.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="400.00" y1="20" x2="400.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="572.00" y1="20" x2="572.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="744.00" y1="20" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="224.00" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="173.00" x2="744.00" y2="173.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="122.00" x2="744.00" y2="122.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="71.00" x2="744.00" y2="71.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="20.00" x2="744.00" y2="20.00" stroke="#d8e2dc" stroke-width="1" /><rect x="56" y="20" width="688.00" height="204.00" fill="transparent" stroke="#7d8f87" stroke-width="1.25" /><polyline fill="none" stroke="#0f766e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="56.00,34.07 744.00,209.93" /><circle cx="744.00" cy="209.93" r="4.5" fill="#0f766e" /><text x="56.00" y="250" text-anchor="middle">1</text><text x="228.00" y="250" text-anchor="middle">1</text><text x="400.00" y="250" text-anchor="middle">2</text><text x="572.00" y="250" text-anchor="middle">2</text><text x="744.00" y="250" text-anchor="middle">2</text><text x="48" y="228.00" text-anchor="end">-8.49e-05</text><text x="48" y="177.00" text-anchor="end">-6.21e-05</text><text x="48" y="126.00" text-anchor="end">-3.93e-05</text><text x="48" y="75.00" text-anchor="end">-1.65e-05</text><text x="48" y="24.00" text-anchor="end">6.29e-06</text><text x="400.00" y="258" text-anchor="middle">Epoch</text></svg></section><section class="chart-card"><div class="chart-header"><h2>Latent Mean |.|</h2><ul class="legend"><li><span class="legend-swatch" style="background:#0f766e"></span>Train Latent Mean |.|</li></ul></div><svg viewBox="0 0 760 260" class="chart-svg" role="img"><line x1="56.00" y1="20" x2="56.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="228.00" y1="20" x2="228.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="400.00" y1="20" x2="400.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="572.00" y1="20" x2="572.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="744.00" y1="20" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="224.00" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="173.00" x2="744.00" y2="173.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="122.00" x2="744.00" y2="122.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="71.00" x2="744.00" y2="71.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="20.00" x2="744.00" y2="20.00" stroke="#d8e2dc" stroke-width="1" /><rect x="56" y="20" width="688.00" height="204.00" fill="transparent" stroke="#7d8f87" stroke-width="1.25" /><polyline fill="none" stroke="#0f766e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="56.00,209.93 744.00,34.07" /><circle cx="744.00" cy="34.07" r="4.5" fill="#0f766e" /><text x="56.00" y="250" text-anchor="middle">1</text><text x="228.00" y="250" text-anchor="middle">1</text><text x="400.00" y="250" text-anchor="middle">2</text><text x="572.00" y="250" text-anchor="middle">2</text><text x="744.00" y="250" text-anchor="middle">2</text><text x="48" y="228.00" text-anchor="end">0.0576</text><text x="48" y="177.00" text-anchor="end">0.125</text><text x="48" y="126.00" text-anchor="end">0.192</text><text x="48" y="75.00" text-anchor="end">0.259</text><text x="48" y="24.00" text-anchor="end">0.326</text><text x="400.00" y="258" text-anchor="middle">Epoch</text></svg></section><section class="chart-card"><div class="chart-header"><h2>Latent Var Mean</h2><ul class="legend"><li><span class="legend-swatch" style="background:#0f766e"></span>Train Latent Var Mean</li></ul></div><svg viewBox="0 0 760 260" class="chart-svg" role="img"><line x1="56.00" y1="20" x2="56.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="228.00" y1="20" x2="228.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="400.00" y1="20" x2="400.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="572.00" y1="20" x2="572.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="744.00" y1="20" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="224.00" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="173.00" x2="744.00" y2="173.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="122.00" x2="744.00" y2="122.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="71.00" x2="744.00" y2="71.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="20.00" x2="744.00" y2="20.00" stroke="#d8e2dc" stroke-width="1" /><rect x="56" y="20" width="688.00" height="204.00" fill="transparent" stroke="#7d8f87" stroke-width="1.25" /><polyline fill="none" stroke="#0f766e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="56.00,34.07 744.00,209.93" /><circle cx="744.00" cy="209.93" r="4.5" fill="#0f766e" /><text x="56.00" y="250" text-anchor="middle">1</text><text x="228.00" y="250" text-anchor="middle">1</text><text x="400.00" y="250" text-anchor="middle">2</text><text x="572.00" y="250" text-anchor="middle">2</text><text x="744.00" y="250" text-anchor="middle">2</text><text x="48" y="228.00" text-anchor="end">0.961</text><text x="48" y="177.00" text-anchor="end">0.975</text><text x="48" y="126.00" text-anchor="end">0.989</text><text x="48" y="75.00" text-anchor="end">1</text><text x="48" y="24.00" text-anchor="end">1.02</text><text x="400.00" y="258" text-anchor="middle">Epoch</text></svg></section><section class="chart-card"><div class="chart-header"><h2>Latent Max |.| mu</h2><ul class="legend"><li><span class="legend-swatch" style="background:#0f766e"></span>Train Latent Max |.| mu</li></ul></div><svg viewBox="0 0 760 260" class="chart-svg" role="img"><line x1="56.00" y1="20" x2="56.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="228.00" y1="20" x2="228.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="400.00" y1="20" x2="400.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="572.00" y1="20" x2="572.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="744.00" y1="20" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="224.00" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="173.00" x2="744.00" y2="173.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="122.00" x2="744.00" y2="122.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="71.00" x2="744.00" y2="71.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="20.00" x2="744.00" y2="20.00" stroke="#d8e2dc" stroke-width="1" /><rect x="56" y="20" width="688.00" height="204.00" fill="transparent" stroke="#7d8f87" stroke-width="1.25" /><polyline fill="none" stroke="#0f766e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="56.00,209.93 744.00,34.07" /><circle cx="744.00" cy="34.07" r="4.5" fill="#0f766e" /><text x="56.00" y="250" text-anchor="middle">1</text><text x="228.00" y="250" text-anchor="middle">1</text><text x="400.00" y="250" text-anchor="middle">2</text><text x="572.00" y="250" text-anchor="middle">2</text><text x="744.00" y="250" text-anchor="middle">2</text><text x="48" y="228.00" text-anchor="end">0.119</text><text x="48" y="177.00" text-anchor="end">0.393</text><text x="48" y="126.00" text-anchor="end">0.667</text><text x="48" y="75.00" text-anchor="end">0.94</text><text x="48" y="24.00" text-anchor="end">1.21</text><text x="400.00" y="258" text-anchor="middle">Epoch</text></svg></section><section class="chart-card"><div class="chart-header"><h2>Latent Max |.| Logvar</h2><ul class="legend"><li><span class="legend-swatch" style="background:#0f766e"></span>Train Latent Max |.| Logvar</li></ul></div><svg viewBox="0 0 760 260" class="chart-svg" role="img"><line x1="56.00" y1="20" x2="56.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="228.00" y1="20" x2="228.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="400.00" y1="20" x2="400.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="572.00" y1="20" x2="572.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="744.00" y1="20" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="224.00" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="173.00" x2="744.00" y2="173.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="122.00" x2="744.00" y2="122.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="71.00" x2="744.00" y2="71.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="20.00" x2="744.00" y2="20.00" stroke="#d8e2dc" stroke-width="1" /><rect x="56" y="20" width="688.00" height="204.00" fill="transparent" stroke="#7d8f87" stroke-width="1.25" /><polyline fill="none" stroke="#0f766e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="56.00,209.93 744.00,34.07" /><circle cx="744.00" cy="34.07" r="4.5" fill="#0f766e" /><text x="56.00" y="250" text-anchor="middle">1</text><text x="228.00" y="250" text-anchor="middle">1</text><text x="400.00" y="250" text-anchor="middle">2</text><text x="572.00" y="250" text-anchor="middle">2</text><text x="744.00" y="250" text-anchor="middle">2</text><text x="48" y="228.00" text-anchor="end">0.145</text><text x="48" y="177.00" text-anchor="end">0.248</text><text x="48" y="126.00" text-anchor="end">0.351</text><text x="48" y="75.00" text-anchor="end">0.455</text><text x="48" y="24.00" text-anchor="end">0.558</text><text x="400.00" y="258" text-anchor="middle">Epoch</text></svg></section><section class="chart-card"><div class="chart-header"><h2>Latent Raw Max |.| Logvar</h2><ul class="legend"><li><span class="legend-swatch" style="background:#0f766e"></span>Train Latent Raw Max |.| Logvar</li></ul></div><svg viewBox="0 0 760 260" class="chart-svg" role="img"><line x1="56.00" y1="20" x2="56.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="228.00" y1="20" x2="228.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="400.00" y1="20" x2="400.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="572.00" y1="20" x2="572.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="744.00" y1="20" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="224.00" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="173.00" x2="744.00" y2="173.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="122.00" x2="744.00" y2="122.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="71.00" x2="744.00" y2="71.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="20.00" x2="744.00" y2="20.00" stroke="#d8e2dc" stroke-width="1" /><rect x="56" y="20" width="688.00" height="204.00" fill="transparent" stroke="#7d8f87" stroke-width="1.25" /><polyline fill="none" stroke="#0f766e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="56.00,209.93 744.00,34.07" /><circle cx="744.00" cy="34.07" r="4.5" fill="#0f766e" /><text x="56.00" y="250" text-anchor="middle">1</text><text x="228.00" y="250" text-anchor="middle">1</text><text x="400.00" y="250" text-anchor="middle">2</text><text x="572.00" y="250" text-anchor="middle">2</text><text x="744.00" y="250" text-anchor="middle">2</text><text x="48" y="228.00" text-anchor="end">0.145</text><text x="48" y="177.00" text-anchor="end">0.248</text><text x="48" y="126.00" text-anchor="end">0.351</text><text x="48" y="75.00" text-anchor="end">0.455</text><text x="48" y="24.00" text-anchor="end">0.558</text><text x="400.00" y="258" text-anchor="middle">Epoch</text></svg></section><section class="chart-card"><div class="chart-header"><h2>Latent Logvar Lower Clamp Fraction</h2><ul class="legend"><li><span class="legend-swatch" style="background:#0f766e"></span>Train Latent Logvar Lower Clamp Fraction</li></ul></div><svg viewBox="0 0 760 260" class="chart-svg" role="img"><line x1="56.00" y1="20" x2="56.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="228.00" y1="20" x2="228.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="400.00" y1="20" x2="400.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="572.00" y1="20" x2="572.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="744.00" y1="20" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="224.00" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="173.00" x2="744.00" y2="173.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="122.00" x2="744.00" y2="122.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="71.00" x2="744.00" y2="71.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="20.00" x2="744.00" y2="20.00" stroke="#d8e2dc" stroke-width="1" /><rect x="56" y="20" width="688.00" height="204.00" fill="transparent" stroke="#7d8f87" stroke-width="1.25" /><polyline fill="none" stroke="#0f766e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="56.00,122.00 744.00,122.00" /><circle cx="744.00" cy="122.00" r="4.5" fill="#0f766e" /><text x="56.00" y="250" text-anchor="middle">1</text><text x="228.00" y="250" text-anchor="middle">1</text><text x="400.00" y="250" text-anchor="middle">2</text><text x="572.00" y="250" text-anchor="middle">2</text><text x="744.00" y="250" text-anchor="middle">2</text><text x="48" y="228.00" text-anchor="end">-1</text><text x="48" y="177.00" text-anchor="end">-0.5</text><text x="48" y="126.00" text-anchor="end">0</text><text x="48" y="75.00" text-anchor="end">0.5</text><text x="48" y="24.00" text-anchor="end">1</text><text x="400.00" y="258" text-anchor="middle">Epoch</text></svg></section><section class="chart-card"><div class="chart-header"><h2>Latent Logvar Upper Clamp Fraction</h2><ul class="legend"><li><span class="legend-swatch" style="background:#0f766e"></span>Train Latent Logvar Upper Clamp Fraction</li></ul></div><svg viewBox="0 0 760 260" class="chart-svg" role="img"><line x1="56.00" y1="20" x2="56.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="228.00" y1="20" x2="228.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="400.00" y1="20" x2="400.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="572.00" y1="20" x2="572.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="744.00" y1="20" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="224.00" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="173.00" x2="744.00" y2="173.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="122.00" x2="744.00" y2="122.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="71.00" x2="744.00" y2="71.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="20.00" x2="744.00" y2="20.00" stroke="#d8e2dc" stroke-width="1" /><rect x="56" y="20" width="688.00" height="204.00" fill="transparent" stroke="#7d8f87" stroke-width="1.25" /><polyline fill="none" stroke="#0f766e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="56.00,122.00 744.00,122.00" /><circle cx="744.00" cy="122.00" r="4.5" fill="#0f766e" /><text x="56.00" y="250" text-anchor="middle">1</text><text x="228.00" y="250" text-anchor="middle">1</text><text x="400.00" y="250" text-anchor="middle">2</text><text x="572.00" y="250" text-anchor="middle">2</text><text x="744.00" y="250" text-anchor="middle">2</text><text x="48" y="228.00" text-anchor="end">-1</text><text x="48" y="177.00" text-anchor="end">-0.5</text><text x="48" y="126.00" text-anchor="end">0</text><text x="48" y="75.00" text-anchor="end">0.5</text><text x="48" y="24.00" text-anchor="end">1</text><text x="400.00" y="258" text-anchor="middle">Epoch</text></svg></section><section class="chart-card"><div class="chart-header"><h2>Latent Logvar Clamp Fraction</h2><ul class="legend"><li><span class="legend-swatch" style="background:#0f766e"></span>Train Latent Logvar Clamp Fraction</li></ul></div><svg viewBox="0 0 760 260" class="chart-svg" role="img"><line x1="56.00" y1="20" x2="56.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="228.00" y1="20" x2="228.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="400.00" y1="20" x2="400.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="572.00" y1="20" x2="572.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="744.00" y1="20" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="224.00" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="173.00" x2="744.00" y2="173.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="122.00" x2="744.00" y2="122.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="71.00" x2="744.00" y2="71.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="20.00" x2="744.00" y2="20.00" stroke="#d8e2dc" stroke-width="1" /><rect x="56" y="20" width="688.00" height="204.00" fill="transparent" stroke="#7d8f87" stroke-width="1.25" /><polyline fill="none" stroke="#0f766e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="56.00,122.00 744.00,122.00" /><circle cx="744.00" cy="122.00" r="4.5" fill="#0f766e" /><text x="56.00" y="250" text-anchor="middle">1</text><text x="228.00" y="250" text-anchor="middle">1</text><text x="400.00" y="250" text-anchor="middle">2</text><text x="572.00" y="250" text-anchor="middle">2</text><text x="744.00" y="250" text-anchor="middle">2</text><text x="48" y="228.00" text-anchor="end">-1</text><text x="48" y="177.00" text-anchor="end">-0.5</text><text x="48" y="126.00" text-anchor="end">0</text><text x="48" y="75.00" text-anchor="end">0.5</text><text x="48" y="24.00" text-anchor="end">1</text><text x="400.00" y="258" text-anchor="middle">Epoch</text></svg></section><section class="chart-card"><div class="chart-header"><h2>Model Precision</h2><ul class="legend"><li><span class="legend-swatch" style="background:#0f766e"></span>Train Model Precision</li></ul></div><svg viewBox="0 0 760 260" class="chart-svg" role="img"><line x1="56.00" y1="20" x2="56.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="228.00" y1="20" x2="228.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="400.00" y1="20" x2="400.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="572.00" y1="20" x2="572.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="744.00" y1="20" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="224.00" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="173.00" x2="744.00" y2="173.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="122.00" x2="744.00" y2="122.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="71.00" x2="744.00" y2="71.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="20.00" x2="744.00" y2="20.00" stroke="#d8e2dc" stroke-width="1" /><rect x="56" y="20" width="688.00" height="204.00" fill="transparent" stroke="#7d8f87" stroke-width="1.25" /><polyline fill="none" stroke="#0f766e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="56.00,122.00 744.00,122.00" /><circle cx="744.00" cy="122.00" r="4.5" fill="#0f766e" /><text x="56.00" y="250" text-anchor="middle">1</text><text x="228.00" y="250" text-anchor="middle">1</text><text x="400.00" y="250" text-anchor="middle">2</text><text x="572.00" y="250" text-anchor="middle">2</text><text x="744.00" y="250" text-anchor="middle">2</text><text x="48" y="228.00" text-anchor="end">9.5</text><text x="48" y="177.00" text-anchor="end">9.75</text><text x="48" y="126.00" text-anchor="end">10</text><text x="48" y="75.00" text-anchor="end">10.2</text><text x="48" y="24.00" text-anchor="end">10.5</text><text x="400.00" y="258" text-anchor="middle">Epoch</text></svg></section><section class="chart-card"><div class="chart-header"><h2>Log Precision</h2><ul class="legend"><li><span class="legend-swatch" style="background:#0f766e"></span>Train Log Precision</li></ul></div><svg viewBox="0 0 760 260" class="chart-svg" role="img"><line x1="56.00" y1="20" x2="56.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="228.00" y1="20" x2="228.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="400.00" y1="20" x2="400.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="572.00" y1="20" x2="572.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="744.00" y1="20" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="224.00" x2="744.00" y2="224.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="173.00" x2="744.00" y2="173.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="122.00" x2="744.00" y2="122.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="71.00" x2="744.00" y2="71.00" stroke="#d8e2dc" stroke-width="1" /><line x1="56" y1="20.00" x2="744.00" y2="20.00" stroke="#d8e2dc" stroke-width="1" /><rect x="56" y="20" width="688.00" height="204.00" fill="transparent" stroke="#7d8f87" stroke-width="1.25" /><polyline fill="none" stroke="#0f766e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="56.00,122.00 744.00,122.00" /><circle cx="744.00" cy="122.00" r="4.5" fill="#0f766e" /><text x="56.00" y="250" text-anchor="middle">1</text><text x="228.00" y="250" text-anchor="middle">1</text><text x="400.00" y="250" text-anchor="middle">2</text><text x="572.00" y="250" text-anchor="middle">2</text><text x="744.00" y="250" text-anchor="middle">2</text><text x="48" y="228.00" text-anchor="end">2.19</text><text x="48" y="177.00" text-anchor="end">2.25</text><text x="48" y="126.00" text-anchor="end">2.3</text><text x="48" y="75.00" text-anchor="end">2.36</text><text x="48" y="24.00" text-anchor="end">2.42</text><text x="400.00" y="258" text-anchor="middle">Epoch</text></svg></section>
+      
+      <section class="detail-card">
+        <h2>Run Details</h2>
+        <dl class="detail-grid">
+          <div class="detail-row"><dt>Updated</dt><dd>2026-04-02T20:39:50+00:00</dd></div><div class="detail-row"><dt>Started</dt><dd>2026-04-02T20:39:48+00:00</dd></div><div class="detail-row"><dt>Latest Step</dt><dd>4</dd></div><div class="detail-row"><dt>AWS Batch Job</dt><dd>n/a</dd></div><div class="detail-row"><dt>Git Commit</dt><dd>23cb9ca08c913e7eb3733d1cbeed4ef16686b9fd</dd></div><div class="detail-row"><dt>Dataset Root</dt><dd>/Volumes/samsung_ssd/data/birdsong</dd></div><div class="detail-row"><dt>Config</dt><dd>docs/runs/artifacts/autoencoded-vocal-analysis-8ot/fixed_window_pk249_33_90.yaml</dd></div><div class="detail-row"><dt>Manifest</dt><dd>docs/runs/artifacts/autoencoded-vocal-analysis-8ot/manifest_pk249_33_37_smoke.json</dd></div>
+        </dl>
+        <div class="artifact-links"><a href="run_metadata.json">Run metadata</a><a href="lightning_logs/version_0">Lightning logs</a></div>
+      </section>
+      
+    </section>
+  </main>
+</body>
+</html>
