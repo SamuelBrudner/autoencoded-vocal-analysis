@@ -27,6 +27,21 @@ class _TensorDataset(Dataset):
 		return self._data[idx]
 
 
+class _EpochTrackingDataset(Dataset):
+	def __init__(self, data):
+		self._data = data
+		self.epochs = []
+
+	def __len__(self):
+		return self._data.shape[0]
+
+	def __getitem__(self, idx):
+		return self._data[idx]
+
+	def set_epoch(self, epoch):
+		self.epochs.append(int(epoch))
+
+
 def _set_seed(seed: int) -> None:
 	random.seed(seed)
 	np.random.seed(seed)
@@ -241,6 +256,41 @@ def test_lightning_saves_checkpoint_after_first_completed_epoch(tmp_path):
 	)
 
 	assert (save_dir / "checkpoint_001.tar").exists()
+
+
+def test_lightning_updates_dataset_epochs_across_train_and_validation(tmp_path):
+	_set_seed(313)
+	train_dataset = _EpochTrackingDataset(torch.randn(4, 64, 64))
+	val_dataset = _EpochTrackingDataset(torch.randn(4, 64, 64))
+	loaders = {
+		"train": DataLoader(train_dataset, batch_size=2, shuffle=False, num_workers=0),
+		"test": DataLoader(val_dataset, batch_size=2, shuffle=False, num_workers=0),
+	}
+	save_dir = tmp_path / "lightning_epoch_tracking"
+
+	train_vae(
+		loaders,
+		save_dir=str(save_dir),
+		epochs=2,
+		test_freq=1,
+		save_freq=None,
+		vis_freq=None,
+		trainer_kwargs={
+			"accelerator": "cpu",
+			"devices": 1,
+			"enable_progress_bar": False,
+			"enable_model_summary": False,
+			"num_sanity_val_steps": 0,
+			"limit_train_batches": 1,
+			"limit_val_batches": 1,
+			"logger": False,
+		},
+		input_shape=(64, 64),
+		z_dim=8,
+	)
+
+	assert train_dataset.epochs == [0, 1]
+	assert val_dataset.epochs == [0, 1]
 
 
 def test_mps_mixed_precision_is_overridden_to_fp32(tmp_path):

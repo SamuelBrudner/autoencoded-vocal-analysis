@@ -92,6 +92,46 @@ def _precision_requests_amp(precision: object) -> bool:
 	return False
 
 
+def _set_dataset_epoch(dataset, epoch: int) -> None:
+	if hasattr(dataset, "set_epoch"):
+		dataset.set_epoch(epoch)
+		return
+	nested = getattr(dataset, "dataset", None)
+	if nested is not None:
+		_set_dataset_epoch(nested, epoch)
+
+
+def _set_loader_epoch(loader, epoch: int) -> None:
+	if loader is None:
+		return
+	if isinstance(loader, dict):
+		for nested in loader.values():
+			_set_loader_epoch(nested, epoch)
+		return
+	if isinstance(loader, (list, tuple)):
+		for nested in loader:
+			_set_loader_epoch(nested, epoch)
+		return
+	nested = getattr(loader, "loaders", None)
+	if nested is not None:
+		_set_loader_epoch(nested, epoch)
+		return
+	nested = getattr(loader, "iterables", None)
+	if nested is not None:
+		_set_loader_epoch(nested, epoch)
+		return
+	sampler = getattr(loader, "sampler", None)
+	if sampler is not None and hasattr(sampler, "set_epoch"):
+		sampler.set_epoch(epoch)
+	batch_sampler = getattr(loader, "batch_sampler", None)
+	batch_sampler_sampler = getattr(batch_sampler, "sampler", None)
+	if batch_sampler_sampler is not None and hasattr(batch_sampler_sampler, "set_epoch"):
+		batch_sampler_sampler.set_epoch(epoch)
+	dataset = getattr(loader, "dataset", None)
+	if dataset is not None:
+		_set_dataset_epoch(dataset, epoch)
+
+
 class VAELightningModule(pl.LightningModule):
 	"""LightningModule wrapper for the VAE."""
 
@@ -185,6 +225,18 @@ class VAELightningModule(pl.LightningModule):
 
 	def forward(self, x, return_latent_rec: bool = False):
 		return self.vae(x, return_latent_rec=return_latent_rec)
+
+	def on_train_epoch_start(self) -> None:
+		trainer = getattr(self, "trainer", None)
+		if trainer is None:
+			return
+		_set_loader_epoch(getattr(trainer, "train_dataloader", None), int(self.current_epoch))
+
+	def on_validation_epoch_start(self) -> None:
+		trainer = getattr(self, "trainer", None)
+		if trainer is None:
+			return
+		_set_loader_epoch(getattr(trainer, "val_dataloaders", None), int(self.current_epoch))
 
 	def _compute_loss_and_stats_impl(self, batch, return_mu: bool = False):
 		recon, mu, logvar, z, u, raw_logvar = self.vae.forward_with_raw_logvar(batch)

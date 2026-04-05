@@ -7,6 +7,7 @@ per-clip ROI text files, without loading all ROIs into memory at init.
 
 from __future__ import annotations
 
+import multiprocessing as mp
 import hashlib
 import json
 import os
@@ -369,6 +370,7 @@ class ManifestFixedWindowDataset(Dataset):
         )
         self.window_log: dict[int, list[dict]] = {}
         self._epoch = 0
+        self._epoch_ref = mp.Value("i", 0)
         self.set_epoch(0)
 
         self._configure_normalization(normalization_stats)
@@ -397,8 +399,14 @@ class ManifestFixedWindowDataset(Dataset):
         if epoch < 0:
             raise ValueError("epoch must be non-negative.")
         self._epoch = int(epoch)
+        with self._epoch_ref.get_lock():
+            self._epoch_ref.value = int(epoch)
         if self._log_window_indices:
             self.window_log.setdefault(self._epoch, [])
+
+    def _current_epoch(self) -> int:
+        with self._epoch_ref.get_lock():
+            return int(self._epoch_ref.value)
 
     def _make_window_seed(self, epoch: int, index: int) -> int:
         payload = f"{self._sampling_seed}:{epoch}:{int(index)}"
@@ -868,7 +876,7 @@ class ManifestFixedWindowDataset(Dataset):
                 result.append(self.__getitem__(int(item), seed=item_seed, shoulder=shoulder))
             return result
 
-        epoch = int(self._epoch)
+        epoch = self._current_epoch()
         if seed is not None:
             rng = np.random.RandomState(int(seed))
             window_seed = None
@@ -914,6 +922,8 @@ def get_manifest_fixed_window_data_loaders(
     roi_format: str = "parquet",
     roi_parquet_name: str = "roi.parquet",
     dataset_length: int = 2048,
+    train_dataset_length: Optional[int] = None,
+    test_dataset_length: Optional[int] = None,
     roi_cache_size: int = 16,
     batch_size: int = 64,
     shuffle: Tuple[bool, bool] = (True, False),
@@ -935,6 +945,16 @@ def get_manifest_fixed_window_data_loaders(
     if num_workers is None:
         num_workers = _default_num_workers()
     num_workers = max(int(num_workers), 0)
+    train_dataset_length = _normalize_positive_int(
+        train_dataset_length,
+        default=dataset_length,
+        name="train_dataset_length",
+    )
+    test_dataset_length = _normalize_positive_int(
+        test_dataset_length,
+        default=dataset_length,
+        name="test_dataset_length",
+    )
     if pin_memory is None:
         pin_memory = torch.cuda.is_available()
     if persistent_workers is None:
@@ -959,7 +979,7 @@ def get_manifest_fixed_window_data_loaders(
         p,
         roi_format=roi_format,
         roi_parquet_name=roi_parquet_name,
-        dataset_length=dataset_length,
+        dataset_length=train_dataset_length,
         min_spec_val=min_spec_val,
         min_audio_energy=min_audio_energy,
         spec_cache_dir=spec_cache_dir,
@@ -986,7 +1006,7 @@ def get_manifest_fixed_window_data_loaders(
         p,
         roi_format=roi_format,
         roi_parquet_name=roi_parquet_name,
-        dataset_length=dataset_length,
+        dataset_length=test_dataset_length,
         min_spec_val=min_spec_val,
         min_audio_energy=min_audio_energy,
         spec_cache_dir=spec_cache_dir,

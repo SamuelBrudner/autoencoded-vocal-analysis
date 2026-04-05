@@ -95,6 +95,18 @@ def _parse_trainer_overrides(payload: Optional[str]) -> dict:
     return overrides
 
 
+def _resolve_streaming_dataset_lengths(
+    dataset_length: int,
+    train_dataset_length: Optional[int],
+    test_dataset_length: Optional[int],
+) -> tuple[int, int]:
+    train_length = dataset_length if train_dataset_length is None else int(train_dataset_length)
+    test_length = dataset_length if test_dataset_length is None else int(test_dataset_length)
+    if train_length <= 0 or test_length <= 0:
+        raise ValueError("Streaming dataset lengths must be positive integers.")
+    return train_length, test_length
+
+
 def _resolve_entries(
     entries: list[dict],
     audio_root: Optional[Path],
@@ -148,6 +160,18 @@ def main() -> None:
         type=int,
         default=2048,
         help="Arbitrary dataset length controlling batches/epoch for window sampling.",
+    )
+    parser.add_argument(
+        "--train-dataset-length",
+        type=int,
+        default=None,
+        help="Optional train-only streaming dataset length override.",
+    )
+    parser.add_argument(
+        "--test-dataset-length",
+        type=int,
+        default=None,
+        help="Optional validation/test-only streaming dataset length override.",
     )
     parser.add_argument(
         "--roi-cache-size",
@@ -209,6 +233,11 @@ def main() -> None:
 
     use_pairs = train_config.invariance_weight > 0
     if args.streaming:
+        train_dataset_length, test_dataset_length = _resolve_streaming_dataset_lengths(
+            int(args.dataset_length),
+            args.train_dataset_length,
+            args.test_dataset_length,
+        )
         resolved_train = _resolve_entries(train_entries, args.audio_root, args.roi_root)
         resolved_test = _resolve_entries(test_entries, args.audio_root, args.roi_root)
         if not resolved_train:
@@ -236,6 +265,8 @@ def main() -> None:
         if args.dry_run:
             print(f"Planned train dirs: {len(resolved_train)}")
             print(f"Planned test dirs: {len(resolved_test)}")
+            print(f"Train dataset length: {train_dataset_length}")
+            print(f"Test dataset length: {test_dataset_length}")
             return
         loaders = get_manifest_fixed_window_data_loaders(
             resolved_train,
@@ -244,6 +275,8 @@ def main() -> None:
             roi_format=str(args.roi_format),
             roi_parquet_name=str(args.roi_parquet_name),
             dataset_length=int(args.dataset_length),
+            train_dataset_length=train_dataset_length,
+            test_dataset_length=test_dataset_length,
             roi_cache_size=int(args.roi_cache_size),
             augmentations=config.augmentations,
             return_pair=use_pairs,
