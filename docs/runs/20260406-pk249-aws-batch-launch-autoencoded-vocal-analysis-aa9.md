@@ -71,16 +71,31 @@ Launch the real AWS path for the `PK249` `33-90dph` single-bird redo:
 - Relaunch work root: `/tmp/pk249_33_90_relaunch_20260407_123338`
 - ROI parent job: `pk249-33-90-roi-20260407_123338`
   - job id: `dca35f2a-507e-427d-934a-cf387373f7b2`
-  - current status at note update: `PENDING` parent, with all `8/8` child shards launched and `RUNNING`
+  - final status: `SUCCEEDED`
+  - child shard summary: `8/8 SUCCEEDED`
+  - ROI outputs written: `58` parquet bundles
 - Training job: `pk249-33-90-train-20260407_123338`
   - job id: `32fd6a9d-d6a4-4abe-86d7-245c3c74c1c9`
   - run name: `pk249-33-90-4gpu-batch-20260407_123338`
   - expected output root:
     - `s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/pk249-33-90/training-runs/pk249-33-90-4gpu-batch-20260407_123338`
-  - current status at note update: `PENDING` behind ROI dependency
+  - final status: `FAILED`
+  - failure cause: Lightning DDP aborted at epoch 0 because the module has parameters unused by `training_step` under plain `strategy="ddp"`
+
+## Training Relaunch
+- Patched run-specific launcher default in `scripts/cloud/aws/launch_pk249_33_90_batch_pipeline.sh`
+  - changed strategy from `ddp` to `ddp_find_unused_parameters_true`
+- Submitted training-only relaunch against the completed ROI parquet outputs:
+  - work root: `/tmp/pk249_33_90_train_rerun_20260407_132439`
+  - job name: `pk249-33-90-train-20260407_132439`
+  - job id: `9f52d127-78dc-4fe5-b9a7-08cda28e9fab`
+  - run name: `pk249-33-90-4gpu-batch-20260407_132439`
+  - trainer kwargs:
+    - `{"accelerator":"gpu","devices":4,"strategy":"ddp_find_unused_parameters_true","precision":"16-mixed","log_every_n_steps":10}`
+  - current status at note update: `RUNNABLE` (accepted by Batch, waiting on GPU capacity)
 
 ## Notes
 - The local `PK249` audio tree is large (`~63 GiB`), so the audio upload is the long pole.
 - The launcher uses the manifest-based uploader rather than a raw top-level sync so only `*.wav` files are pushed.
 - The training job is submitted only after ROI submission, with an explicit Batch dependency on the ROI array parent job.
-- No parquet ROI files had been written yet at the time this note was updated, but the relaunched ROI shards had moved past the original S3 permission failure and were actively running.
+- The first 4-GPU training attempt was useful because it proved the AWS GPU path, parquet preflight, and DDP initialization were all working before the unused-parameter error.
