@@ -1,0 +1,38 @@
+FROM pytorch/pytorch:2.5.1-cuda12.1-cudnn9-runtime
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV PIP_NO_CACHE_DIR=1
+ENV MPLBACKEND=Agg
+
+WORKDIR /opt/ava
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends git && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN pip install --upgrade pip && \
+    pip install \
+      awscli \
+      bokeh \
+      h5py \
+      joblib \
+      matplotlib \
+      moviepy \
+      numba \
+      numpy==1.26.4 \
+      pandas \
+      pyarrow==21.0.0 \
+      pytorch-lightning==2.6.0 \
+      pyyaml \
+      scikit-learn==1.7.2 \
+      scipy==1.15.3 \
+      tensorboard \
+      tqdm \
+      umap-learn && \
+    pip install "affinewarp @ git+https://github.com/ahwillia/affinewarp.git"
+
+COPY src/ src/
+COPY scripts/ scripts/
+
+ENTRYPOINT ["python", "scripts/cloud/aws/run_birdsong_training_batch_job.py"]
