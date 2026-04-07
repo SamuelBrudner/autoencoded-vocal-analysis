@@ -92,7 +92,39 @@ Launch the real AWS path for the `PK249` `33-90dph` single-bird redo:
   - run name: `pk249-33-90-4gpu-batch-20260407_132439`
   - trainer kwargs:
     - `{"accelerator":"gpu","devices":4,"strategy":"ddp_find_unused_parameters_true","precision":"16-mixed","log_every_n_steps":10}`
-  - current status at note update: `RUNNABLE` (accepted by Batch, waiting on GPU capacity)
+  - final status: `FAILED`
+  - failure cause: `OSError: [Errno 28] No space left on device` after training reached roughly epoch `37`
+
+## Scratch-Space Fix
+- Patched the AWS training submit path to stop using container `/tmp` for the main run directory:
+  - `scripts/cloud/aws/submit_birdsong_training_job.py`
+  - `scripts/cloud/aws/launch_pk249_33_90_batch_pipeline.sh`
+  - `scripts/cloud/aws/run_birdsong_training_batch_job.py`
+- New behavior:
+  - training jobs now pass `AVA_WORKDIR=/mnt/ava_cache/<run_name>`
+  - the Batch runner creates a per-run scratch tree under `/mnt/ava_cache`
+  - the Batch runner also points `TMPDIR`, `TEMP`, and `TMP` into that scratch tree
+- Updated the 4-GPU launch template `ava-gpu-batch-root600g`:
+  - created version `2`
+  - root volume increased from `600 GiB gp3` to `1200 GiB gp3`
+  - set version `2` as the default launch template version
+- The 4-GPU Batch compute environment `ava-gpu-ec2-4x` uses launch template version `$Latest`, so fresh nodes now inherit the larger root disk.
+
+## Current Training Relaunch
+- Submitted a new training-only job against the existing ROI parquet outputs:
+  - work root: `/tmp/pk249_33_90_train_rerun_20260407_235058`
+  - job name: `pk249-33-90-train-20260407_235058`
+  - job id: `78f5232c-f843-4e68-bb75-5f74aabc2452`
+  - run name: `pk249-33-90-4gpu-batch-20260407_235058`
+  - workdir override:
+    - `/mnt/ava_cache/pk249-33-90-4gpu-batch-20260407_235058`
+  - current status at note update: `RUNNING`
+  - current CloudWatch log stream:
+    - `ava-train-gpu-4x/default/46f72812d9b6462dbbcb7bcb3011b3fa`
+- Batch needed an explicit scale-out nudge after the relaunch:
+  - temporarily set `desiredvCpus=48` on `ava-gpu-ec2-4x`
+  - Batch then launched a fresh 4-GPU ECS container instance and moved the job from `RUNNABLE` to `RUNNING`
+  - Batch rejected a manual scale-down back to `desiredvCpus=0` while the environment was active; it must scale down on its own after the job is no longer consuming capacity
 
 ## Notes
 - The local `PK249` audio tree is large (`~63 GiB`), so the audio upload is the long pole.

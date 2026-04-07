@@ -186,7 +186,11 @@ def main() -> None:
     parser.add_argument("--preflight-sample-segments", type=int, default=_env_int("AVA_PREFLIGHT_SAMPLE_SEGMENTS", 5000))
     parser.add_argument("--preflight-seed", type=int, default=_env_int("AVA_PREFLIGHT_SEED", 0))
     parser.add_argument("--max-empty-fraction", type=float, default=_env_float("AVA_MAX_EMPTY_FRACTION", 0.01))
-    parser.add_argument("--workdir", type=Path, default=Path(_env("AVA_WORKDIR", "/tmp/ava_train_workdir")))
+    parser.add_argument(
+        "--workdir",
+        type=Path,
+        default=Path(_env("AVA_WORKDIR", "/mnt/ava_cache/ava_train_workdir")),
+    )
     parser.add_argument("--dry-run", action="store_true")
 
     args = parser.parse_args()
@@ -231,6 +235,7 @@ def main() -> None:
     local_audio_root = args.workdir / "audio"
     local_roi_root = args.workdir / "roi"
     local_run_dir = args.workdir / "training_run"
+    local_tmp_dir = args.workdir / "tmp"
     local_summary_path = args.workdir / "job_summary.json"
     local_manifest_path = local_inputs_dir / "manifest.json"
     local_config_path = local_inputs_dir / "config.yaml"
@@ -251,6 +256,7 @@ def main() -> None:
                     "local_audio_root": local_audio_root.as_posix(),
                     "local_roi_root": local_roi_root.as_posix(),
                     "local_run_dir": local_run_dir.as_posix(),
+                    "local_tmp_dir": local_tmp_dir.as_posix(),
                     "run_name": run_name,
                     "roi_format": str(args.roi_format),
                     "batch_size": args.batch_size,
@@ -265,10 +271,15 @@ def main() -> None:
         return
 
     aws = _require_aws_cli()
+    if args.workdir.exists():
+        shutil.rmtree(args.workdir, ignore_errors=True)
     args.workdir.mkdir(parents=True, exist_ok=True)
     local_inputs_dir.mkdir(parents=True, exist_ok=True)
     local_logs_dir.mkdir(parents=True, exist_ok=True)
+    local_tmp_dir.mkdir(parents=True, exist_ok=True)
     args.spec_cache_dir.mkdir(parents=True, exist_ok=True)
+    for env_name in ("TMPDIR", "TEMP", "TMP"):
+        os.environ[env_name] = local_tmp_dir.as_posix()
 
     status = "failed"
     summary: dict = {

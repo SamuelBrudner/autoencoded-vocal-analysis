@@ -108,7 +108,7 @@ def main() -> None:
     parser.add_argument("--preflight-sample-segments", type=int, default=5000)
     parser.add_argument("--preflight-seed", type=int, default=0)
     parser.add_argument("--max-empty-fraction", type=float, default=0.01)
-    parser.add_argument("--workdir", type=str, default="/tmp/ava_train_workdir")
+    parser.add_argument("--workdir", type=str, default="/mnt/ava_cache/ava_train_workdir")
     parser.add_argument("--timeout-seconds", type=int, default=172800)
     parser.add_argument("--depends-on-job-id", action="append", default=None)
     parser.add_argument(

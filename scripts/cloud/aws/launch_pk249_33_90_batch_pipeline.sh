@@ -22,6 +22,7 @@ TRAIN_NUM_WORKERS="${TRAIN_NUM_WORKERS:-4}"
 TRAIN_DATASET_LENGTH="${TRAIN_DATASET_LENGTH:-262144}"
 TEST_DATASET_LENGTH="${TEST_DATASET_LENGTH:-16384}"
 TRAINER_KWARGS_JSON="${TRAINER_KWARGS_JSON:-{\"accelerator\":\"gpu\",\"devices\":4,\"strategy\":\"ddp_find_unused_parameters_true\",\"precision\":\"16-mixed\",\"log_every_n_steps\":10}}"
+TRAIN_WORKDIR="${TRAIN_WORKDIR:-/mnt/ava_cache/${RUN_NAME}}"
 
 MANIFEST_PATH="${MANIFEST_PATH:-${ROOT}/docs/runs/artifacts/autoencoded-vocal-analysis-8ot/manifest_pk249_33_90.json}"
 TRAIN_CONFIG_PATH="${TRAIN_CONFIG_PATH:-${ROOT}/docs/runs/artifacts/autoencoded-vocal-analysis-8ot/fixed_window_pk249_33_90.yaml}"
@@ -120,6 +121,7 @@ python "${ROOT}/scripts/cloud/aws/submit_birdsong_training_job.py" \
   --train-dataset-length "${TRAIN_DATASET_LENGTH}" \
   --test-dataset-length "${TEST_DATASET_LENGTH}" \
   --trainer-kwargs-json "${TRAINER_KWARGS_JSON}" \
+  --workdir "${TRAIN_WORKDIR}" \
   --depends-on-job-id "${ROI_JOB_ID}" \
   --emit-json "${TRAIN_PAYLOAD_JSON}" \
   --submit > "${TRAIN_SUBMIT_JSON}"
