@@ -38,18 +38,49 @@ Launch the real AWS path for the `PK249` `33-90dph` single-bird redo:
 - Runner submit helper: `scripts/cloud/aws/submit_birdsong_training_job.py`
 - Batch runner image entrypoint: `scripts/cloud/aws/run_birdsong_training_batch_job.py`
 
-## Live Launch State
-- Active run stamp: `20260407_001600`
-- Work root: `/tmp/pk249_33_90_aws_pipeline_20260407_001600`
-- Training run name: `pk249-33-90-4gpu-batch-20260407_001600`
-- Expected training output root:
-  - `s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/pk249-33-90/training-runs/pk249-33-90-4gpu-batch-20260407_001600`
-- Current stage at handoff:
-  - manifest/config uploads completed
-  - audio upload running with `24` concurrent directory syncs
-  - ROI and training Batch submissions will happen automatically after upload completes
+## Upload Outcome
+- The initial manifest-based uploader was too slow for the `PK249` subset.
+- The audio transfer was relaunched with `rclone` against the same prefix and completed successfully.
+- Final upload work root: `/tmp/pk249_33_90_rclone_pipeline_20260406_204000`
+- Upload log: `/tmp/pk249_33_90_rclone_pipeline_20260406_204000/rclone_upload.log`
+- Completion summary from `rclone`:
+  - `50.173 GiB / 50.173 GiB`
+  - `11840` existing-object checks
+  - `83562` transferred objects
+  - elapsed `4h20m21.9s`
+
+## First Batch Attempt
+- ROI parent job: `pk249-33-90-roi-20260406_204000`
+  - job id: `bdc3a4f2-7174-4b06-a4b1-d6f44ea94da7`
+  - final status: `FAILED`
+- Training job: `pk249-33-90-train-20260406_204000`
+  - job id: `4b33f605-0099-4306-849a-8613bc3f2871`
+  - final status: `FAILED` (`Dependent Job failed`)
+- Failure cause:
+  - all `8/8` ROI array children failed immediately on `aws s3 cp` of the manifest
+  - CloudWatch logs showed `403 Forbidden` on `HeadObject`
+  - the Batch task role `arn:aws:iam::108633434817:role/avaRoiTaskRole` only allowed `ava/birdsong/*`, while this run used `autoencoded-vocal-analysis/pk249-33-90/*`
+
+## IAM Fix
+- Updated inline policy `AvaRoiS3Access` on `avaRoiTaskRole`
+- Added bucket-list access for prefix `autoencoded-vocal-analysis/*`
+- Added object read/write access for `arn:aws:s3:::ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/*`
+- Verified with `aws iam simulate-principal-policy` that `s3:GetObject` and `s3:ListBucket` are now allowed for the PK249 manifest path
+
+## Current Live Launch State
+- Relaunch work root: `/tmp/pk249_33_90_relaunch_20260407_123338`
+- ROI parent job: `pk249-33-90-roi-20260407_123338`
+  - job id: `dca35f2a-507e-427d-934a-cf387373f7b2`
+  - current status at note update: `PENDING` parent, with all `8/8` child shards launched and `RUNNING`
+- Training job: `pk249-33-90-train-20260407_123338`
+  - job id: `32fd6a9d-d6a4-4abe-86d7-245c3c74c1c9`
+  - run name: `pk249-33-90-4gpu-batch-20260407_123338`
+  - expected output root:
+    - `s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/pk249-33-90/training-runs/pk249-33-90-4gpu-batch-20260407_123338`
+  - current status at note update: `PENDING` behind ROI dependency
 
 ## Notes
 - The local `PK249` audio tree is large (`~63 GiB`), so the audio upload is the long pole.
 - The launcher uses the manifest-based uploader rather than a raw top-level sync so only `*.wav` files are pushed.
 - The training job is submitted only after ROI submission, with an explicit Batch dependency on the ROI array parent job.
+- No parquet ROI files had been written yet at the time this note was updated, but the relaunched ROI shards had moved past the original S3 permission failure and were actively running.
