@@ -24,6 +24,7 @@ if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
 from ava.models.fixed_window_config import FixedWindowExperimentConfig
+from ava.models.disk_telemetry import DiskTelemetryCallback
 from ava.models.lightning_vae import train_vae
 from ava.models.roi_preflight import (
     assert_window_length_compatible,
@@ -124,6 +125,30 @@ def _resolve_entries(
     return resolved
 
 
+def _build_extra_callbacks(args: argparse.Namespace):
+    disk_roots = [Path(path) for path in (args.disk_telemetry_root or [])]
+    if args.disk_telemetry_every_n_epochs is not None and not disk_roots:
+        raise ValueError(
+            "--disk-telemetry-every-n-epochs requires at least one --disk-telemetry-root."
+        )
+    if not disk_roots:
+        return None
+    every_n_epochs = (
+        5
+        if args.disk_telemetry_every_n_epochs is None
+        else int(args.disk_telemetry_every_n_epochs)
+    )
+    if every_n_epochs <= 0:
+        raise ValueError("--disk-telemetry-every-n-epochs must be positive.")
+    return [
+        DiskTelemetryCallback(
+            save_dir=args.save_dir.as_posix(),
+            roots=disk_roots,
+            every_n_epochs=every_n_epochs,
+        )
+    ]
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Launch fixed-window birdsong training (scaled-ready)."
@@ -200,6 +225,18 @@ def main() -> None:
 
     parser.add_argument("--disable-spec-cache", action="store_true")
     parser.add_argument("--spec-cache-dir", type=Path, default=None)
+    parser.add_argument(
+        "--disk-telemetry-root",
+        action="append",
+        default=None,
+        help="Path to include in periodic disk-usage telemetry. Can be repeated.",
+    )
+    parser.add_argument(
+        "--disk-telemetry-every-n-epochs",
+        type=int,
+        default=None,
+        help="Capture disk telemetry every N train epochs when telemetry roots are set.",
+    )
 
     parser.add_argument(
         "--trainer-kwargs-json",
@@ -342,11 +379,13 @@ def main() -> None:
     train_kwargs["trainer_kwargs"] = trainer_kwargs
 
     args.save_dir.mkdir(parents=True, exist_ok=True)
+    extra_callbacks = _build_extra_callbacks(args)
     train_vae(
         loaders,
         save_dir=args.save_dir.as_posix(),
         config_path=args.config.as_posix(),
         manifest_path=args.manifest.as_posix(),
+        extra_callbacks=extra_callbacks,
         **train_kwargs,
     )
 

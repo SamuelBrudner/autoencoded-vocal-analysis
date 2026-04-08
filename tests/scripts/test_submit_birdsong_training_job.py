@@ -48,6 +48,7 @@ def test_build_payload_includes_dependency_timeout_and_env():
         preflight_sample_segments=5000,
         preflight_seed=0,
         max_empty_fraction=0.01,
+        disk_telemetry_every_n_epochs=5,
         workdir="/tmp/ava_train_workdir",
         timeout_seconds=172800,
         depends_on_job_id=["roi-job-123"],
@@ -78,3 +79,4 @@ def test_build_payload_includes_dependency_timeout_and_env():
     assert env["AVA_EPOCHS"] == "51"
     assert env["AVA_TRAIN_DATASET_LENGTH"] == "262144"
     assert env["AVA_TEST_DATASET_LENGTH"] == "16384"
+    assert env["AVA_DISK_TELEMETRY_EVERY_N_EPOCHS"] == "5"

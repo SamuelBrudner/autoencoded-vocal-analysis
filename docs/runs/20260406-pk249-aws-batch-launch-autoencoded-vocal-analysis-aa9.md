@@ -26,6 +26,10 @@ Launch the real AWS path for the `PK249` `33-90dph` single-bird redo:
 - New training image: `108633434817.dkr.ecr.us-east-1.amazonaws.com/ava-train:latest`
   - digest: `sha256:8486b012995fec46877395f91a863ae732e87817c42e7965bc455e7b4664bc6e`
   - pushed: `2026-04-06T19:59:46-04:00`
+- Telemetry training refresh: `108633434817.dkr.ecr.us-east-1.amazonaws.com/ava-train:20260408-disk-telemetry`
+  - digest: `sha256:5d8289d2fb586c6951f819b016fbc4b34d9fc007fa780f27c36109411e2b6f62`
+  - also tagged as `latest`
+  - pushed: `2026-04-08T07:35:56-04:00`
 
 ## Registered Training Job Definition
 - ARN: `arn:aws:batch:us-east-1:108633434817:job-definition/ava-train-gpu-4x:1`
@@ -125,6 +129,32 @@ Launch the real AWS path for the `PK249` `33-90dph` single-bird redo:
   - temporarily set `desiredvCpus=48` on `ava-gpu-ec2-4x`
   - Batch then launched a fresh 4-GPU ECS container instance and moved the job from `RUNNABLE` to `RUNNING`
   - Batch rejected a manual scale-down back to `desiredvCpus=0` while the environment was active; it must scale down on its own after the job is no longer consuming capacity
+
+## Disk Telemetry Patch + New Relaunch
+- The mounted-scratch rerun still failed with `OSError: [Errno 28] No space left on device`:
+  - job id: `78f5232c-f843-4e68-bb75-5f74aabc2452`
+  - run name: `pk249-33-90-4gpu-batch-20260407_235058`
+  - status: `FAILED`
+  - last visible progress: around epoch `37`, step `996/2048`
+- Added reusable disk telemetry instrumentation in the training code:
+  - Batch runner snapshots before/after setup, downloads, coverage, and on exception/finalize
+  - Lightning callback snapshots at fit start and every `5` train epochs
+  - telemetry snapshots write under `logs/disk_telemetry/` and also print to stdout
+- Submitted a telemetry-enabled training rerun:
+  - work root: `/tmp/pk249_33_90_train_rerun_20260408_113628`
+  - job name: `pk249-33-90-train-20260408_113628`
+  - job id: `603d68ef-1077-4b2d-8c6a-90a8e3ff9682`
+  - run name: `pk249-33-90-4gpu-batch-20260408_113628`
+  - workdir override:
+    - `/mnt/ava_cache/pk249-33-90-4gpu-batch-20260408_113628`
+  - telemetry frequency:
+    - every `5` train epochs
+  - status at note update: `STARTING`
+  - current CloudWatch log stream:
+    - `ava-train-gpu-4x/default/d56266aaba1e4a248578ee410ce89cf0`
+  - Batch scale-out nudge reapplied:
+    - `desiredvCpus=48` on `ava-gpu-ec2-4x`
+  - Batch has already launched a fresh 4-GPU ECS container instance for this job
 
 ## Notes
 - The local `PK249` audio tree is large (`~63 GiB`), so the audio upload is the long pole.

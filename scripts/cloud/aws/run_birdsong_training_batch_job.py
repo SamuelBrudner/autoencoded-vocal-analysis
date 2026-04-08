@@ -19,6 +19,12 @@ SRC_ROOT = ROOT / "src"
 if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
+from ava.models.disk_telemetry import (
+    append_disk_telemetry_snapshot,
+    collect_disk_telemetry,
+    format_disk_telemetry_summary,
+)
+
 
 def _env(name: str, default: str | None = None) -> str | None:
     val = os.environ.get(name)
@@ -164,6 +170,28 @@ def _sum_manifest_files(manifest: dict) -> int:
     return int(total)
 
 
+def _record_disk_telemetry(
+    output_dir: Path,
+    stage: str,
+    roots: list[Path],
+    *,
+    extra: dict | None = None,
+) -> dict:
+    payload = collect_disk_telemetry(roots)
+    payload["stage"] = stage
+    if extra:
+        payload.update(extra)
+    print(format_disk_telemetry_summary(payload), flush=True)
+    try:
+        append_disk_telemetry_snapshot(output_dir, payload)
+    except Exception as exc:  # pragma: no cover - best effort during disk failures
+        print(
+            f"Warning: failed to persist disk telemetry snapshot for stage={stage}: {exc}",
+            file=sys.stderr,
+        )
+    return payload
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run a birdsong training job inside AWS Batch.")
     parser.add_argument("--manifest-s3-uri", type=str, default=_env("AVA_MANIFEST_S3_URI"), required=False)
@@ -186,6 +214,11 @@ def main() -> None:
     parser.add_argument("--preflight-sample-segments", type=int, default=_env_int("AVA_PREFLIGHT_SAMPLE_SEGMENTS", 5000))
     parser.add_argument("--preflight-seed", type=int, default=_env_int("AVA_PREFLIGHT_SEED", 0))
     parser.add_argument("--max-empty-fraction", type=float, default=_env_float("AVA_MAX_EMPTY_FRACTION", 0.01))
+    parser.add_argument(
+        "--disk-telemetry-every-n-epochs",
+        type=int,
+        default=_env_int("AVA_DISK_TELEMETRY_EVERY_N_EPOCHS", 5),
+    )
     parser.add_argument(
         "--workdir",
         type=Path,
@@ -221,6 +254,8 @@ def main() -> None:
         raise ValueError("Preflight sample sizes must be positive.")
     if not (0.0 <= float(args.max_empty_fraction) <= 1.0):
         raise ValueError("--max-empty-fraction must be in [0, 1].")
+    if args.disk_telemetry_every_n_epochs is not None and args.disk_telemetry_every_n_epochs <= 0:
+        raise ValueError("--disk-telemetry-every-n-epochs must be positive.")
 
     run_name = str(
         args.run_name
@@ -242,6 +277,17 @@ def main() -> None:
     local_coverage_log_path = local_logs_dir / "coverage_stdout.log"
     local_training_log_path = local_logs_dir / "training_stdout.log"
     local_download_summary_path = local_logs_dir / "download_summary.json"
+    local_disk_telemetry_dir = local_logs_dir / "disk_telemetry"
+    disk_telemetry_roots = [
+        Path("/tmp"),
+        Path("/mnt/ava_cache"),
+        args.workdir,
+        local_tmp_dir,
+        args.spec_cache_dir,
+        local_audio_root,
+        local_roi_root,
+        local_run_dir,
+    ]
 
     if args.dry_run:
         print(
@@ -257,6 +303,8 @@ def main() -> None:
                     "local_roi_root": local_roi_root.as_posix(),
                     "local_run_dir": local_run_dir.as_posix(),
                     "local_tmp_dir": local_tmp_dir.as_posix(),
+                    "disk_telemetry_roots": [path.as_posix() for path in disk_telemetry_roots],
+                    "disk_telemetry_every_n_epochs": args.disk_telemetry_every_n_epochs,
                     "run_name": run_name,
                     "roi_format": str(args.roi_format),
                     "batch_size": args.batch_size,
@@ -280,6 +328,12 @@ def main() -> None:
     args.spec_cache_dir.mkdir(parents=True, exist_ok=True)
     for env_name in ("TMPDIR", "TEMP", "TMP"):
         os.environ[env_name] = local_tmp_dir.as_posix()
+    _record_disk_telemetry(
+        local_disk_telemetry_dir,
+        "after_setup",
+        disk_telemetry_roots,
+        extra={"run_name": run_name},
+    )
 
     status = "failed"
     summary: dict = {
@@ -291,6 +345,8 @@ def main() -> None:
         "s3_audio_root": str(args.s3_audio_root),
         "s3_roi_root": str(args.s3_roi_root),
         "roi_format": str(args.roi_format),
+        "disk_telemetry_roots": [path.as_posix() for path in disk_telemetry_roots],
+        "disk_telemetry_every_n_epochs": int(args.disk_telemetry_every_n_epochs),
     }
 
     try:
@@ -345,6 +401,15 @@ def main() -> None:
         summary["audio_download_failures"] = int(len(audio_download_failures))
         summary["roi_download_failures"] = int(len(roi_download_failures))
         _write_json(local_download_summary_path, {"results": download_results})
+        _record_disk_telemetry(
+            local_disk_telemetry_dir,
+            "after_downloads",
+            disk_telemetry_roots,
+            extra={
+                "audio_download_failures": int(len(audio_download_failures)),
+                "roi_download_failures": int(len(roi_download_failures)),
+            },
+        )
         if audio_download_failures or roi_download_failures:
             raise RuntimeError("Audio/ROI directory download failed for one or more entries.")
 
@@ -375,6 +440,12 @@ def main() -> None:
         summary["coverage_summary"] = coverage_summary
         summary["coverage_wav_files_checked"] = wav_files_checked
         summary["coverage_empty_fraction"] = empty_fraction
+        _record_disk_telemetry(
+            local_disk_telemetry_dir,
+            "after_coverage",
+            disk_telemetry_roots,
+            extra={"coverage_empty_fraction": empty_fraction},
+        )
         if (
             int(coverage_summary.get("missing_roi_dirs") or 0)
             or int(coverage_summary.get("missing_roi_files") or 0)
@@ -425,16 +496,38 @@ def main() -> None:
             train_cmd.extend(["--test-dataset-length", str(args.test_dataset_length)])
         if args.trainer_kwargs_json:
             train_cmd.extend(["--trainer-kwargs-json", str(args.trainer_kwargs_json)])
+        train_cmd.extend([
+            "--disk-telemetry-every-n-epochs",
+            str(args.disk_telemetry_every_n_epochs),
+        ])
+        for root in disk_telemetry_roots:
+            train_cmd.extend(["--disk-telemetry-root", root.as_posix()])
 
+        _record_disk_telemetry(
+            local_disk_telemetry_dir,
+            "before_training",
+            disk_telemetry_roots,
+        )
         _stream_to_log(train_cmd, local_training_log_path)
         status = "completed"
         summary["training_run_dir"] = local_run_dir.as_posix()
     except Exception as exc:
         summary["error"] = str(exc)
+        _record_disk_telemetry(
+            local_disk_telemetry_dir,
+            "exception",
+            disk_telemetry_roots,
+            extra={"error": str(exc)},
+        )
         raise
     finally:
         summary["completed_utc"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
         summary["status"] = status
+        _record_disk_telemetry(
+            local_disk_telemetry_dir,
+            f"final_{status}",
+            disk_telemetry_roots,
+        )
         _write_json(local_summary_path, summary)
         try:
             _sync_path_to_s3(aws, local_summary_path, _join_s3_uri(s3_run_root, "job_summary.json"))
@@ -443,6 +536,7 @@ def main() -> None:
             _sync_path_to_s3(aws, local_download_summary_path, _join_s3_uri(s3_run_root, "logs/download_summary.json"))
             _sync_path_to_s3(aws, local_coverage_log_path, _join_s3_uri(s3_run_root, "logs/coverage_stdout.log"))
             _sync_path_to_s3(aws, local_training_log_path, _join_s3_uri(s3_run_root, "logs/training_stdout.log"))
+            _sync_path_to_s3(aws, local_disk_telemetry_dir, _join_s3_uri(s3_run_root, "logs/disk_telemetry"))
             _sync_path_to_s3(aws, local_coverage_dir, _join_s3_uri(s3_run_root, "coverage"))
             _sync_path_to_s3(aws, local_run_dir, _join_s3_uri(s3_run_root, "training_run"))
         except Exception as upload_exc:

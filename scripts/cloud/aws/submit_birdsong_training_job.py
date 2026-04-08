@@ -59,6 +59,12 @@ def build_payload(args: argparse.Namespace) -> dict:
         _payload_env("AVA_PREFLIGHT_SAMPLE_SEGMENTS", int(args.preflight_sample_segments)),
         _payload_env("AVA_PREFLIGHT_SEED", int(args.preflight_seed)),
         _payload_env("AVA_MAX_EMPTY_FRACTION", float(args.max_empty_fraction)),
+        _payload_env(
+            "AVA_DISK_TELEMETRY_EVERY_N_EPOCHS",
+            int(args.disk_telemetry_every_n_epochs)
+            if args.disk_telemetry_every_n_epochs is not None
+            else None,
+        ),
         _payload_env("AVA_WORKDIR", args.workdir),
     ]
     env_items = [item for item in env_items if item is not None]
@@ -108,6 +114,7 @@ def main() -> None:
     parser.add_argument("--preflight-sample-segments", type=int, default=5000)
     parser.add_argument("--preflight-seed", type=int, default=0)
     parser.add_argument("--max-empty-fraction", type=float, default=0.01)
+    parser.add_argument("--disk-telemetry-every-n-epochs", type=int, default=5)
     parser.add_argument("--workdir", type=str, default="/mnt/ava_cache/ava_train_workdir")
     parser.add_argument("--timeout-seconds", type=int, default=172800)
     parser.add_argument("--depends-on-job-id", action="append", default=None)
@@ -148,6 +155,8 @@ def main() -> None:
         raise ValueError("--preflight-sample-segments must be positive.")
     if not (0.0 <= float(args.max_empty_fraction) <= 1.0):
         raise ValueError("--max-empty-fraction must be in [0, 1].")
+    if args.disk_telemetry_every_n_epochs is not None and args.disk_telemetry_every_n_epochs <= 0:
+        raise ValueError("--disk-telemetry-every-n-epochs must be positive.")
     if args.timeout_seconds is not None and args.timeout_seconds <= 0:
         raise ValueError("--timeout-seconds must be positive.")
 
