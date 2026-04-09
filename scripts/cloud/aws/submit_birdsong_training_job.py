@@ -53,6 +53,7 @@ def build_payload(args: argparse.Namespace) -> dict:
         _payload_env("AVA_EPOCHS", int(args.epochs) if args.epochs is not None else None),
         _payload_env("AVA_TRAIN_DATASET_LENGTH", int(args.train_dataset_length) if args.train_dataset_length is not None else None),
         _payload_env("AVA_TEST_DATASET_LENGTH", int(args.test_dataset_length) if args.test_dataset_length is not None else None),
+        _payload_env("AVA_DISABLE_SPEC_CACHE", 1 if args.disable_spec_cache else None),
         _payload_env("AVA_SPEC_CACHE_DIR", args.spec_cache_dir),
         _payload_env("AVA_TRAINER_KWARGS_JSON", args.trainer_kwargs_json),
         _payload_env("AVA_PREFLIGHT_SAMPLE_DIRS", int(args.preflight_sample_dirs)),
@@ -108,6 +109,7 @@ def main() -> None:
     parser.add_argument("--epochs", type=int, default=None)
     parser.add_argument("--train-dataset-length", type=int, default=None)
     parser.add_argument("--test-dataset-length", type=int, default=None)
+    parser.add_argument("--disable-spec-cache", action="store_true")
     parser.add_argument("--spec-cache-dir", type=str, default="/mnt/ava_cache/spec_cache")
     parser.add_argument("--trainer-kwargs-json", type=str, default=None)
     parser.add_argument("--preflight-sample-dirs", type=int, default=25)

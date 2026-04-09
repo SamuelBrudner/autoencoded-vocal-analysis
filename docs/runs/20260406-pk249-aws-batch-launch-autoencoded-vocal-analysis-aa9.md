@@ -156,6 +156,50 @@ Launch the real AWS path for the `PK249` `33-90dph` single-bird redo:
     - `desiredvCpus=48` on `ava-gpu-ec2-4x`
   - Batch has already launched a fresh 4-GPU ECS container instance for this job
 
+## Disable-Spec-Cache Patch + Fresh Rerun
+- Telemetry showed the dominant disk consumer was spectrogram cache growth:
+  - `spec_cache` reached about `520 GiB`
+  - local audio copy reached about `56 GiB`
+  - the run/work tree reached about `57 GiB`
+- Patched the AWS training path to allow `disable-spec-cache` end to end:
+  - `scripts/cloud/aws/submit_birdsong_training_job.py`
+  - `scripts/cloud/aws/run_birdsong_training_batch_job.py`
+  - `scripts/cloud/aws/launch_pk249_33_90_batch_pipeline.sh`
+- Added regression coverage:
+  - `tests/scripts/test_submit_birdsong_training_job.py`
+  - `tests/scripts/test_run_birdsong_training_batch_job.py`
+- Verification:
+  - `pytest -q tests/scripts/test_submit_birdsong_training_job.py tests/scripts/test_run_birdsong_training_batch_job.py`
+  - `bash -n scripts/cloud/aws/launch_pk249_33_90_batch_pipeline.sh`
+- Rebuilt and pushed the training image with the new runner behavior:
+  - image: `108633434817.dkr.ecr.us-east-1.amazonaws.com/ava-train:20260408-disable-spec-cache`
+  - also retagged: `108633434817.dkr.ecr.us-east-1.amazonaws.com/ava-train:latest`
+  - manifest digest: `sha256:ad2b074621389761b8c8eea09fe0785bade3b77cf66be8c2c274fa9d6219aaab`
+- Submitted a fresh training-only rerun with cache disabled:
+  - work root: `/tmp/pk249_33_90_disable_spec_cache_20260409_010209`
+  - job name: `pk249-33-90-train-20260409_010209`
+  - job id: `b57990f7-02ea-48c7-bf66-4a22a3fe342a`
+  - run name: `pk249-33-90-4gpu-batch-20260409_010209`
+  - payload detail:
+    - `AVA_DISABLE_SPEC_CACHE=1`
+  - current status at note update: `RUNNABLE`
+
+## Queue / Compute Environment Findings
+- `ava-gpu-queue-4x` now points to:
+  - `ava-gpu-ec2-4x-v2`
+- The new v2 compute environment is correctly configured for the larger disk:
+  - launch template name: `ava-gpu-batch-root600g`
+  - launch template version: `2`
+  - Batch-managed internal launch template: `lt-0d4badb4f3a15d757`
+  - internal root volume size: `1200 GiB gp3`
+- The PK249 rerun is currently blocked by quota/capacity churn rather than code:
+  - account quota for `Running On-Demand G and VT instances`: `64`
+  - the v2 environment initially tried to scale to `96` because two jobs were runnable
+  - the extra runnable job `jtda-ddp4x-volumecheck-20260408-1` has since failed
+  - capped the v2 ASG path to one node by updating the compute environment, which drove the Batch-managed ASG to `desired=48`, `max=48`
+  - the only remaining GPU instance in the account is the stale old-node `i-0d971d76414ab0b93` from `ava-gpu-ec2-4x`, already in `shutting-down`
+  - as soon as AWS fully releases that stale `48`-vCPU node from quota accounting, the v2 environment should be able to launch the new PK249 rerun
+
 ## Notes
 - The local `PK249` audio tree is large (`~63 GiB`), so the audio upload is the long pole.
 - The launcher uses the manifest-based uploader rather than a raw top-level sync so only `*.wav` files are pushed.

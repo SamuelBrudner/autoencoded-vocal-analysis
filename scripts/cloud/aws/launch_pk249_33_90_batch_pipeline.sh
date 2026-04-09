@@ -24,6 +24,7 @@ TEST_DATASET_LENGTH="${TEST_DATASET_LENGTH:-16384}"
 TRAINER_KWARGS_JSON="${TRAINER_KWARGS_JSON:-{\"accelerator\":\"gpu\",\"devices\":4,\"strategy\":\"ddp_find_unused_parameters_true\",\"precision\":\"16-mixed\",\"log_every_n_steps\":10}}"
 TRAIN_WORKDIR="${TRAIN_WORKDIR:-/mnt/ava_cache/${RUN_NAME}}"
 DISK_TELEMETRY_EVERY_N_EPOCHS="${DISK_TELEMETRY_EVERY_N_EPOCHS:-5}"
+DISABLE_SPEC_CACHE="${DISABLE_SPEC_CACHE:-1}"
 
 MANIFEST_PATH="${MANIFEST_PATH:-${ROOT}/docs/runs/artifacts/autoencoded-vocal-analysis-8ot/manifest_pk249_33_90.json}"
 TRAIN_CONFIG_PATH="${TRAIN_CONFIG_PATH:-${ROOT}/docs/runs/artifacts/autoencoded-vocal-analysis-8ot/fixed_window_pk249_33_90.yaml}"
@@ -105,6 +106,12 @@ log "Submitted ROI job id ${ROI_JOB_ID}"
 
 TRAIN_SUBMIT_JSON="${WORK_ROOT}/train_submit_response.json"
 TRAIN_PAYLOAD_JSON="${WORK_ROOT}/train_submit_payload.json"
+TRAIN_EXTRA_ARGS=()
+case "${DISABLE_SPEC_CACHE,,}" in
+  1|true|yes|on)
+    TRAIN_EXTRA_ARGS+=(--disable-spec-cache)
+    ;;
+esac
 
 log "Submitting training Batch job ${TRAIN_JOB_NAME} depending on ROI completion"
 python "${ROOT}/scripts/cloud/aws/submit_birdsong_training_job.py" \
@@ -125,6 +132,7 @@ python "${ROOT}/scripts/cloud/aws/submit_birdsong_training_job.py" \
   --disk-telemetry-every-n-epochs "${DISK_TELEMETRY_EVERY_N_EPOCHS}" \
   --workdir "${TRAIN_WORKDIR}" \
   --depends-on-job-id "${ROI_JOB_ID}" \
+  "${TRAIN_EXTRA_ARGS[@]}" \
   --emit-json "${TRAIN_PAYLOAD_JSON}" \
   --submit > "${TRAIN_SUBMIT_JSON}"
 

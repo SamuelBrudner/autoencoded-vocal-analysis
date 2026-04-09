@@ -47,6 +47,18 @@ def _env_float(name: str, default: float | None = None) -> float | None:
     return float(val)
 
 
+def _env_flag(name: str, default: bool = False) -> bool:
+    val = _env(name)
+    if val is None:
+        return default
+    normalized = str(val).strip().lower()
+    if normalized in {"1", "true", "yes", "on"}:
+        return True
+    if normalized in {"0", "false", "no", "off"}:
+        return False
+    raise ValueError(f"Environment variable {name} must be a boolean-like value, got: {val!r}")
+
+
 def _join_s3_uri(root_uri: str, rel: str) -> str:
     root_uri = str(root_uri).rstrip("/")
     rel = str(rel or ".").lstrip("/")
@@ -192,6 +204,18 @@ def _record_disk_telemetry(
     return payload
 
 
+def _extend_spec_cache_args(
+    cmd: list[str],
+    *,
+    disable_spec_cache: bool,
+    spec_cache_dir: Path,
+) -> None:
+    if disable_spec_cache:
+        cmd.append("--disable-spec-cache")
+        return
+    cmd.extend(["--spec-cache-dir", spec_cache_dir.as_posix()])
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run a birdsong training job inside AWS Batch.")
     parser.add_argument("--manifest-s3-uri", type=str, default=_env("AVA_MANIFEST_S3_URI"), required=False)
@@ -208,6 +232,11 @@ def main() -> None:
     parser.add_argument("--epochs", type=int, default=_env_int("AVA_EPOCHS"))
     parser.add_argument("--train-dataset-length", type=int, default=_env_int("AVA_TRAIN_DATASET_LENGTH"))
     parser.add_argument("--test-dataset-length", type=int, default=_env_int("AVA_TEST_DATASET_LENGTH"))
+    parser.add_argument(
+        "--disable-spec-cache",
+        action="store_true",
+        default=_env_flag("AVA_DISABLE_SPEC_CACHE", False),
+    )
     parser.add_argument("--spec-cache-dir", type=Path, default=Path(_env("AVA_SPEC_CACHE_DIR", "/mnt/ava_cache/spec_cache")))
     parser.add_argument("--trainer-kwargs-json", type=str, default=_env("AVA_TRAINER_KWARGS_JSON"))
     parser.add_argument("--preflight-sample-dirs", type=int, default=_env_int("AVA_PREFLIGHT_SAMPLE_DIRS", 25))
@@ -312,6 +341,7 @@ def main() -> None:
                     "epochs": args.epochs,
                     "train_dataset_length": args.train_dataset_length,
                     "test_dataset_length": args.test_dataset_length,
+                    "disable_spec_cache": bool(args.disable_spec_cache),
                 },
                 indent=2,
             )
@@ -325,7 +355,8 @@ def main() -> None:
     local_inputs_dir.mkdir(parents=True, exist_ok=True)
     local_logs_dir.mkdir(parents=True, exist_ok=True)
     local_tmp_dir.mkdir(parents=True, exist_ok=True)
-    args.spec_cache_dir.mkdir(parents=True, exist_ok=True)
+    if not args.disable_spec_cache:
+        args.spec_cache_dir.mkdir(parents=True, exist_ok=True)
     for env_name in ("TMPDIR", "TEMP", "TMP"):
         os.environ[env_name] = local_tmp_dir.as_posix()
     _record_disk_telemetry(
@@ -345,6 +376,7 @@ def main() -> None:
         "s3_audio_root": str(args.s3_audio_root),
         "s3_roi_root": str(args.s3_roi_root),
         "roi_format": str(args.roi_format),
+        "disable_spec_cache": bool(args.disable_spec_cache),
         "disk_telemetry_roots": [path.as_posix() for path in disk_telemetry_roots],
         "disk_telemetry_every_n_epochs": int(args.disk_telemetry_every_n_epochs),
     }
@@ -475,8 +507,6 @@ def main() -> None:
             str(args.roi_format),
             "--roi-parquet-name",
             str(args.roi_parquet_name),
-            "--spec-cache-dir",
-            args.spec_cache_dir.as_posix(),
             "--preflight-sample-dirs",
             str(args.preflight_sample_dirs),
             "--preflight-sample-segments",
@@ -484,6 +514,11 @@ def main() -> None:
             "--preflight-seed",
             str(args.preflight_seed),
         ]
+        _extend_spec_cache_args(
+            train_cmd,
+            disable_spec_cache=bool(args.disable_spec_cache),
+            spec_cache_dir=args.spec_cache_dir,
+        )
         if args.batch_size is not None:
             train_cmd.extend(["--batch-size", str(args.batch_size)])
         if args.num_workers is not None:
