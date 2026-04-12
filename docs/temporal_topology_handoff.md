@@ -7,6 +7,10 @@ plug them into the **distance-image → persistence** pipeline prototyped in
 For the canonical on-disk schema (NPZ arrays + JSON metadata), see:
 `docs/latent_sequence_export.md`.
 
+For the completed `PK249` `33-90dph` corpus export locations and analyst-facing
+access examples, see:
+`docs/pk249_33_90_latent_access.md`.
+
 ## Prereqs
 
 - A birdsong **manifest JSON** (schema: `docs/birdsong_manifest.md`).
@@ -146,4 +150,3 @@ diag_h0 = persistence_diagram(pers, homology_dim=0)  # (n_bars, 2)
 - `energy` is RMS over the **resampled audio** inside each window. It is not
   globally normalized; percentile-based thresholds are usually more robust than
   absolute thresholds.
-
