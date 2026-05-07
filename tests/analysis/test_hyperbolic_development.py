@@ -9,6 +9,7 @@ import pytest
 from ava.analysis.hyperbolic_development import (
 	aggregate_latent_clip_to_events,
 	fit_adult_clusters,
+	fit_poincare_embedding,
 	latent_matrix,
 	poincare_distance,
 	poincare_radius,
@@ -119,6 +120,19 @@ def test_adult_clusters_are_deterministic_with_fixed_seed():
 	assert second.best_k == 2
 	assert np.array_equal(first.labels, second.labels)
 	assert np.allclose(first.confidence, second.confidence)
+
+
+def test_poincare_embedding_returns_best_finite_coordinates():
+	pytest.importorskip("torch")
+
+	rng = np.random.default_rng(4)
+	x = rng.normal(size=(32, 6)).astype(np.float32)
+	result = fit_poincare_embedding(x, seed=0, knn=4, epochs=12, lr=1.0)
+
+	assert result.loss_history
+	assert np.isfinite(result.loss_history).all()
+	assert np.isfinite(result.points).all()
+	assert (np.linalg.norm(result.points, axis=1) < 1.0).all()
 
 
 def test_hyperbolic_development_cli_smoke(tmp_path: Path):

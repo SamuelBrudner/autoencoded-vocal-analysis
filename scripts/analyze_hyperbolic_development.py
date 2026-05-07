@@ -47,7 +47,7 @@ def main() -> None:
 	parser.add_argument("--embedding-max-events", type=int, default=6000)
 	parser.add_argument("--knn", type=int, default=10)
 	parser.add_argument("--embedding-epochs", type=int, default=300)
-	parser.add_argument("--embedding-lr", type=float, default=0.05)
+	parser.add_argument("--embedding-lr", type=float, default=0.01)
 	parser.add_argument("--cluster-min-k", type=int, default=4)
 	parser.add_argument("--cluster-max-k", type=int, default=12)
 	parser.add_argument("--bootstrap-iterations", type=int, default=1000)

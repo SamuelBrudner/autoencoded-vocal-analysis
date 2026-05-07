@@ -678,7 +678,7 @@ def fit_poincare_embedding(
 	seed: int = 0,
 	knn: int = 10,
 	epochs: int = 300,
-	lr: float = 0.05,
+	lr: float = 0.01,
 	max_edges: int = 200_000,
 ) -> EmbeddingResult:
 	"""Fit a two-dimensional Poincare embedding from kNN edge distances."""
@@ -727,24 +727,42 @@ def fit_poincare_embedding(
 	target_np = np.clip(target_np / target_scale, 0.0, 8.0)
 
 	init = _initial_pca_coordinates(x_std, seed=seed)
-	raw = torch.tensor(init, dtype=torch.float32, requires_grad=True)
+	points_param = torch.tensor(init, dtype=torch.float32, requires_grad=True)
 	src_t = torch.tensor(src, dtype=torch.long)
 	dst_t = torch.tensor(dst, dtype=torch.long)
 	target_t = torch.tensor(target_np, dtype=torch.float32)
-	opt = torch.optim.Adam([raw], lr=float(lr))
+	opt = torch.optim.Adam([points_param], lr=float(lr))
 	loss_history: list[float] = []
+	best_points = _project_poincare_torch(points_param).detach().clone()
+	best_loss = float("inf")
 	for _ in range(int(epochs)):
 		opt.zero_grad()
-		points = _raw_to_poincare_torch(raw)
+		points = _project_poincare_torch(points_param)
 		pred = _poincare_distance_torch(points[src_t], points[dst_t])
 		loss = torch.mean((pred - target_t) ** 2)
 		loss = loss + 1e-4 * torch.mean(torch.sum(points * points, dim=1))
+		if not bool(torch.isfinite(loss).detach().cpu()):
+			break
+		loss_value = float(loss.detach().cpu())
+		loss_history.append(loss_value)
+		if loss_value < best_loss:
+			best_loss = loss_value
+			best_points = points.detach().clone()
 		loss.backward()
+		if not _all_finite_gradients([points_param]):
+			break
+		torch.nn.utils.clip_grad_norm_([points_param], max_norm=10.0)
 		opt.step()
-		loss_history.append(float(loss.detach().cpu()))
+		with torch.no_grad():
+			points_param.nan_to_num_(nan=0.0, posinf=0.95, neginf=-0.95)
+			points_param.copy_(_project_poincare_torch(points_param))
 
-	with torch.no_grad():
-		points = _raw_to_poincare_torch(raw).detach().cpu().numpy().astype(np.float32)
+	if not loss_history:
+		raise ValueError("Poincare embedding optimization produced no finite losses.")
+
+	points = best_points.detach().cpu().numpy().astype(np.float32)
+	if not np.isfinite(points).all():
+		raise ValueError("Poincare embedding produced non-finite coordinates.")
 	return EmbeddingResult(
 		points=points,
 		loss_history=loss_history,
@@ -777,15 +795,34 @@ def _raw_to_poincare_torch(raw):
 	return direction * radius
 
 
+def _project_poincare_torch(points, max_norm: float = 0.95):
+	import torch
+
+	points = torch.nan_to_num(points, nan=0.0, posinf=max_norm, neginf=-max_norm)
+	norm = torch.linalg.norm(points, dim=1, keepdim=True)
+	scale = torch.clamp(float(max_norm) / torch.clamp(norm, min=EPS), max=1.0)
+	return points * scale
+
+
+def _all_finite_gradients(parameters) -> bool:
+	import torch
+
+	for parameter in parameters:
+		if parameter.grad is not None and not bool(torch.isfinite(parameter.grad).all().detach().cpu()):
+			return False
+	return True
+
+
 def _poincare_distance_torch(a, b):
 	import torch
 
+	torch_eps = 1e-5
 	diff_sq = torch.sum((a - b) ** 2, dim=1)
 	a_norm_sq = torch.sum(a * a, dim=1)
 	b_norm_sq = torch.sum(b * b, dim=1)
 	denom = torch.clamp((1.0 - a_norm_sq) * (1.0 - b_norm_sq), min=EPS)
 	arg = 1.0 + 2.0 * diff_sq / denom
-	return torch.acosh(torch.clamp(arg, min=1.0 + EPS))
+	return torch.acosh(torch.clamp(arg, min=1.0 + torch_eps))
 
 
 def attach_embedding_coordinates(
@@ -950,6 +987,48 @@ def grouped_median_metric(records: Sequence[dict], key: str) -> list[dict]:
 		{"dph": float(dph), "n": len(values), "median": float(np.median(values))}
 		for dph, values in sorted(grouped.items())
 	]
+
+
+def early_late_metric_contrast(
+	records: Sequence[dict],
+	key: str,
+	early_dph_max: float,
+	late_dph_min: float,
+) -> dict:
+	"""Summarize early-vs-late medians for a scalar embedding record field."""
+	early = []
+	late = []
+	for record in records:
+		value = record.get(key)
+		dph = _coerce_dph(record.get("dph"))
+		if dph is None or value is None:
+			continue
+		value = float(value)
+		if not math.isfinite(value):
+			continue
+		if dph <= float(early_dph_max):
+			early.append(value)
+		if dph >= float(late_dph_min):
+			late.append(value)
+	early_arr = np.asarray(early, dtype=np.float64)
+	late_arr = np.asarray(late, dtype=np.float64)
+	early_median = float(np.median(early_arr)) if early_arr.size else None
+	late_median = float(np.median(late_arr)) if late_arr.size else None
+	delta = (
+		float(late_median - early_median)
+		if early_median is not None and late_median is not None
+		else None
+	)
+	return {
+		"key": key,
+		"early_dph_max": float(early_dph_max),
+		"late_dph_min": float(late_dph_min),
+		"early_n": int(early_arr.size),
+		"late_n": int(late_arr.size),
+		"early_median": early_median,
+		"late_median": late_median,
+		"late_minus_early": delta,
+	}
 
 
 def cluster_payload(result: ClusterResult, late_dph_min: float) -> dict:
@@ -1167,6 +1246,12 @@ def write_report(
 	radius = metrics["radius_age"]
 	ci = radius.get("bootstrap_rho_ci95")
 	ci_text = "n/a" if ci is None else f"[{ci[0]:.3f}, {ci[1]:.3f}]"
+	confidence_age = metrics.get("adult_confidence_age", {})
+	entropy_age = metrics.get("adult_entropy_age", {})
+	conf_ci = confidence_age.get("bootstrap_rho_ci95")
+	ent_ci = entropy_age.get("bootstrap_rho_ci95")
+	conf_ci_text = "n/a" if conf_ci is None else f"[{conf_ci[0]:.3f}, {conf_ci[1]:.3f}]"
+	ent_ci_text = "n/a" if ent_ci is None else f"[{ent_ci[0]:.3f}, {ent_ci[1]:.3f}]"
 	sensitivity = metrics.get("sensitivity", {})
 	sens_radius = sensitivity.get("radius_age", {})
 	sens_text = "not run"
@@ -1190,6 +1275,12 @@ def write_report(
 		f"(p={radius['spearman_p_value']:.3g}, bootstrap CI {ci_text}).",
 		f"- Adult-like clusters: K={metrics['adult_clusters']['best_k']} "
 		f"from {metrics['adult_clusters']['late_event_count']} late-age events.",
+		f"- Adult-cluster confidence-age Spearman rho: "
+		f"{confidence_age.get('spearman_rho', float('nan')):.3f} "
+		f"(bootstrap CI {conf_ci_text}); entropy-age rho: "
+		f"{entropy_age.get('spearman_rho', float('nan')):.3f} "
+		f"(bootstrap CI {ent_ci_text}).",
+		_early_late_summary(metrics),
 		f"- Sensitivity run: {sens_text}.",
 		"",
 		"## Figures",
@@ -1208,9 +1299,7 @@ def write_report(
 		"",
 		_interpret_radius(radius),
 		"",
-		"Adult-like branch structure is summarized by late-age unsupervised clusters. "
-		"A developmental increase in cluster confidence, paired with decreasing "
-		"cluster entropy, supports progressive differentiation into distal branches.",
+		_interpret_branch_confidence(metrics),
 		"",
 		"## Skip And Coverage Summary",
 		"",
@@ -1224,6 +1313,32 @@ def write_report(
 	for name, path in artifacts.items():
 		lines.append(f"- `{name}`: `{rel(path)}`")
 	report_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def _fmt_optional(value: Any, digits: int = 4) -> str:
+	if value is None:
+		return "n/a"
+	try:
+		value = float(value)
+	except (TypeError, ValueError):
+		return "n/a"
+	return f"{value:.{digits}f}" if math.isfinite(value) else "n/a"
+
+
+def _early_late_summary(metrics: dict) -> str:
+	contrasts = metrics.get("early_late_contrasts", {})
+	radius = contrasts.get("poincare_radius", {})
+	confidence = contrasts.get("adult_cluster_confidence", {})
+	entropy = contrasts.get("adult_cluster_entropy", {})
+	return (
+		"- Early/late medians: radius "
+		f"{_fmt_optional(radius.get('early_median'))} -> "
+		f"{_fmt_optional(radius.get('late_median'))}; confidence "
+		f"{_fmt_optional(confidence.get('early_median'))} -> "
+		f"{_fmt_optional(confidence.get('late_median'))}; entropy "
+		f"{_fmt_optional(entropy.get('early_median'))} -> "
+		f"{_fmt_optional(entropy.get('late_median'))}."
+	)
 
 
 def _interpret_radius(radius_metrics: dict) -> str:
@@ -1243,6 +1358,37 @@ def _interpret_radius(radius_metrics: dict) -> str:
 	return (
 		"The primary radius-age test does not support the current hyperbolic "
 		"developmental hypothesis in this run."
+	)
+
+
+def _interpret_branch_confidence(metrics: dict) -> str:
+	contrasts = metrics.get("early_late_contrasts", {})
+	radius = contrasts.get("poincare_radius", {})
+	confidence = contrasts.get("adult_cluster_confidence", {})
+	entropy = contrasts.get("adult_cluster_entropy", {})
+	radius_delta = radius.get("late_minus_early")
+	conf_delta = confidence.get("late_minus_early")
+	entropy_delta = entropy.get("late_minus_early")
+
+	branch_confident = (
+		conf_delta is not None and conf_delta > 0
+		and entropy_delta is not None and entropy_delta < 0
+	)
+	radius_distal = radius_delta is not None and radius_delta > 0
+	if branch_confident and radius_distal:
+		return (
+			"Late events occupy more confident, lower-entropy adult-like branches "
+			"and are more distal in the recentered Poincare embedding."
+		)
+	if branch_confident:
+		return (
+			"Late events are more confidently assigned to adult-like branches and "
+			"have lower cluster entropy, but they are not more distal by the primary "
+			"hyperbolic radius coordinate."
+		)
+	return (
+		"Late events do not show the paired increase in adult-cluster confidence "
+		"and decrease in cluster entropy expected for branch-like differentiation."
 	)
 
 
@@ -1361,10 +1507,13 @@ def run_hyperbolic_development_analysis(
 			"events_available_for_embedding": int(len(build.records)),
 			"knn": int(knn),
 			"epochs": int(embedding_epochs),
+			"epochs_completed": int(len(embedding.loss_history)),
+			"lr": float(embedding_lr),
 			"edge_count": int(embedding.edge_count),
 			"target_scale": float(embedding.target_scale),
 			"loss_initial": float(embedding.loss_history[0]),
 			"loss_final": float(embedding.loss_history[-1]),
+			"loss_best": float(min(embedding.loss_history)),
 		},
 		"controls": control_status,
 		"radius_age": radius_metrics,
@@ -1376,6 +1525,38 @@ def run_hyperbolic_development_analysis(
 			embedding_records,
 			"adult_cluster_entropy",
 		),
+		"adult_confidence_age": radius_age_metrics(
+			embedding_records,
+			radius_key="adult_cluster_confidence",
+			bootstrap_iterations=bootstrap_iterations,
+			seed=seed,
+		),
+		"adult_entropy_age": radius_age_metrics(
+			embedding_records,
+			radius_key="adult_cluster_entropy",
+			bootstrap_iterations=bootstrap_iterations,
+			seed=seed,
+		),
+		"early_late_contrasts": {
+			"poincare_radius": early_late_metric_contrast(
+				embedding_records,
+				"poincare_radius",
+				early_dph_max,
+				late_dph_min,
+			),
+			"adult_cluster_confidence": early_late_metric_contrast(
+				embedding_records,
+				"adult_cluster_confidence",
+				early_dph_max,
+				late_dph_min,
+			),
+			"adult_cluster_entropy": early_late_metric_contrast(
+				embedding_records,
+				"adult_cluster_entropy",
+				early_dph_max,
+				late_dph_min,
+			),
+		},
 		"control_radius_by_dph": {
 			"euclidean_latent_norm": grouped_median_metric(
 				embedding_records,
@@ -1405,9 +1586,12 @@ def run_hyperbolic_development_analysis(
 			"seed": int(seed) + 1,
 			"embedding": {
 				"epochs": int(sensitivity_epochs),
+				"epochs_completed": int(len(sensitivity.loss_history)),
+				"lr": float(embedding_lr),
 				"edge_count": int(sensitivity.edge_count),
 				"loss_initial": float(sensitivity.loss_history[0]),
 				"loss_final": float(sensitivity.loss_history[-1]),
+				"loss_best": float(min(sensitivity.loss_history)),
 			},
 			"radius_age": radius_age_metrics(
 				sensitivity_records,
