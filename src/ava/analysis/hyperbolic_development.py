@@ -1411,7 +1411,7 @@ def run_hyperbolic_development_analysis(
 	embedding_max_events: int = 6000,
 	knn: int = 10,
 	embedding_epochs: int = 300,
-	embedding_lr: float = 0.05,
+	embedding_lr: float = 0.01,
 	cluster_min_k: int = 4,
 	cluster_max_k: int = 12,
 	bootstrap_iterations: int = 1000,
