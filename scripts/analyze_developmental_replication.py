@@ -47,6 +47,12 @@ def main() -> None:
 		help="Comma-separated bird ids. Defaults to PK249 plus the fixed top-longitudinal cohort.",
 	)
 	parser.add_argument(
+		"--latent-model-id",
+		type=str,
+		default="ava_latent",
+		help="Analysis label for the latent source, e.g. ava_latent or shotgun_vae.",
+	)
+	parser.add_argument(
 		"--event-table",
 		action="append",
 		default=[],
@@ -122,6 +128,7 @@ def main() -> None:
 		manifest_path=args.manifest,
 		bird_ids=bird_ids,
 		cohort=args.cohort,
+		latent_model_id=args.latent_model_id,
 		event_tables=event_tables,
 		event_table_roots=args.event_table_root,
 		latent_root=args.latent_root,

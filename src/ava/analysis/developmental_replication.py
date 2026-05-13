@@ -77,6 +77,7 @@ def run_developmental_replication_analysis(
 	manifest_path: Path,
 	bird_ids: Sequence[str] = DEFAULT_BIRD_IDS,
 	cohort: str = "top-longitudinal",
+	latent_model_id: str = "ava_latent",
 	event_tables: Optional[dict[str, Path]] = None,
 	event_table_roots: Optional[Sequence[Path]] = None,
 	latent_root: Optional[Path] = None,
@@ -114,6 +115,7 @@ def run_developmental_replication_analysis(
 		manifest=manifest,
 		bird_ids=requested_birds,
 		cohort=cohort,
+		latent_model_id=latent_model_id,
 		dph_min=dph_min,
 		dph_max=dph_max,
 		early_dph_max=early_dph_max,
@@ -134,6 +136,7 @@ def run_developmental_replication_analysis(
 	inventory: dict[str, Any] = {
 		"created_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
 		"manifest_path": manifest_path.as_posix(),
+		"latent_model_id": str(latent_model_id),
 		"event_table_roots": [
 			Path(root).as_posix() for root in (event_table_roots or ())
 		],
@@ -214,6 +217,7 @@ def run_developmental_replication_analysis(
 			event_summary=event_summary,
 			inputs=inputs,
 			manifest_summary=cohort_payload["birds"].get(bird_id, {}),
+			latent_model_id=latent_model_id,
 			early_dph_max=early_dph_max,
 			late_dph_min=late_dph_min,
 			cluster_min_k=cluster_min_k,
@@ -272,6 +276,7 @@ def build_cohort_payload(
 	manifest: dict,
 	bird_ids: Sequence[str],
 	cohort: str,
+	latent_model_id: str,
 	dph_min: float,
 	dph_max: float,
 	early_dph_max: float,
@@ -291,6 +296,7 @@ def build_cohort_payload(
 	}
 	return {
 		"cohort": cohort,
+		"latent_model_id": str(latent_model_id),
 		"bird_ids": list(birds),
 		"dph_min": float(dph_min),
 		"dph_max": float(dph_max),
@@ -436,6 +442,7 @@ def analyze_replication_bird(
 	event_summary: dict,
 	inputs: dict,
 	manifest_summary: dict,
+	latent_model_id: str,
 	early_dph_max: float,
 	late_dph_min: float,
 	cluster_min_k: int,
@@ -499,6 +506,7 @@ def analyze_replication_bird(
 	primary = analysis.metrics["primary_metrics"]
 	return {
 		"bird_id": _normalize_bird_id(bird_id),
+		"latent_model_id": str(latent_model_id),
 		"status": "analyzed",
 		"manifest": manifest_summary,
 		"inputs": inputs,

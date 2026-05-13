@@ -4,4 +4,5 @@ __all__ = [
 	"branch_commitment",
 	"developmental_replication",
 	"hyperbolic_development",
+	"shotgun_development",
 ]
