@@ -1,3 +1,7 @@
 """Analysis utilities for AVA latent outputs."""
 
-__all__ = ["branch_commitment", "hyperbolic_development"]
+__all__ = [
+	"branch_commitment",
+	"developmental_replication",
+	"hyperbolic_development",
+]

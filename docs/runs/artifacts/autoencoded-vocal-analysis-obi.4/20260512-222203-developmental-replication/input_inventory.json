@@ -1,0 +1,287 @@
+{
+  "birds": {
+    "PK249": {
+      "bird_id": "PK249",
+      "coverage_metrics": "/Users/samuelbrudner/.codex/worktrees/cc22/autoencoded-vocal-analysis/docs/runs/artifacts/autoencoded-vocal-analysis-obi.2/20260507-182654-pk249-hyperbolic-development-autoencoded-vocal-analysis-obi.2/metrics.json",
+      "event_table": "/Users/samuelbrudner/.codex/worktrees/cc22/autoencoded-vocal-analysis/docs/runs/artifacts/autoencoded-vocal-analysis-obi.2/20260507-182654-pk249-hyperbolic-development-autoencoded-vocal-analysis-obi.2/event_latents.parquet",
+      "events_loaded": 114690,
+      "manifest": {
+        "bird_id": "PK249",
+        "dph_max_all": 91.0,
+        "dph_min_all": 31.0,
+        "has_early_reference": true,
+        "has_late_reference": true,
+        "manifest_rows": 61,
+        "num_files": 97174,
+        "regimes": [
+          "bells"
+        ],
+        "splits": [
+          "train"
+        ],
+        "unique_dph_all": 61,
+        "unique_dph_in_range": 58
+      },
+      "reason": null,
+      "source_mode": "event_table",
+      "status": "analyzed"
+    },
+    "R122": {
+      "bird_id": "R122",
+      "coverage_metrics": null,
+      "event_table": null,
+      "manifest": {
+        "bird_id": "R122",
+        "dph_max_all": 127.0,
+        "dph_min_all": 36.0,
+        "has_early_reference": true,
+        "has_late_reference": true,
+        "manifest_rows": 77,
+        "num_files": 90981,
+        "regimes": [
+          "bells"
+        ],
+        "splits": [
+          "train"
+        ],
+        "unique_dph_all": 77,
+        "unique_dph_in_range": 40
+      },
+      "reason": "No local event_latents.parquet was found and --latent-root was not provided.",
+      "source_mode": null,
+      "status": "missing_inputs"
+    },
+    "R150": {
+      "bird_id": "R150",
+      "coverage_metrics": null,
+      "event_table": null,
+      "manifest": {
+        "bird_id": "R150",
+        "dph_max_all": 121.0,
+        "dph_min_all": 36.0,
+        "has_early_reference": true,
+        "has_late_reference": true,
+        "manifest_rows": 137,
+        "num_files": 161286,
+        "regimes": [
+          "samba"
+        ],
+        "splits": [
+          "train"
+        ],
+        "unique_dph_all": 70,
+        "unique_dph_in_range": 49
+      },
+      "reason": "No local event_latents.parquet was found and --latent-root was not provided.",
+      "source_mode": null,
+      "status": "missing_inputs"
+    },
+    "R203": {
+      "bird_id": "R203",
+      "coverage_metrics": null,
+      "event_table": null,
+      "manifest": {
+        "bird_id": "R203",
+        "dph_max_all": 133.0,
+        "dph_min_all": 35.0,
+        "has_early_reference": true,
+        "has_late_reference": true,
+        "manifest_rows": 82,
+        "num_files": 109521,
+        "regimes": [
+          "isolates"
+        ],
+        "splits": [
+          "train"
+        ],
+        "unique_dph_all": 81,
+        "unique_dph_in_range": 39
+      },
+      "reason": "No local event_latents.parquet was found and --latent-root was not provided.",
+      "source_mode": null,
+      "status": "missing_inputs"
+    },
+    "R229": {
+      "bird_id": "R229",
+      "coverage_metrics": null,
+      "event_table": null,
+      "manifest": {
+        "bird_id": "R229",
+        "dph_max_all": 140.0,
+        "dph_min_all": 34.0,
+        "has_early_reference": true,
+        "has_late_reference": true,
+        "manifest_rows": 96,
+        "num_files": 99039,
+        "regimes": [
+          "bells"
+        ],
+        "splits": [
+          "train"
+        ],
+        "unique_dph_all": 96,
+        "unique_dph_in_range": 53
+      },
+      "reason": "No local event_latents.parquet was found and --latent-root was not provided.",
+      "source_mode": null,
+      "status": "missing_inputs"
+    },
+    "R404": {
+      "bird_id": "R404",
+      "coverage_metrics": null,
+      "event_table": null,
+      "manifest": {
+        "bird_id": "R404",
+        "dph_max_all": 120.0,
+        "dph_min_all": 38.0,
+        "has_early_reference": true,
+        "has_late_reference": true,
+        "manifest_rows": 77,
+        "num_files": 161782,
+        "regimes": [
+          "simple"
+        ],
+        "splits": [
+          "train"
+        ],
+        "unique_dph_all": 77,
+        "unique_dph_in_range": 50
+      },
+      "reason": "No local event_latents.parquet was found and --latent-root was not provided.",
+      "source_mode": null,
+      "status": "missing_inputs"
+    },
+    "R425": {
+      "bird_id": "R425",
+      "coverage_metrics": null,
+      "event_table": null,
+      "manifest": {
+        "bird_id": "R425",
+        "dph_max_all": 133.0,
+        "dph_min_all": 36.0,
+        "has_early_reference": true,
+        "has_late_reference": true,
+        "manifest_rows": 96,
+        "num_files": 109027,
+        "regimes": [
+          "samba"
+        ],
+        "splits": [
+          "train"
+        ],
+        "unique_dph_all": 96,
+        "unique_dph_in_range": 53
+      },
+      "reason": "No local event_latents.parquet was found and --latent-root was not provided.",
+      "source_mode": null,
+      "status": "missing_inputs"
+    },
+    "R426": {
+      "bird_id": "R426",
+      "coverage_metrics": null,
+      "event_table": null,
+      "manifest": {
+        "bird_id": "R426",
+        "dph_max_all": 130.0,
+        "dph_min_all": 40.0,
+        "has_early_reference": true,
+        "has_late_reference": true,
+        "manifest_rows": 91,
+        "num_files": 201293,
+        "regimes": [
+          "bells"
+        ],
+        "splits": [
+          "train"
+        ],
+        "unique_dph_all": 91,
+        "unique_dph_in_range": 51
+      },
+      "reason": "No local event_latents.parquet was found and --latent-root was not provided.",
+      "source_mode": null,
+      "status": "missing_inputs"
+    },
+    "R467": {
+      "bird_id": "R467",
+      "coverage_metrics": null,
+      "event_table": null,
+      "manifest": {
+        "bird_id": "R467",
+        "dph_max_all": 130.0,
+        "dph_min_all": 37.0,
+        "has_early_reference": true,
+        "has_late_reference": true,
+        "manifest_rows": 93,
+        "num_files": 185641,
+        "regimes": [
+          "bells"
+        ],
+        "splits": [
+          "train"
+        ],
+        "unique_dph_all": 93,
+        "unique_dph_in_range": 53
+      },
+      "reason": "No local event_latents.parquet was found and --latent-root was not provided.",
+      "source_mode": null,
+      "status": "missing_inputs"
+    },
+    "R470": {
+      "bird_id": "R470",
+      "coverage_metrics": null,
+      "event_table": null,
+      "manifest": {
+        "bird_id": "R470",
+        "dph_max_all": 130.0,
+        "dph_min_all": 37.0,
+        "has_early_reference": true,
+        "has_late_reference": true,
+        "manifest_rows": 94,
+        "num_files": 110631,
+        "regimes": [
+          "samba"
+        ],
+        "splits": [
+          "train"
+        ],
+        "unique_dph_all": 94,
+        "unique_dph_in_range": 54
+      },
+      "reason": "No local event_latents.parquet was found and --latent-root was not provided.",
+      "source_mode": null,
+      "status": "missing_inputs"
+    },
+    "R493": {
+      "bird_id": "R493",
+      "coverage_metrics": null,
+      "event_table": null,
+      "manifest": {
+        "bird_id": "R493",
+        "dph_max_all": 126.0,
+        "dph_min_all": 35.0,
+        "has_early_reference": true,
+        "has_late_reference": true,
+        "manifest_rows": 91,
+        "num_files": 157266,
+        "regimes": [
+          "samba"
+        ],
+        "splits": [
+          "train"
+        ],
+        "unique_dph_all": 91,
+        "unique_dph_in_range": 56
+      },
+      "reason": "No local event_latents.parquet was found and --latent-root was not provided.",
+      "source_mode": null,
+      "status": "missing_inputs"
+    }
+  },
+  "created_utc": "2026-05-13T02:22:03Z",
+  "event_table_roots": [
+    "/Users/samuelbrudner/.codex/worktrees/cc22/autoencoded-vocal-analysis/docs/runs/artifacts"
+  ],
+  "latent_root": null,
+  "manifest_path": "/Users/samuelbrudner/.codex/worktrees/cc22/autoencoded-vocal-analysis/data/manifests/birdsong_manifest.json",
+  "roi_root": null
+}

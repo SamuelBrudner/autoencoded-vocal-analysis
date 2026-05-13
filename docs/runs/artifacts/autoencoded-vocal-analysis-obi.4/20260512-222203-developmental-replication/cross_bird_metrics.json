@@ -1,0 +1,263 @@
+{
+  "analyzed_birds": [
+    "PK249"
+  ],
+  "branch_metrics": {
+    "branch_confidence": {
+      "bootstrap_iterations": 1000,
+      "bootstrap_mean_rho_ci95": null,
+      "expected_sign": 1,
+      "expected_sign_count": 1,
+      "mean_rho": 0.9593958596081087,
+      "median_rho": 0.9593958596081087,
+      "n_birds": 1,
+      "per_bird": [
+        {
+          "bird_id": "PK249",
+          "bootstrap_rho_ci95": [
+            0.9190145019393978,
+            0.9746356741085952
+          ],
+          "regime": "bells",
+          "spearman_rho": 0.9593958596081087
+        }
+      ]
+    },
+    "branch_distance_margin": {
+      "bootstrap_iterations": 1000,
+      "bootstrap_mean_rho_ci95": null,
+      "expected_sign": 1,
+      "expected_sign_count": 1,
+      "mean_rho": 0.9442000676735675,
+      "median_rho": 0.9442000676735675,
+      "n_birds": 1,
+      "per_bird": [
+        {
+          "bird_id": "PK249",
+          "bootstrap_rho_ci95": [
+            0.869609201773836,
+            0.9790597764158789
+          ],
+          "regime": "bells",
+          "spearman_rho": 0.9442000676735675
+        }
+      ]
+    },
+    "branch_entropy": {
+      "bootstrap_iterations": 1000,
+      "bootstrap_mean_rho_ci95": null,
+      "expected_sign": -1,
+      "expected_sign_count": 1,
+      "mean_rho": -0.9178688978436742,
+      "median_rho": -0.9178688978436742,
+      "n_birds": 1,
+      "per_bird": [
+        {
+          "bird_id": "PK249",
+          "bootstrap_rho_ci95": [
+            -0.9551123921710837,
+            -0.8421215148256266
+          ],
+          "regime": "bells",
+          "spearman_rho": -0.9178688978436742
+        }
+      ]
+    },
+    "branch_nearest_distance": {
+      "bootstrap_iterations": 1000,
+      "bootstrap_mean_rho_ci95": null,
+      "expected_sign": -1,
+      "expected_sign_count": 1,
+      "mean_rho": -0.9491217816604632,
+      "median_rho": -0.9491217816604632,
+      "n_birds": 1,
+      "per_bird": [
+        {
+          "bird_id": "PK249",
+          "bootstrap_rho_ci95": [
+            -0.9751850096446782,
+            -0.8868838757275498
+          ],
+          "regime": "bells",
+          "spearman_rho": -0.9491217816604632
+        }
+      ]
+    },
+    "branch_probability_margin": {
+      "bootstrap_iterations": 1000,
+      "bootstrap_mean_rho_ci95": null,
+      "expected_sign": 1,
+      "expected_sign_count": 1,
+      "mean_rho": 0.9485065674121014,
+      "median_rho": 0.9485065674121014,
+      "n_birds": 1,
+      "per_bird": [
+        {
+          "bird_id": "PK249",
+          "bootstrap_rho_ci95": [
+            0.8875302385566874,
+            0.9788749961504113
+          ],
+          "regime": "bells",
+          "spearman_rho": 0.9485065674121014
+        }
+      ]
+    },
+    "branch_within_standardized_distance": {
+      "bootstrap_iterations": 1000,
+      "bootstrap_mean_rho_ci95": null,
+      "expected_sign": -1,
+      "expected_sign_count": 1,
+      "mean_rho": -0.9553354455689196,
+      "median_rho": -0.9553354455689196,
+      "n_birds": 1,
+      "per_bird": [
+        {
+          "bird_id": "PK249",
+          "bootstrap_rho_ci95": [
+            -0.9741954854802451,
+            -0.9085440933814354
+          ],
+          "regime": "bells",
+          "spearman_rho": -0.9553354455689196
+        }
+      ]
+    }
+  },
+  "created_utc": "2026-05-13T02:24:27Z",
+  "missing_or_failed_birds": [
+    "R122",
+    "R150",
+    "R203",
+    "R229",
+    "R404",
+    "R425",
+    "R426",
+    "R467",
+    "R470",
+    "R493"
+  ],
+  "n_analyzed_birds": 1,
+  "n_expected_birds": 11,
+  "negative_controls": {
+    "poincare_radius": {
+      "bootstrap_iterations": 1000,
+      "bootstrap_mean_rho_ci95": null,
+      "expected_sign": 0,
+      "expected_sign_count": null,
+      "mean_rho": -0.7067273678058386,
+      "median_rho": -0.7067273678058386,
+      "n_birds": 1,
+      "per_bird": [
+        {
+          "bird_id": "PK249",
+          "bootstrap_rho_ci95": [
+            -0.8358391814428319,
+            -0.5076396361673104
+          ],
+          "regime": "bells",
+          "spearman_rho": -0.7067273678058386
+        }
+      ]
+    }
+  },
+  "regime_stratified": {
+    "bells": {
+      "birds": [
+        "PK249"
+      ],
+      "metrics": {
+        "branch_confidence": {
+          "expected_sign_count": 1,
+          "mean_rho": 0.9593958596081087,
+          "median_rho": 0.9593958596081087,
+          "n_birds": 1
+        },
+        "branch_distance_margin": {
+          "expected_sign_count": 1,
+          "mean_rho": 0.9442000676735675,
+          "median_rho": 0.9442000676735675,
+          "n_birds": 1
+        },
+        "branch_entropy": {
+          "expected_sign_count": 1,
+          "mean_rho": -0.9178688978436742,
+          "median_rho": -0.9178688978436742,
+          "n_birds": 1
+        },
+        "branch_nearest_distance": {
+          "expected_sign_count": 1,
+          "mean_rho": -0.9491217816604632,
+          "median_rho": -0.9491217816604632,
+          "n_birds": 1
+        },
+        "branch_probability_margin": {
+          "expected_sign_count": 1,
+          "mean_rho": 0.9485065674121014,
+          "median_rho": 0.9485065674121014,
+          "n_birds": 1
+        },
+        "branch_within_standardized_distance": {
+          "expected_sign_count": 1,
+          "mean_rho": -0.9553354455689196,
+          "median_rho": -0.9553354455689196,
+          "n_birds": 1
+        }
+      }
+    }
+  },
+  "replication_success": {
+    "criteria": {
+      "branch_confidence": {
+        "bootstrap_ci_excludes_zero": false,
+        "expected_sign_count": 1,
+        "passes": false,
+        "required_sign_count": 9,
+        "sign_count_pass": false
+      },
+      "branch_distance_margin": {
+        "bootstrap_ci_excludes_zero": false,
+        "expected_sign_count": 1,
+        "passes": false,
+        "required_sign_count": 9,
+        "sign_count_pass": false
+      },
+      "branch_entropy": {
+        "bootstrap_ci_excludes_zero": false,
+        "expected_sign_count": 1,
+        "passes": false,
+        "required_sign_count": 9,
+        "sign_count_pass": false
+      },
+      "branch_nearest_distance": {
+        "bootstrap_ci_excludes_zero": false,
+        "expected_sign_count": 1,
+        "passes": false,
+        "required_sign_count": 9,
+        "sign_count_pass": false
+      }
+    },
+    "min_success_birds": 9,
+    "n_expected_total": 11,
+    "passes": false
+  },
+  "sign_consistency_table": [
+    {
+      "bird_id": "PK249",
+      "branch_confidence_expected": true,
+      "branch_confidence_rho": 0.9593958596081087,
+      "branch_distance_margin_expected": true,
+      "branch_distance_margin_rho": 0.9442000676735675,
+      "branch_entropy_expected": true,
+      "branch_entropy_rho": -0.9178688978436742,
+      "branch_nearest_distance_expected": true,
+      "branch_nearest_distance_rho": -0.9491217816604632,
+      "branch_probability_margin_expected": true,
+      "branch_probability_margin_rho": 0.9485065674121014,
+      "branch_within_standardized_distance_expected": true,
+      "branch_within_standardized_distance_rho": -0.9553354455689196,
+      "poincare_radius_rho": -0.7067273678058386,
+      "regime": "bells"
+    }
+  ]
+}

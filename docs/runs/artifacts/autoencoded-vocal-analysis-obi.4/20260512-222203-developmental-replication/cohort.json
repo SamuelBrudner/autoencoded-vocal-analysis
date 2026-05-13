@@ -1,0 +1,209 @@
+{
+  "bird_ids": [
+    "PK249",
+    "R426",
+    "R467",
+    "R404",
+    "R150",
+    "R493",
+    "R470",
+    "R203",
+    "R425",
+    "R229",
+    "R122"
+  ],
+  "birds": {
+    "PK249": {
+      "bird_id": "PK249",
+      "dph_max_all": 91.0,
+      "dph_min_all": 31.0,
+      "has_early_reference": true,
+      "has_late_reference": true,
+      "manifest_rows": 61,
+      "num_files": 97174,
+      "regimes": [
+        "bells"
+      ],
+      "splits": [
+        "train"
+      ],
+      "unique_dph_all": 61,
+      "unique_dph_in_range": 58
+    },
+    "R122": {
+      "bird_id": "R122",
+      "dph_max_all": 127.0,
+      "dph_min_all": 36.0,
+      "has_early_reference": true,
+      "has_late_reference": true,
+      "manifest_rows": 77,
+      "num_files": 90981,
+      "regimes": [
+        "bells"
+      ],
+      "splits": [
+        "train"
+      ],
+      "unique_dph_all": 77,
+      "unique_dph_in_range": 40
+    },
+    "R150": {
+      "bird_id": "R150",
+      "dph_max_all": 121.0,
+      "dph_min_all": 36.0,
+      "has_early_reference": true,
+      "has_late_reference": true,
+      "manifest_rows": 137,
+      "num_files": 161286,
+      "regimes": [
+        "samba"
+      ],
+      "splits": [
+        "train"
+      ],
+      "unique_dph_all": 70,
+      "unique_dph_in_range": 49
+    },
+    "R203": {
+      "bird_id": "R203",
+      "dph_max_all": 133.0,
+      "dph_min_all": 35.0,
+      "has_early_reference": true,
+      "has_late_reference": true,
+      "manifest_rows": 82,
+      "num_files": 109521,
+      "regimes": [
+        "isolates"
+      ],
+      "splits": [
+        "train"
+      ],
+      "unique_dph_all": 81,
+      "unique_dph_in_range": 39
+    },
+    "R229": {
+      "bird_id": "R229",
+      "dph_max_all": 140.0,
+      "dph_min_all": 34.0,
+      "has_early_reference": true,
+      "has_late_reference": true,
+      "manifest_rows": 96,
+      "num_files": 99039,
+      "regimes": [
+        "bells"
+      ],
+      "splits": [
+        "train"
+      ],
+      "unique_dph_all": 96,
+      "unique_dph_in_range": 53
+    },
+    "R404": {
+      "bird_id": "R404",
+      "dph_max_all": 120.0,
+      "dph_min_all": 38.0,
+      "has_early_reference": true,
+      "has_late_reference": true,
+      "manifest_rows": 77,
+      "num_files": 161782,
+      "regimes": [
+        "simple"
+      ],
+      "splits": [
+        "train"
+      ],
+      "unique_dph_all": 77,
+      "unique_dph_in_range": 50
+    },
+    "R425": {
+      "bird_id": "R425",
+      "dph_max_all": 133.0,
+      "dph_min_all": 36.0,
+      "has_early_reference": true,
+      "has_late_reference": true,
+      "manifest_rows": 96,
+      "num_files": 109027,
+      "regimes": [
+        "samba"
+      ],
+      "splits": [
+        "train"
+      ],
+      "unique_dph_all": 96,
+      "unique_dph_in_range": 53
+    },
+    "R426": {
+      "bird_id": "R426",
+      "dph_max_all": 130.0,
+      "dph_min_all": 40.0,
+      "has_early_reference": true,
+      "has_late_reference": true,
+      "manifest_rows": 91,
+      "num_files": 201293,
+      "regimes": [
+        "bells"
+      ],
+      "splits": [
+        "train"
+      ],
+      "unique_dph_all": 91,
+      "unique_dph_in_range": 51
+    },
+    "R467": {
+      "bird_id": "R467",
+      "dph_max_all": 130.0,
+      "dph_min_all": 37.0,
+      "has_early_reference": true,
+      "has_late_reference": true,
+      "manifest_rows": 93,
+      "num_files": 185641,
+      "regimes": [
+        "bells"
+      ],
+      "splits": [
+        "train"
+      ],
+      "unique_dph_all": 93,
+      "unique_dph_in_range": 53
+    },
+    "R470": {
+      "bird_id": "R470",
+      "dph_max_all": 130.0,
+      "dph_min_all": 37.0,
+      "has_early_reference": true,
+      "has_late_reference": true,
+      "manifest_rows": 94,
+      "num_files": 110631,
+      "regimes": [
+        "samba"
+      ],
+      "splits": [
+        "train"
+      ],
+      "unique_dph_all": 94,
+      "unique_dph_in_range": 54
+    },
+    "R493": {
+      "bird_id": "R493",
+      "dph_max_all": 126.0,
+      "dph_min_all": 35.0,
+      "has_early_reference": true,
+      "has_late_reference": true,
+      "manifest_rows": 91,
+      "num_files": 157266,
+      "regimes": [
+        "samba"
+      ],
+      "splits": [
+        "train"
+      ],
+      "unique_dph_all": 91,
+      "unique_dph_in_range": 56
+    }
+  },
+  "cohort": "top-longitudinal",
+  "dph_max": 90.0,
+  "dph_min": 33.0,
+  "early_dph_max": 45.0,
+  "late_dph_min": 80.0
+}
