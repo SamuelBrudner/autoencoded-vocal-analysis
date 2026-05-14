@@ -7,6 +7,7 @@ from pathlib import Path
 
 import numpy as np
 
+import ava.cloud.developmental_baseline_aws as aws_plan
 from ava.cloud.developmental_baseline_aws import (
 	build_s3_layout,
 	recover_pk249_latent_lineage,
@@ -159,3 +160,78 @@ def test_prepare_developmental_baseline_aws_cli_writes_payloads(tmp_path: Path) 
 	assert roi_smoke_env["AVA_MAX_DIRS"] == "2"
 	assert (out_dir / "upload_audio_dry_run_stdout.txt").exists()
 	assert report_path.exists()
+
+
+def test_readonly_aws_preflight_uses_job_definition_name_and_optional_prefix(monkeypatch) -> None:
+	calls: list[list[str]] = []
+
+	def fake_which(name: str) -> str:
+		assert name == "aws"
+		return "/usr/bin/aws"
+
+	def fake_run(cmd, capture_output: bool, text: bool):
+		calls.append(list(cmd))
+		assert capture_output is True
+		assert text is True
+		if cmd[1:4] == ["configure", "get", "region"]:
+			return subprocess.CompletedProcess(cmd, 0, stdout="us-east-1\n", stderr="")
+		if cmd[1:3] == ["sts", "get-caller-identity"]:
+			return subprocess.CompletedProcess(
+				cmd,
+				0,
+				stdout=json.dumps({"Account": "123456789012", "Arn": "arn:aws:iam::123456789012:user/test"}),
+				stderr="",
+			)
+		if cmd[1:3] == ["s3api", "head-bucket"]:
+			return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
+		if cmd[1:3] == ["s3", "ls"]:
+			return subprocess.CompletedProcess(cmd, 1, stdout="", stderr="")
+		if cmd[1:3] == ["batch", "describe-job-queues"]:
+			return subprocess.CompletedProcess(
+				cmd,
+				0,
+				stdout=json.dumps(
+					{"jobQueues": [{"jobQueueName": cmd[-1], "state": "ENABLED", "status": "VALID"}]}
+				),
+				stderr="",
+			)
+		if cmd[1:3] == ["batch", "describe-job-definitions"]:
+			assert "--job-definition-name" in cmd
+			assert "--job-definitions" not in cmd
+			name = cmd[cmd.index("--job-definition-name") + 1]
+			return subprocess.CompletedProcess(
+				cmd,
+				0,
+				stdout=json.dumps(
+					{
+						"jobDefinitions": [
+							{
+								"jobDefinitionName": name,
+								"revision": 1,
+								"status": "ACTIVE",
+								"type": "container",
+								"platformCapabilities": ["FARGATE"],
+							}
+						]
+					}
+				),
+				stderr="",
+			)
+		raise AssertionError(f"unexpected command: {cmd}")
+
+	monkeypatch.setattr(aws_plan.shutil, "which", fake_which)
+	monkeypatch.setattr(aws_plan.subprocess, "run", fake_run)
+
+	result = aws_plan.run_readonly_aws_preflight(
+		"s3://bucket/ava/developmental-baseline-ava-v1",
+		"roi-queue",
+		"roi-jobdef",
+		"latent-queue",
+		"latent-jobdef",
+	)
+
+	assert result["status"] == "ok"
+	prefix_check = next(check for check in result["checks"] if check["name"] == "s3_prefix")
+	assert prefix_check["required"] is False
+	assert prefix_check["returncode"] == 1
+	assert any("--job-definition-name" in call for call in calls)

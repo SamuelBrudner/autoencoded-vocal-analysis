@@ -481,18 +481,37 @@ def run_readonly_aws_preflight(
 	base = [aws]
 	if aws_profile:
 		base.extend(["--profile", str(aws_profile)])
+	bucket = _s3_bucket_from_uri(s3_root)
+	roi_definition_cmd = base + [
+		"batch",
+		"describe-job-definitions",
+		"--job-definition-name",
+		roi_job_definition,
+		"--status",
+		"ACTIVE",
+	]
+	latent_definition_cmd = base + [
+		"batch",
+		"describe-job-definitions",
+		"--job-definition-name",
+		latent_job_definition,
+		"--status",
+		"ACTIVE",
+	]
+	check_specs = [
+		("region", base + ["configure", "get", "region"], True),
+		("identity", base + ["sts", "get-caller-identity"], True),
+		("s3_bucket", base + ["s3api", "head-bucket", "--bucket", bucket], True),
+		("s3_prefix", base + ["s3", "ls", str(s3_root).rstrip("/") + "/"], False),
+		("roi_job_queue", base + ["batch", "describe-job-queues", "--job-queues", roi_job_queue], True),
+		("latent_job_queue", base + ["batch", "describe-job-queues", "--job-queues", latent_job_queue], True),
+		("roi_job_definition", roi_definition_cmd, True),
+		("latent_job_definition", latent_definition_cmd, True),
+	]
 	checks = []
-	for name, cmd in [
-		("region", base + ["configure", "get", "region"]),
-		("identity", base + ["sts", "get-caller-identity"]),
-		("s3_root", base + ["s3", "ls", str(s3_root).rstrip("/") + "/"]),
-		("roi_job_queue", base + ["batch", "describe-job-queues", "--job-queues", roi_job_queue]),
-		("latent_job_queue", base + ["batch", "describe-job-queues", "--job-queues", latent_job_queue]),
-		("roi_job_definition", base + ["batch", "describe-job-definitions", "--job-definitions", roi_job_definition]),
-		("latent_job_definition", base + ["batch", "describe-job-definitions", "--job-definitions", latent_job_definition]),
-	]:
-		checks.append(_readonly_check(name, cmd))
-	status = "ok" if all(check["returncode"] == 0 for check in checks) else "failed"
+	for name, cmd, required in check_specs:
+		checks.append(_readonly_check(name, cmd, required=required))
+	status = "ok" if all(check["returncode"] == 0 for check in checks if check["required"]) else "failed"
 	return {"status": status, "checks": checks}
 
 
@@ -545,18 +564,34 @@ def _run_capture(cmd: Sequence[str], cwd: Path) -> str:
 	return proc.stdout
 
 
-def _readonly_check(name: str, cmd: Sequence[str]) -> dict:
+def _readonly_check(name: str, cmd: Sequence[str], required: bool) -> dict:
 	proc = subprocess.run(list(cmd), capture_output=True, text=True)
 	stdout = (proc.stdout or "").strip()
 	stderr = (proc.stderr or "").strip()
-	if name == "identity" and proc.returncode == 0:
-		stdout = _redact_identity_stdout(stdout)
+	returncode = int(proc.returncode)
+	if proc.returncode == 0:
+		stdout, stderr, returncode = _summarize_preflight_stdout(name, stdout)
 	return {
 		"name": name,
-		"returncode": int(proc.returncode),
+		"required": bool(required),
+		"returncode": int(returncode),
 		"stdout": stdout[-2000:] if stdout else "",
 		"stderr": stderr[-2000:] if stderr else "",
 	}
+
+
+def _summarize_preflight_stdout(name: str, stdout: str) -> tuple[str, str, int]:
+	if name == "identity":
+		return _redact_identity_stdout(stdout), "", 0
+	if name == "s3_bucket":
+		return "bucket_exists", "", 0
+	if name == "s3_prefix":
+		return stdout or "prefix_exists", "", 0
+	if name in {"roi_job_queue", "latent_job_queue"}:
+		return _summarize_batch_queues(stdout)
+	if name in {"roi_job_definition", "latent_job_definition"}:
+		return _summarize_batch_job_definitions(stdout)
+	return stdout, "", 0
 
 
 def _redact_identity_stdout(stdout: str) -> str:
@@ -573,6 +608,57 @@ def _redact_identity_stdout(stdout: str) -> str:
 		},
 		indent=2,
 	)
+
+
+def _summarize_batch_queues(stdout: str) -> tuple[str, str, int]:
+	try:
+		payload = json.loads(stdout)
+	except json.JSONDecodeError:
+		return "[unparseable batch queue output]", "", 1
+	queues = payload.get("jobQueues") or []
+	summary = [
+		{
+			"jobQueueName": queue.get("jobQueueName"),
+			"state": queue.get("state"),
+			"status": queue.get("status"),
+		}
+		for queue in queues
+	]
+	if not summary:
+		return json.dumps(summary, indent=2), "No matching Batch job queue found.", 1
+	return json.dumps(summary, indent=2), "", 0
+
+
+def _summarize_batch_job_definitions(stdout: str) -> tuple[str, str, int]:
+	try:
+		payload = json.loads(stdout)
+	except json.JSONDecodeError:
+		return "[unparseable batch job definition output]", "", 1
+	defs = payload.get("jobDefinitions") or []
+	summary = [
+		{
+			"jobDefinitionName": item.get("jobDefinitionName"),
+			"revision": item.get("revision"),
+			"status": item.get("status"),
+			"type": item.get("type"),
+			"platformCapabilities": item.get("platformCapabilities"),
+		}
+		for item in defs
+	]
+	if not summary:
+		return json.dumps(summary, indent=2), "No active Batch job definition found.", 1
+	return json.dumps(summary, indent=2), "", 0
+
+
+def _s3_bucket_from_uri(uri: str) -> str:
+	prefix = "s3://"
+	if not str(uri).startswith(prefix):
+		raise ValueError("S3 URI must start with s3://")
+	remainder = str(uri)[len(prefix) :]
+	bucket = remainder.split("/", 1)[0]
+	if not bucket:
+		raise ValueError("S3 URI is missing bucket name.")
+	return bucket
 
 
 def _optional_scalar(payload: Any, key: str) -> Optional[float]:
