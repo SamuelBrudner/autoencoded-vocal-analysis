@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import shutil
@@ -95,6 +96,101 @@ def build_s3_layout(s3_root: str) -> dict:
 		"roi_summary_root": s3_join(s3_root, "summaries", "roi"),
 		"latent_summary_root": s3_join(s3_root, "summaries", "latents"),
 	}
+
+
+def build_input_staging_plan(
+	s3_root: str,
+	cohort_manifest_path: Path,
+	segment_config_path: Path,
+	ava_config_path: Path,
+	ava_checkpoint_path: Path,
+) -> dict:
+	layout = build_s3_layout(s3_root)
+	files = [
+		{
+			"role": "cohort_manifest",
+			"local_path": Path(cohort_manifest_path),
+			"s3_uri": layout["cohort_manifest"],
+		},
+		{
+			"role": "segment_config",
+			"local_path": Path(segment_config_path),
+			"s3_uri": layout["segment_config"],
+		},
+		{
+			"role": "ava_config",
+			"local_path": Path(ava_config_path),
+			"s3_uri": layout["ava_config"],
+		},
+		{
+			"role": "ava_checkpoint",
+			"local_path": Path(ava_checkpoint_path),
+			"s3_uri": layout["ava_checkpoint"],
+		},
+	]
+	planned_files = []
+	for item in files:
+		local_path = Path(item["local_path"])
+		if not local_path.exists():
+			raise FileNotFoundError(local_path.as_posix())
+		if not local_path.is_file():
+			raise ValueError(f"Expected file path for {item['role']}: {local_path.as_posix()}")
+		planned_files.append(
+			{
+				"role": item["role"],
+				"local_path": local_path.as_posix(),
+				"s3_uri": item["s3_uri"],
+				"size_bytes": int(local_path.stat().st_size),
+				"sha256": sha256_file(local_path),
+			}
+		)
+	return {
+		"created_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+		"s3_layout": layout,
+		"files": planned_files,
+		"safety": {
+			"uploads_to_s3": False,
+			"submits_aws_jobs": False,
+			"requires_execute_flag": True,
+		},
+	}
+
+
+def upload_input_staging_plan(plan: dict, aws_profile: Optional[str] = None) -> dict:
+	aws = shutil.which("aws")
+	if not aws:
+		raise RuntimeError("aws CLI is required but was not found on PATH.")
+	base = [aws]
+	if aws_profile:
+		base.extend(["--profile", str(aws_profile)])
+	results = []
+	for item in plan.get("files", []):
+		cmd = base + ["s3", "cp", str(item["local_path"]), str(item["s3_uri"]), "--only-show-errors"]
+		proc = subprocess.run(cmd, capture_output=True, text=True)
+		results.append(
+			{
+				"role": item.get("role"),
+				"s3_uri": item.get("s3_uri"),
+				"returncode": int(proc.returncode),
+				"stdout": (proc.stdout or "").strip()[-2000:],
+				"stderr": (proc.stderr or "").strip()[-2000:],
+			}
+		)
+	status = "ok" if all(result["returncode"] == 0 for result in results) else "failed"
+	return {
+		"created_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+		"status": status,
+		"uploads_to_s3": True,
+		"results": results,
+	}
+
+
+def sha256_file(path: Path, chunk_size: int = 1024 * 1024) -> str:
+	digest = hashlib.sha256()
+	with open(path, "rb") as handle:
+		for chunk in iter(lambda: handle.read(chunk_size), b""):
+			digest.update(chunk)
+	return digest.hexdigest()
 
 
 def recover_pk249_latent_lineage(latent_root: Path = DEFAULT_PK249_LATENT_ROOT) -> dict:

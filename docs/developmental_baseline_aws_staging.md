@@ -43,9 +43,27 @@ This writes:
 
 After reviewing the dry-run artifacts and AWS preflight:
 
-1. Upload `developmental_cohort_manifest.json`, `segment_config.yaml`, the
-   recovered AVA `config.yaml`, and `checkpoint_050.tar` to the `inputs/` S3
-   prefix.
+1. Write the input staging manifest and review file sizes/checksums:
+
+   ```bash
+   python scripts/stage_developmental_baseline_inputs.py \
+     --s3-root "$AVA_S3_ROOT" \
+     --ava-config-source "$AVA_CONFIG_PATH" \
+     --ava-checkpoint-source "$AVA_CHECKPOINT_PATH"
+   ```
+
+   Then, after explicit approval, upload `developmental_cohort_manifest.json`,
+   `segment_config.yaml`, the recovered AVA `config.yaml`, and
+   `checkpoint_050.tar` to the `inputs/` S3 prefix:
+
+   ```bash
+   python scripts/stage_developmental_baseline_inputs.py \
+     --s3-root "$AVA_S3_ROOT" \
+     --ava-config-source "$AVA_CONFIG_PATH" \
+     --ava-checkpoint-source "$AVA_CHECKPOINT_PATH" \
+     --execute
+   ```
+
 2. Sync audio with `scripts/cloud/aws/upload_manifest_audio_to_s3.py`.
 3. Submit the ROI smoke payload first; inspect shard summary output.
 4. Submit the full ROI array payload.

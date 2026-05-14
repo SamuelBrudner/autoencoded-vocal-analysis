@@ -10,6 +10,7 @@ import numpy as np
 import ava.cloud.developmental_baseline_aws as aws_plan
 from ava.cloud.developmental_baseline_aws import (
 	build_s3_layout,
+	build_input_staging_plan,
 	recover_pk249_latent_lineage,
 	summarize_cohort_manifest,
 )
@@ -80,6 +81,36 @@ def test_build_s3_layout_uses_expected_developmental_prefixes() -> None:
 	)
 	assert layout["roi_root"].endswith("/roi")
 	assert layout["latent_root"].endswith("/latents/ava_latent")
+
+
+def test_build_input_staging_plan_hashes_expected_files(tmp_path: Path) -> None:
+	manifest = tmp_path / "developmental_cohort_manifest.json"
+	segment = tmp_path / "segment_config.yaml"
+	config = tmp_path / "config.yaml"
+	checkpoint = tmp_path / "checkpoint_050.tar"
+	manifest.write_text(json.dumps(_manifest()), encoding="utf-8")
+	segment.write_text("segment:\n  fs: 44100\n", encoding="utf-8")
+	config.write_text("model:\n  z_dim: 32\n", encoding="utf-8")
+	checkpoint.write_bytes(b"checkpoint")
+
+	plan = build_input_staging_plan(
+		"s3://bucket/ava/developmental-baseline-ava-v1",
+		cohort_manifest_path=manifest,
+		segment_config_path=segment,
+		ava_config_path=config,
+		ava_checkpoint_path=checkpoint,
+	)
+	by_role = {item["role"]: item for item in plan["files"]}
+
+	assert set(by_role) == {"cohort_manifest", "segment_config", "ava_config", "ava_checkpoint"}
+	assert by_role["cohort_manifest"]["s3_uri"].endswith("/inputs/developmental_cohort_manifest.json")
+	assert by_role["ava_config"]["s3_uri"].endswith("/inputs/config.yaml")
+	assert by_role["ava_checkpoint"]["size_bytes"] == len(b"checkpoint")
+	assert by_role["ava_checkpoint"]["sha256"] == (
+		"47320987f9a49d5b00119b960f247a956773f57543982b8bfcb6da5bb3afd9ef"
+	)
+	assert plan["safety"]["uploads_to_s3"] is False
+	assert plan["safety"]["submits_aws_jobs"] is False
 
 
 def test_recover_pk249_latent_lineage_from_metadata_and_npz(tmp_path: Path) -> None:
@@ -160,6 +191,44 @@ def test_prepare_developmental_baseline_aws_cli_writes_payloads(tmp_path: Path) 
 	assert roi_smoke_env["AVA_MAX_DIRS"] == "2"
 	assert (out_dir / "upload_audio_dry_run_stdout.txt").exists()
 	assert report_path.exists()
+
+
+def test_stage_developmental_baseline_inputs_cli_dry_run(tmp_path: Path) -> None:
+	repo_root = Path(__file__).resolve().parents[2]
+	manifest_path = tmp_path / "cohort.json"
+	segment_config = tmp_path / "segment.yaml"
+	ava_config = tmp_path / "config.yaml"
+	checkpoint = tmp_path / "checkpoint_050.tar"
+	out_path = tmp_path / "input_staging_manifest.json"
+	manifest_path.write_text(json.dumps(_manifest()), encoding="utf-8")
+	segment_config.write_text("segment:\n  fs: 44100\n", encoding="utf-8")
+	ava_config.write_text("model:\n  z_dim: 32\n", encoding="utf-8")
+	checkpoint.write_bytes(b"checkpoint")
+
+	cmd = [
+		sys.executable,
+		(repo_root / "scripts" / "stage_developmental_baseline_inputs.py").as_posix(),
+		"--cohort-manifest",
+		manifest_path.as_posix(),
+		"--segment-config",
+		segment_config.as_posix(),
+		"--ava-config-source",
+		ava_config.as_posix(),
+		"--ava-checkpoint-source",
+		checkpoint.as_posix(),
+		"--s3-root",
+		"s3://bucket/ava/developmental-baseline-ava-v1",
+		"--out",
+		out_path.as_posix(),
+	]
+	result = subprocess.run(cmd, cwd=repo_root, capture_output=True, text=True)
+	if result.returncode != 0:
+		raise AssertionError(f"CLI failed\nstdout:\n{result.stdout}\nstderr:\n{result.stderr}")
+
+	plan = json.loads(out_path.read_text(encoding="utf-8"))
+	assert plan["execution"]["status"] == "dry_run"
+	assert plan["execution"]["uploads_to_s3"] is False
+	assert len(plan["files"]) == 4
 
 
 def test_readonly_aws_preflight_uses_job_definition_name_and_optional_prefix(monkeypatch) -> None:
