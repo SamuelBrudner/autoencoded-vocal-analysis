@@ -33,6 +33,8 @@ def test_submit_payload_omits_command_override_by_default() -> None:
         "s3://bucket/prefix/roi",
         "--split",
         "train",
+        "--max-dirs",
+        "2",
         "--skip-existing",
         "--download-jobs",
         "1",
@@ -46,6 +48,8 @@ def test_submit_payload_omits_command_override_by_default() -> None:
     overrides = payload["containerOverrides"]
     assert "environment" in overrides
     assert "command" not in overrides
+    env_map = {item["name"]: item["value"] for item in overrides["environment"]}
+    assert env_map["AVA_MAX_DIRS"] == "2"
 
 
 def test_submit_payload_includes_command_override_when_requested() -> None:
@@ -74,4 +78,3 @@ def test_submit_payload_includes_command_override_when_requested() -> None:
     payload = json.loads(out)
     overrides = payload["containerOverrides"]
     assert overrides["command"] == ["python", "scripts/cloud/aws/run_birdsong_roi_batch_shard.py"]
-

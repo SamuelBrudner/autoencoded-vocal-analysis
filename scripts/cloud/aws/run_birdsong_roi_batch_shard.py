@@ -162,7 +162,7 @@ def main() -> None:
         default=_env_int("AWS_BATCH_JOB_ARRAY_INDEX", 0),
         help="Shard index. Defaults to AWS_BATCH_JOB_ARRAY_INDEX (or 0).",
     )
-    parser.add_argument("--max-dirs", type=int, default=None)
+    parser.add_argument("--max-dirs", type=int, default=_env_int("AVA_MAX_DIRS"))
     parser.add_argument(
         "--roi-output-format",
         choices=["parquet"],

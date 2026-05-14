@@ -31,9 +31,6 @@ from ava.cloud.manifest_sharding import (
     iter_manifest_entry_pairs,
     select_shard,
 )
-from ava.data.manifest_paths import resolve_manifest_entry_paths
-
-
 def _load_manifest(path: Path) -> dict:
     with open(path, "r", encoding="utf-8") as handle:
         return json.load(handle)
@@ -55,6 +52,16 @@ def _require_aws_cli() -> str:
             "Install awscli (or AWS CLI v2) and configure credentials."
         )
     return aws
+
+
+def _resolve_audio_dir(entry: dict, audio_root: Path | None) -> str:
+    rel = entry.get("audio_dir_rel")
+    if audio_root is not None and rel:
+        return (Path(audio_root) / str(rel)).as_posix()
+    audio_dir = entry.get("audio_dir")
+    if audio_dir:
+        return str(audio_dir)
+    raise ValueError("Manifest entry missing audio_dir/audio_dir_rel (or pass --audio-root).")
 
 
 def _run(cmd: list[str]) -> tuple[int, str]:
@@ -134,9 +141,7 @@ def main() -> None:
 
     tasks: list[tuple[str, str]] = []
     for entry in entries:
-        audio_dir, _ = resolve_manifest_entry_paths(
-            entry, audio_root=args.audio_root, roi_root=None
-        )
+        audio_dir = _resolve_audio_dir(entry, audio_root=args.audio_root)
         rel = entry.get("audio_dir_rel")
         if rel is None:
             raise ValueError("Manifest entry missing audio_dir_rel (required for S3 layout).")

@@ -56,6 +56,7 @@ def main() -> None:
     parser.add_argument("--s3-audio-root", type=str, required=True)
     parser.add_argument("--s3-roi-root", type=str, required=True)
     parser.add_argument("--split", choices=["train", "test", "all"], default="all")
+    parser.add_argument("--max-dirs", type=int, default=None)
     parser.add_argument("--roi-parquet-name", type=str, default="roi.parquet")
     parser.add_argument("--download-jobs", type=int, default=8)
     parser.add_argument("--jobs", type=int, default=None, help="Parallelism inside ROI script (optional).")
@@ -88,6 +89,8 @@ def main() -> None:
 
     if args.array_size <= 0:
         raise ValueError("--array-size must be positive.")
+    if args.max_dirs is not None and int(args.max_dirs) <= 0:
+        raise ValueError("--max-dirs must be positive.")
     if args.download_jobs <= 0:
         raise ValueError("--download-jobs must be positive.")
 
@@ -98,6 +101,7 @@ def main() -> None:
         _payload_env("AVA_S3_ROI_ROOT", args.s3_roi_root),
         _payload_env("AVA_SPLIT", args.split),
         _payload_env("AVA_NUM_SHARDS", int(args.array_size)),
+        _payload_env("AVA_MAX_DIRS", args.max_dirs),
         _payload_env("AVA_ROI_OUTPUT_FORMAT", "parquet"),
         _payload_env("AVA_ROI_PARQUET_NAME", args.roi_parquet_name),
         _payload_env("AVA_DOWNLOAD_JOBS", int(args.download_jobs)),
