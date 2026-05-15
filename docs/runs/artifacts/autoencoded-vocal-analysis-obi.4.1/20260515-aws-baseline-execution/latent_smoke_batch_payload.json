@@ -1,0 +1,108 @@
+{
+  "jobName": "ava-developmental-baseline-latent-smoke",
+  "jobQueue": "ava-roi-queue",
+  "jobDefinition": "ava-latent-jobdef",
+  "arrayProperties": {
+    "size": 1
+  },
+  "containerOverrides": {
+    "environment": [
+      {
+        "name": "AVA_MANIFEST_S3_URI",
+        "value": "s3://ava-birdsong-us-east-1-a1859d31/ava/developmental-baseline-ava-v1/inputs/developmental_cohort_manifest.json"
+      },
+      {
+        "name": "AVA_CONFIG_S3_URI",
+        "value": "s3://ava-birdsong-us-east-1-a1859d31/ava/developmental-baseline-ava-v1/inputs/config.yaml"
+      },
+      {
+        "name": "AVA_CHECKPOINT_S3_URI",
+        "value": "s3://ava-birdsong-us-east-1-a1859d31/ava/developmental-baseline-ava-v1/inputs/checkpoint_050.tar"
+      },
+      {
+        "name": "AVA_S3_AUDIO_ROOT",
+        "value": "s3://ava-birdsong-us-east-1-a1859d31/ava/developmental-baseline-ava-v1/audio"
+      },
+      {
+        "name": "AVA_S3_ROI_ROOT",
+        "value": "s3://ava-birdsong-us-east-1-a1859d31/ava/developmental-baseline-ava-v1/roi"
+      },
+      {
+        "name": "AVA_S3_LATENT_ROOT",
+        "value": "s3://ava-birdsong-us-east-1-a1859d31/ava/developmental-baseline-ava-v1/latents/ava_latent"
+      },
+      {
+        "name": "AVA_SPLIT",
+        "value": "all"
+      },
+      {
+        "name": "AVA_NUM_SHARDS",
+        "value": "1"
+      },
+      {
+        "name": "AVA_MAX_DIRS",
+        "value": "2"
+      },
+      {
+        "name": "AVA_MAX_FILES_PER_DIR",
+        "value": "2"
+      },
+      {
+        "name": "AVA_DOWNLOAD_JOBS",
+        "value": "8"
+      },
+      {
+        "name": "AVA_BATCH_SIZE",
+        "value": "64"
+      },
+      {
+        "name": "AVA_DEVICE",
+        "value": "cpu"
+      },
+      {
+        "name": "AVA_ROI_FORMAT",
+        "value": "parquet"
+      },
+      {
+        "name": "AVA_ROI_PARQUET_NAME",
+        "value": "roi.parquet"
+      },
+      {
+        "name": "AVA_NO_ROIS",
+        "value": "0"
+      },
+      {
+        "name": "AVA_HOP_LENGTH_SEC",
+        "value": "0.005804988662131519"
+      },
+      {
+        "name": "AVA_START_TIME_SEC",
+        "value": "0.0"
+      },
+      {
+        "name": "AVA_EXPORT_ENERGY",
+        "value": "1"
+      },
+      {
+        "name": "AVA_AUDIO_SHA256",
+        "value": "0"
+      },
+      {
+        "name": "AVA_SKIP_EXISTING",
+        "value": "1"
+      },
+      {
+        "name": "AVA_CONTINUE_ON_ERROR",
+        "value": "0"
+      },
+      {
+        "name": "AVA_REPORT_EVERY",
+        "value": "25"
+      },
+      {
+        "name": "AVA_S3_SUMMARY_ROOT",
+        "value": "s3://ava-birdsong-us-east-1-a1859d31/ava/developmental-baseline-ava-v1/summaries/latents"
+      }
+    ]
+  }
+}

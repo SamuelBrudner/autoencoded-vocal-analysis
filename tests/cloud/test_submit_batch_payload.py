@@ -72,9 +72,26 @@ def test_submit_payload_includes_command_override_when_requested() -> None:
         "s3://bucket/prefix/audio",
         "--s3-roi-root",
         "s3://bucket/prefix/roi",
+        "--split",
+        "all",
+        "--max-dirs",
+        "2",
+        "--skip-existing",
+        "--download-jobs",
+        "1",
+        "--jobs",
+        "1",
+        "--s3-summary-root",
+        "s3://bucket/prefix/summaries",
         "--override-command",
     ]
     out = subprocess.check_output(cmd, text=True)
     payload = json.loads(out)
     overrides = payload["containerOverrides"]
-    assert overrides["command"] == ["python", "scripts/cloud/aws/run_birdsong_roi_batch_shard.py"]
+    command = overrides["command"]
+    assert command[0] == "--manifest-s3-uri"
+    assert "scripts/cloud/aws/run_birdsong_roi_batch_shard.py" not in command
+    assert command[command.index("--max-dirs") + 1] == "2"
+    assert command[command.index("--num-shards") + 1] == "1"
+    assert command[command.index("--jobs") + 1] == "1"
+    assert "--skip-existing" in command

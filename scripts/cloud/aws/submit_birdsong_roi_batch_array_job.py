@@ -64,7 +64,10 @@ def main() -> None:
     parser.add_argument(
         "--override-command",
         action="store_true",
-        help="Override the container command to run the shard runner explicitly.",
+        help=(
+            "Override the container command with explicit shard-runner arguments. "
+            "The ROI image ENTRYPOINT already invokes the runner."
+        ),
     )
     parser.add_argument(
         "--s3-summary-root",
@@ -113,10 +116,35 @@ def main() -> None:
 
     container_overrides: dict = {"environment": env_items}
     if args.override_command:
-        container_overrides["command"] = [
-            "python",
-            "scripts/cloud/aws/run_birdsong_roi_batch_shard.py",
+        command = [
+            "--manifest-s3-uri",
+            str(args.manifest_s3_uri),
+            "--segment-config-s3-uri",
+            str(args.segment_config_s3_uri),
+            "--s3-audio-root",
+            str(args.s3_audio_root),
+            "--s3-roi-root",
+            str(args.s3_roi_root),
+            "--split",
+            str(args.split),
+            "--num-shards",
+            str(int(args.array_size)),
+            "--roi-output-format",
+            "parquet",
+            "--roi-parquet-name",
+            str(args.roi_parquet_name),
+            "--download-jobs",
+            str(int(args.download_jobs)),
         ]
+        if args.max_dirs is not None:
+            command.extend(["--max-dirs", str(int(args.max_dirs))])
+        if args.skip_existing:
+            command.append("--skip-existing")
+        if args.jobs is not None:
+            command.extend(["--jobs", str(int(args.jobs))])
+        if args.s3_summary_root is not None:
+            command.extend(["--s3-summary-root", str(args.s3_summary_root)])
+        container_overrides["command"] = command
 
     payload = {
         "jobName": str(args.job_name),

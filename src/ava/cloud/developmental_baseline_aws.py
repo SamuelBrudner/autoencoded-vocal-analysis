@@ -272,6 +272,7 @@ def build_roi_submit_command(
 	split: str = "all",
 	emit_json: Optional[Path] = None,
 	max_dirs: Optional[int] = None,
+	override_command: bool = False,
 ) -> list[str]:
 	cmd = [
 		sys.executable,
@@ -304,6 +305,8 @@ def build_roi_submit_command(
 	]
 	if max_dirs is not None:
 		cmd.extend(["--max-dirs", str(int(max_dirs))])
+	if override_command:
+		cmd.append("--override-command")
 	if emit_json is not None:
 		cmd.extend(["--emit-json", emit_json.as_posix()])
 	return cmd
@@ -477,20 +480,21 @@ def run_preparation(
 		job_name="ava-developmental-baseline-roi-smoke",
 		job_queue=roi_job_queue,
 		job_definition=roi_job_definition,
-		array_size=1,
+		array_size=2,
 		layout=layout,
 		split=split,
 		download_jobs=roi_download_jobs,
 		jobs=roi_jobs,
 		emit_json=paths["roi_smoke_batch_payload"],
 		max_dirs=smoke_max_dirs,
+		override_command=True,
 	)
 	latent_smoke_cmd = build_latent_submit_command(
 		repo_root=repo_root,
 		job_name="ava-developmental-baseline-latent-smoke",
 		job_queue=latent_job_queue,
 		job_definition=latent_job_definition,
-		array_size=1,
+		array_size=2,
 		layout=layout,
 		split=split,
 		batch_size=latent_batch_size,

@@ -1,0 +1,86 @@
+{
+  "created_utc": "2026-05-15T15:00:13Z",
+  "execution": {
+    "created_utc": "2026-05-15T15:00:26Z",
+    "results": [
+      {
+        "returncode": 0,
+        "role": "cohort_manifest",
+        "s3_uri": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1/inputs/developmental_cohort_manifest.json",
+        "stderr": "",
+        "stdout": ""
+      },
+      {
+        "returncode": 0,
+        "role": "segment_config",
+        "s3_uri": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1/inputs/segment_config.yaml",
+        "stderr": "",
+        "stdout": ""
+      },
+      {
+        "returncode": 0,
+        "role": "ava_config",
+        "s3_uri": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1/inputs/config.yaml",
+        "stderr": "",
+        "stdout": ""
+      },
+      {
+        "returncode": 0,
+        "role": "ava_checkpoint",
+        "s3_uri": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1/inputs/checkpoint_050.tar",
+        "stderr": "",
+        "stdout": ""
+      }
+    ],
+    "status": "ok",
+    "uploads_to_s3": true
+  },
+  "files": [
+    {
+      "local_path": "/Users/samuelbrudner/.codex/worktrees/cc22/autoencoded-vocal-analysis/docs/runs/artifacts/autoencoded-vocal-analysis-obi.4.1/20260513-011500-developmental-input-inventory/developmental_cohort_manifest.json",
+      "role": "cohort_manifest",
+      "s3_uri": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1/inputs/developmental_cohort_manifest.json",
+      "sha256": "5404851852d60fa42a04c78bca24405b5eaaf9faaa27bb30adde222451a81be7",
+      "size_bytes": 110097
+    },
+    {
+      "local_path": "/Users/samuelbrudner/.codex/worktrees/cc22/autoencoded-vocal-analysis/examples/configs/birdsong_roi_medium_pilot.yaml",
+      "role": "segment_config",
+      "s3_uri": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1/inputs/segment_config.yaml",
+      "sha256": "e09c0053ca46cd21556bd81d4cf298d677343e0d3d06534ddef9a13aef9de689",
+      "size_bytes": 288
+    },
+    {
+      "local_path": "/Users/samuelbrudner/Documents/GitHub/juvenile_learning_tda/artifacts/pk249_export_smoke_inputs/fixed_window_pk249_33_90.yaml",
+      "role": "ava_config",
+      "s3_uri": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1/inputs/config.yaml",
+      "sha256": "c006a987d9b3e091709d92845e3a7896ccae85c1f4d115b660ba2ecaa3997dbb",
+      "size_bytes": 1443
+    },
+    {
+      "local_path": "/Users/samuelbrudner/Documents/GitHub/juvenile_learning_tda/artifacts/pk249_export_smoke_inputs/checkpoint_050.tar",
+      "role": "ava_checkpoint",
+      "s3_uri": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1/inputs/checkpoint_050.tar",
+      "sha256": "c277416aae5d1d6eb85e63c9356553b317bf9d395f3bc4813d2fe1db3c556c23",
+      "size_bytes": 108379994
+    }
+  ],
+  "s3_layout": {
+    "audio_root": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1/audio",
+    "ava_checkpoint": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1/inputs/checkpoint_050.tar",
+    "ava_config": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1/inputs/config.yaml",
+    "cohort_manifest": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1/inputs/developmental_cohort_manifest.json",
+    "inputs_root": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1/inputs",
+    "latent_root": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1/latents/ava_latent",
+    "latent_summary_root": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1/summaries/latents",
+    "roi_root": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1/roi",
+    "roi_summary_root": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1/summaries/roi",
+    "root": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1",
+    "segment_config": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1/inputs/segment_config.yaml"
+  },
+  "safety": {
+    "requires_execute_flag": true,
+    "submits_aws_jobs": false,
+    "uploads_to_s3": true
+  }
+}

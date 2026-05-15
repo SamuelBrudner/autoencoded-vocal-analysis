@@ -11,11 +11,15 @@ jobs.
 - Default segment config: `examples/configs/birdsong_roi_medium_pilot.yaml`
 - PK249 lineage source: `/Volumes/samsung_ssd/data/ava_hyperbolic_pk249_inputs/latent_sequences`
 - Required runtime values:
-  - `AVA_S3_ROOT=s3://<bucket>/ava/developmental-baseline-ava-v1`
+  - `AVA_S3_ROOT=s3://<bucket>/autoencoded-vocal-analysis/developmental-baseline-ava-v1`
   - `AVA_ROI_JOB_QUEUE`
   - `AVA_ROI_JOB_DEFINITION`
   - `AVA_LATENT_JOB_QUEUE`
   - `AVA_LATENT_JOB_DEFINITION`
+
+The current ROI Batch task role is scoped to existing project prefixes. Use an
+authorized prefix such as `autoencoded-vocal-analysis/...`, or update the task
+role policy before using a new top-level prefix.
 
 ## Prepare Dry-Run Artifacts
 
@@ -65,7 +69,9 @@ After reviewing the dry-run artifacts and AWS preflight:
    ```
 
 2. Sync audio with `scripts/cloud/aws/upload_manifest_audio_to_s3.py`.
-3. Submit the ROI smoke payload first; inspect shard summary output.
+3. Submit the ROI smoke payload first; inspect shard summary output. Smoke
+   payloads use a two-child Batch array because AWS Batch requires array size
+   greater than one.
 4. Submit the full ROI array payload.
 5. Submit the latent smoke payload with `--export-energy` and
    `hop_length_sec=0.005804988662131519`; inspect exported schema.

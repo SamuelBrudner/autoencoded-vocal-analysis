@@ -1,0 +1,61 @@
+{
+  "checks": [
+    {
+      "name": "region",
+      "required": true,
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "us-east-1"
+    },
+    {
+      "name": "identity",
+      "required": true,
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\n  \"UserId\": \"[redacted]\",\n  \"Account\": \"[redacted]\",\n  \"Arn\": \"[redacted]\",\n  \"identity_available\": true\n}"
+    },
+    {
+      "name": "s3_bucket",
+      "required": true,
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "bucket_exists"
+    },
+    {
+      "name": "s3_prefix",
+      "required": false,
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "PRE audio/\n                           PRE inputs/"
+    },
+    {
+      "name": "roi_job_queue",
+      "required": true,
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "[\n  {\n    \"jobQueueName\": \"ava-roi-queue\",\n    \"state\": \"ENABLED\",\n    \"status\": \"VALID\"\n  }\n]"
+    },
+    {
+      "name": "latent_job_queue",
+      "required": true,
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "[\n  {\n    \"jobQueueName\": \"ava-roi-queue\",\n    \"state\": \"ENABLED\",\n    \"status\": \"VALID\"\n  }\n]"
+    },
+    {
+      "name": "roi_job_definition",
+      "required": true,
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "[\n  {\n    \"jobDefinitionName\": \"ava-roi-jobdef\",\n    \"revision\": 2,\n    \"status\": \"ACTIVE\",\n    \"type\": \"container\",\n    \"platformCapabilities\": [\n      \"FARGATE\"\n    ]\n  },\n  {\n    \"jobDefinitionName\": \"ava-roi-jobdef\",\n    \"revision\": 1,\n    \"status\": \"ACTIVE\",\n    \"type\": \"container\",\n    \"platformCapabilities\": [\n      \"FARGATE\"\n    ]\n  }\n]"
+    },
+    {
+      "name": "latent_job_definition",
+      "required": true,
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "[\n  {\n    \"jobDefinitionName\": \"ava-latent-jobdef\",\n    \"revision\": 8,\n    \"status\": \"ACTIVE\",\n    \"type\": \"container\",\n    \"platformCapabilities\": [\n      \"FARGATE\"\n    ]\n  },\n  {\n    \"jobDefinitionName\": \"ava-latent-jobdef\",\n    \"revision\": 7,\n    \"status\": \"ACTIVE\",\n    \"type\": \"container\",\n    \"platformCapabilities\": [\n      \"FARGATE\"\n    ]\n  },\n  {\n    \"jobDefinitionName\": \"ava-latent-jobdef\",\n    \"revision\": 6,\n    \"status\": \"ACTIVE\",\n    \"type\": \"container\",\n    \"platformCapabilities\": [\n      \"FARGATE\"\n    ]\n  },\n  {\n    \"jobDefinitionName\": \"ava-latent-jobdef\",\n    \"revision\": 5,\n    \"status\": \"ACTIVE\",\n    \"type\": \"container\",\n    \"platformCapabilities\": [\n      \"FARGATE\"\n    ]\n  },\n  {\n    \"jobDefinitionName\": \"ava-latent-jobdef\",\n    \"revision\": 4,\n    \"status\": \"ACTIVE\",\n    \"type\": \"container\",\n    \"platformCapabilities\": [\n      \"FARGATE\"\n    ]\n  },\n  {\n    \"jobDefinitionName\": \"ava-latent-jobdef\",\n    \"revision\": 3,\n    \"status\": \"ACTIVE\",\n    \"type\": \"container\",\n    \"platformCapabilities\": [\n      \"FARGATE\"\n    ]\n  },\n  {\n    \"jobDefinitionName\": \"ava-latent-jobdef\",\n    \"revision\": 2,\n    \"status\": \"ACTIVE\",\n    \"type\": \"container\",\n    \"platformCapabilities\": [\n      \"FARGATE\"\n    ]\n  },\n  {\n    \"jobDefinitionName\": \"ava-latent-jobdef\",\n    \"revision\": 1,\n    \"status\": \"ACTIVE\",\n    \"type\": \"container\",\n    \"platformCapabilities\": [\n      \"FARGATE\"\n    ]\n  }\n]"
+    }
+  ],
+  "status": "ok"
+}

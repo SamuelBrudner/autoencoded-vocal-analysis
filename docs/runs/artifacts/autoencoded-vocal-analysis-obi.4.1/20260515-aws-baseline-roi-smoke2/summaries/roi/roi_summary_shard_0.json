@@ -1,0 +1,18 @@
+{
+  "created_utc": "2026-05-15T15:19:09Z",
+  "manifest_path": "/tmp/ava_roi_workdir/inputs/manifest_subset.json",
+  "segment_config": "/tmp/ava_roi_workdir/inputs/segment_config.yaml",
+  "split": "all",
+  "audio_root": "/tmp/ava_roi_workdir/audio",
+  "roi_root": "/tmp/ava_roi_workdir/roi",
+  "num_shards": 1,
+  "shard_index": 0,
+  "planned_total": 1,
+  "skipped_existing": 0,
+  "total": 1,
+  "ok": 1,
+  "failed": 0,
+  "elapsed_sec": 4.226802110671997,
+  "dirs_per_sec": 0.23658547852882927,
+  "errors": []
+}

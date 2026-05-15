@@ -172,6 +172,9 @@ def test_prepare_developmental_baseline_aws_cli_writes_payloads(tmp_path: Path) 
 	roi_payload = json.loads((out_dir / "roi_batch_payload.json").read_text(encoding="utf-8"))
 	latent_payload = json.loads((out_dir / "latent_batch_payload.json").read_text(encoding="utf-8"))
 	roi_smoke = json.loads((out_dir / "roi_smoke_batch_payload.json").read_text(encoding="utf-8"))
+	latent_smoke = json.loads(
+		(out_dir / "latent_smoke_batch_payload.json").read_text(encoding="utf-8")
+	)
 
 	roi_env = {item["name"]: item["value"] for item in roi_payload["containerOverrides"]["environment"]}
 	latent_env = {
@@ -188,7 +191,12 @@ def test_prepare_developmental_baseline_aws_cli_writes_payloads(tmp_path: Path) 
 	assert roi_env["AVA_S3_ROI_ROOT"].endswith("/roi")
 	assert latent_env["AVA_EXPORT_ENERGY"] == "1"
 	assert latent_env["AVA_HOP_LENGTH_SEC"] == "0.005804988662131519"
+	assert roi_smoke["arrayProperties"]["size"] == 2
+	assert latent_smoke["arrayProperties"]["size"] == 2
 	assert roi_smoke_env["AVA_MAX_DIRS"] == "2"
+	assert roi_smoke["containerOverrides"]["command"][
+		roi_smoke["containerOverrides"]["command"].index("--max-dirs") + 1
+	] == "2"
 	assert (out_dir / "upload_audio_dry_run_stdout.txt").exists()
 	assert report_path.exists()
 

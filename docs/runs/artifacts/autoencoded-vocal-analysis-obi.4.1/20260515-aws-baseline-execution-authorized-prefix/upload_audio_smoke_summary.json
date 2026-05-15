@@ -1,0 +1,15 @@
+{
+  "created_utc": "2026-05-15T15:00:41Z",
+  "manifest_path": "docs/runs/artifacts/autoencoded-vocal-analysis-obi.4.1/20260513-011500-developmental-input-inventory/developmental_cohort_manifest.json",
+  "split": "all",
+  "audio_root": "/Volumes/samsung_ssd/data/birdsong",
+  "s3_audio_root": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1/audio",
+  "jobs": 2,
+  "num_shards": 1,
+  "shard_index": 0,
+  "tasks": 2,
+  "failures": 0,
+  "elapsed_sec": 14.828697919845581,
+  "tasks_per_sec": 0.1348736086479552,
+  "errors": []
+}

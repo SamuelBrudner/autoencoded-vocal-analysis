@@ -1,0 +1,32 @@
+[
+    {
+        "jobId": "9787f48a-6b12-440d-b872-2912caa1aa49:1",
+        "status": "SUCCEEDED",
+        "statusReason": "Essential container in task exited",
+        "startedAt": 1778858342530,
+        "stoppedAt": 1778858391097,
+        "exitCode": 0,
+        "reason": null,
+        "logStreamName": "ava-roi-jobdef/default/fa6f77a4492c4d50a013ac1b6533f824"
+    },
+    {
+        "jobId": "9787f48a-6b12-440d-b872-2912caa1aa49:0",
+        "status": "SUCCEEDED",
+        "statusReason": "Essential container in task exited",
+        "startedAt": 1778858339090,
+        "stoppedAt": 1778858375672,
+        "exitCode": 0,
+        "reason": null,
+        "logStreamName": "ava-roi-jobdef/default/d5cdd5eedcfb405fae0a6f105b4da0d8"
+    },
+    {
+        "jobId": "9787f48a-6b12-440d-b872-2912caa1aa49",
+        "status": "SUCCEEDED",
+        "statusReason": null,
+        "startedAt": null,
+        "stoppedAt": null,
+        "exitCode": null,
+        "reason": null,
+        "logStreamName": null
+    }
+]

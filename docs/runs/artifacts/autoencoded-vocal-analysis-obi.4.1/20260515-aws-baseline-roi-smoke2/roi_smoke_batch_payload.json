@@ -1,0 +1,91 @@
+{
+  "jobName": "ava-developmental-baseline-roi-smoke",
+  "jobQueue": "ava-roi-queue",
+  "jobDefinition": "ava-roi-jobdef",
+  "arrayProperties": {
+    "size": 2
+  },
+  "containerOverrides": {
+    "environment": [
+      {
+        "name": "AVA_MANIFEST_S3_URI",
+        "value": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-smoke-20260515/inputs/developmental_cohort_manifest.json"
+      },
+      {
+        "name": "AVA_SEGMENT_CONFIG_S3_URI",
+        "value": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-smoke-20260515/inputs/segment_config.yaml"
+      },
+      {
+        "name": "AVA_S3_AUDIO_ROOT",
+        "value": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-smoke-20260515/audio"
+      },
+      {
+        "name": "AVA_S3_ROI_ROOT",
+        "value": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-smoke-20260515/roi"
+      },
+      {
+        "name": "AVA_SPLIT",
+        "value": "all"
+      },
+      {
+        "name": "AVA_NUM_SHARDS",
+        "value": "2"
+      },
+      {
+        "name": "AVA_MAX_DIRS",
+        "value": "2"
+      },
+      {
+        "name": "AVA_ROI_OUTPUT_FORMAT",
+        "value": "parquet"
+      },
+      {
+        "name": "AVA_ROI_PARQUET_NAME",
+        "value": "roi.parquet"
+      },
+      {
+        "name": "AVA_DOWNLOAD_JOBS",
+        "value": "8"
+      },
+      {
+        "name": "AVA_SKIP_EXISTING",
+        "value": "1"
+      },
+      {
+        "name": "AVA_JOBS",
+        "value": "8"
+      },
+      {
+        "name": "AVA_S3_SUMMARY_ROOT",
+        "value": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-smoke-20260515/summaries/roi"
+      }
+    ],
+    "command": [
+      "--manifest-s3-uri",
+      "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-smoke-20260515/inputs/developmental_cohort_manifest.json",
+      "--segment-config-s3-uri",
+      "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-smoke-20260515/inputs/segment_config.yaml",
+      "--s3-audio-root",
+      "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-smoke-20260515/audio",
+      "--s3-roi-root",
+      "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-smoke-20260515/roi",
+      "--split",
+      "all",
+      "--num-shards",
+      "2",
+      "--roi-output-format",
+      "parquet",
+      "--roi-parquet-name",
+      "roi.parquet",
+      "--download-jobs",
+      "8",
+      "--max-dirs",
+      "2",
+      "--skip-existing",
+      "--jobs",
+      "8",
+      "--s3-summary-root",
+      "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-smoke-20260515/summaries/roi"
+    ]
+  }
+}

@@ -1,0 +1,20 @@
+[
+  {
+    "path": "docs/runs/artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-roi-smoke2/roi/day43 Bells/pk249/33/roi.parquet",
+    "rows": 140,
+    "columns": [
+      "clip_stem",
+      "onsets_sec",
+      "offsets_sec"
+    ]
+  },
+  {
+    "path": "docs/runs/artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-roi-smoke2/roi/day43 Bells/pk249/34/roi.parquet",
+    "rows": 328,
+    "columns": [
+      "clip_stem",
+      "onsets_sec",
+      "offsets_sec"
+    ]
+  }
+]
