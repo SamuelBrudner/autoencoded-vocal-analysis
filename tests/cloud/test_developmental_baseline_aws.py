@@ -189,8 +189,16 @@ def test_prepare_developmental_baseline_aws_cli_writes_payloads(tmp_path: Path) 
 	assert plan["safety"]["submits_aws_jobs"] is False
 	assert roi_env["AVA_NUM_SHARDS"] == "2"
 	assert roi_env["AVA_S3_ROI_ROOT"].endswith("/roi")
+	assert roi_payload["containerOverrides"]["command"][
+		roi_payload["containerOverrides"]["command"].index("--num-shards") + 1
+	] == "2"
 	assert latent_env["AVA_EXPORT_ENERGY"] == "1"
 	assert latent_env["AVA_HOP_LENGTH_SEC"] == "0.005804988662131519"
+	assert plan["commands"]["audio_coverage"][
+		plan["commands"]["audio_coverage"].index("--out") + 1
+	].endswith("audio_coverage.json")
+	assert "--fail-on-missing" in plan["commands"]["audio_coverage"]
+	assert "--fail-on-count-mismatch" in plan["commands"]["audio_coverage"]
 	assert roi_smoke["arrayProperties"]["size"] == 2
 	assert latent_smoke["arrayProperties"]["size"] == 2
 	assert roi_smoke_env["AVA_MAX_DIRS"] == "2"
@@ -199,6 +207,7 @@ def test_prepare_developmental_baseline_aws_cli_writes_payloads(tmp_path: Path) 
 	] == "2"
 	assert (out_dir / "upload_audio_dry_run_stdout.txt").exists()
 	assert report_path.exists()
+	assert "Post-Upload Coverage Gate" in report_path.read_text(encoding="utf-8")
 
 
 def test_stage_developmental_baseline_inputs_cli_dry_run(tmp_path: Path) -> None:

@@ -1,0 +1,11 @@
+Planned sync tasks: 602 (shard=0/1)
+  /Volumes/samsung_ssd/data/birdsong/day43 Bells/pk249/33 -> s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/audio/day43 Bells/pk249/33
+  /Volumes/samsung_ssd/data/birdsong/day43 Bells/pk249/34 -> s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/audio/day43 Bells/pk249/34
+  /Volumes/samsung_ssd/data/birdsong/day43 Bells/pk249/35 -> s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/audio/day43 Bells/pk249/35
+  /Volumes/samsung_ssd/data/birdsong/day43 Bells/pk249/36 -> s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/audio/day43 Bells/pk249/36
+  /Volumes/samsung_ssd/data/birdsong/day43 Bells/pk249/37 -> s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/audio/day43 Bells/pk249/37
+  /Volumes/samsung_ssd/data/birdsong/day43 Bells/pk249/38 -> s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/audio/day43 Bells/pk249/38
+  /Volumes/samsung_ssd/data/birdsong/day43 Bells/pk249/39 -> s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/audio/day43 Bells/pk249/39
+  /Volumes/samsung_ssd/data/birdsong/day43 Bells/pk249/40 -> s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/audio/day43 Bells/pk249/40
+  /Volumes/samsung_ssd/data/birdsong/day43 Bells/pk249/41 -> s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/audio/day43 Bells/pk249/41
+  /Volumes/samsung_ssd/data/birdsong/day43 Bells/pk249/42 -> s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/audio/day43 Bells/pk249/42

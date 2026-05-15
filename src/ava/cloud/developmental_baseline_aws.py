@@ -260,6 +260,37 @@ def build_upload_audio_dry_run_command(
 	return cmd
 
 
+def build_check_audio_coverage_command(
+	repo_root: Path,
+	manifest_path: Path,
+	s3_audio_root: str,
+	out_path: Path,
+	split: str = "all",
+	max_dirs: Optional[int] = None,
+	fail_on_missing: bool = True,
+	fail_on_count_mismatch: bool = True,
+) -> list[str]:
+	cmd = [
+		sys.executable,
+		(repo_root / "scripts" / "cloud" / "aws" / "check_manifest_audio_s3_coverage.py").as_posix(),
+		"--manifest",
+		manifest_path.as_posix(),
+		"--split",
+		str(split),
+		"--s3-audio-root",
+		str(s3_audio_root),
+		"--out",
+		out_path.as_posix(),
+	]
+	if max_dirs is not None:
+		cmd.extend(["--max-dirs", str(int(max_dirs))])
+	if fail_on_missing:
+		cmd.append("--fail-on-missing")
+	if fail_on_count_mismatch:
+		cmd.append("--fail-on-count-mismatch")
+	return cmd
+
+
 def build_roi_submit_command(
 	repo_root: Path,
 	job_name: str,
@@ -437,6 +468,7 @@ def run_preparation(
 		"latent_batch_payload": out_dir / "latent_batch_payload.json",
 		"roi_smoke_batch_payload": out_dir / "roi_smoke_batch_payload.json",
 		"latent_smoke_batch_payload": out_dir / "latent_smoke_batch_payload.json",
+		"audio_coverage": out_dir / "audio_coverage.json",
 		"aws_staging_plan": out_dir / "aws_staging_plan.json",
 		"aws_preflight": out_dir / "aws_preflight.json",
 	}
@@ -449,6 +481,13 @@ def run_preparation(
 		split=split,
 		jobs=upload_jobs,
 	)
+	audio_coverage_cmd = build_check_audio_coverage_command(
+		repo_root=repo_root,
+		manifest_path=cohort_manifest_path,
+		s3_audio_root=layout["audio_root"],
+		out_path=paths["audio_coverage"],
+		split=split,
+	)
 	roi_cmd = build_roi_submit_command(
 		repo_root=repo_root,
 		job_name="ava-developmental-baseline-roi",
@@ -460,6 +499,7 @@ def run_preparation(
 		download_jobs=roi_download_jobs,
 		jobs=roi_jobs,
 		emit_json=paths["roi_batch_payload"],
+		override_command=True,
 	)
 	latent_cmd = build_latent_submit_command(
 		repo_root=repo_root,
@@ -554,6 +594,7 @@ def run_preparation(
 		},
 		"commands": {
 			"upload_audio_dry_run": upload_cmd,
+			"audio_coverage": audio_coverage_cmd,
 			"roi_batch_payload": roi_cmd,
 			"latent_batch_payload": latent_cmd,
 			"roi_smoke_batch_payload": roi_smoke_cmd,
@@ -645,12 +686,21 @@ def write_report(report_path: Path, plan: dict) -> None:
 	lines.extend(
 		[
 			"",
+			"## Post-Upload Coverage Gate",
+			"",
+			"Run this after all audio upload shard summaries report zero failures and before ROI submission:",
+			"",
+			"```bash",
+			" ".join(plan["commands"]["audio_coverage"]),
+			"```",
+			"",
 			"## Next Submit Gate",
 			"",
 			"No AWS jobs were submitted and no audio was uploaded by this preparation command. "
 			"Before submission, stage the cohort manifest, segment config, recovered AVA config, "
-			"and recovered checkpoint under the S3 `inputs/` layout, then run the one-shard smoke "
-			"payloads before the full ROI and latent array payloads.",
+			"and recovered checkpoint under the S3 `inputs/` layout, upload the manifest audio "
+			"subset, run the audio coverage gate, then run the one-shard smoke payloads before "
+			"the full ROI and latent array payloads.",
 		]
 	)
 	report_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
