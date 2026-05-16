@@ -100,7 +100,8 @@ def parse_aws_s3_ls_key(line: str) -> str | None:
 
 
 def is_audio_wav_key(key: str) -> bool:
-	return str(key).lower().endswith(".wav")
+	name = str(key).strip("/").rsplit("/", 1)[-1]
+	return name.lower().endswith(".wav") and not name.startswith("._")
 
 
 def count_wav_keys_by_manifest_prefix(

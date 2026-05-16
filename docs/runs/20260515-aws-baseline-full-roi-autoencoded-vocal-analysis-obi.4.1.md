@@ -16,14 +16,25 @@
 - Window/hop: 0.03 sec / 0.005804988662131519 sec.
 - Export energy: True.
 
-## Dry-Run Artifacts
+## Artifacts
 
 - `upload_audio_dry_run_stdout`: `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/upload_audio_dry_run_stdout.txt`
 - `roi_batch_payload`: `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/roi_batch_payload.json`
 - `latent_batch_payload`: `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/latent_batch_payload.json`
 - `roi_smoke_batch_payload`: `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/roi_smoke_batch_payload.json`
 - `latent_smoke_batch_payload`: `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/latent_smoke_batch_payload.json`
-- `audio_coverage`: `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/audio_coverage.json`
+- `audio_coverage_initial`: `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/audio_coverage.json`
+- `audio_coverage_after_repair`: `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/audio_coverage_after_repair.json`
+- `audio_coverage_final`: `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/audio_coverage_final.json`
+- `upload_audio_summary_shards`: `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/upload_audio_summary_shard_*.json`
+- `upload_audio_repair_summary`: `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/upload_audio_repair_summary.json`
+- `audio_coverage_repair_summary`: `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/audio_coverage_repair_summary.json`
+- `audio_hidden_sidecar_removal`: `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/audio_hidden_sidecar_removal.json`
+- `roi_full_submit_stdout`: `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/roi_full_submit_stdout.json`
+- `roi_full_describe_jobs`: `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/roi_full_describe_jobs.json`
+- `roi_full_child_status_initial`: `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/roi_full_child_status_initial.json`
+- `roi_full_child_status_followup`: `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/roi_full_child_status_followup.json`
+- `roi_full_child_status_latest`: `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/roi_full_child_status_latest.json`
 - `aws_staging_plan`: `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/aws_staging_plan.json`
 - `aws_preflight`: `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/aws_preflight.json`
 
@@ -35,6 +46,24 @@ Run this after all audio upload shard summaries report zero failures and before 
 /opt/anaconda3/bin/python /Users/samuelbrudner/.codex/worktrees/cc22/autoencoded-vocal-analysis/scripts/cloud/aws/check_manifest_audio_s3_coverage.py --manifest /Users/samuelbrudner/.codex/worktrees/cc22/autoencoded-vocal-analysis/docs/runs/artifacts/autoencoded-vocal-analysis-obi.4.1/20260513-011500-developmental-input-inventory/developmental_cohort_manifest.json --split all --s3-audio-root s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/audio --out docs/runs/artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/audio_coverage.json --fail-on-missing --fail-on-count-mismatch
 ```
 
-## Next Submit Gate
+## Execution Update
 
-No AWS jobs were submitted and no audio was uploaded by this preparation command. Before submission, stage the cohort manifest, segment config, recovered AVA config, and recovered checkpoint under the S3 `inputs/` layout, upload the manifest audio subset, run the audio coverage gate, then run the one-shard smoke payloads before the full ROI and latent array payloads.
+Audio upload was run as four local shard controllers over the 602-entry cohort manifest. The first pass wrote all directories but reported 25 transient S3 errors across shard summaries, caused by request timeouts or TLS EOFs. A targeted low-concurrency repair over the 25 failed directories completed with zero repair failures.
+
+The initial post-upload coverage gate found 11 count mismatches: ten S3 undercounts and one overcount. The ten undercount directories were repaired with zero failures. The single overcount was traced to one hidden AppleDouble sidecar file under `isolates/R 203/82`; local scanning found exactly one such `._*.wav` sidecar across the cohort manifest. That non-audio sidecar object was removed from S3 and recorded in `audio_hidden_sidecar_removal.json`.
+
+The final strict audio coverage gate passed:
+
+- Manifest entries: 602.
+- Expected WAV files: 1138367.
+- Observed S3 directories: 602.
+- Observed S3 WAV files: 1138367.
+- Missing directories: 0.
+- Count mismatch directories: 0.
+- Unmatched WAV keys: 0.
+
+The full ROI Batch array was submitted after the coverage gate passed. Initial child status showed 590 runnable, 4 starting, 3 running, 5 succeeded, and 0 failed. A follow-up snapshot showed 585 runnable, 1 starting, 6 running, 10 succeeded, and 0 failed. The latest snapshot before commit showed 563 runnable, 1 starting, 7 running, 31 succeeded, and 0 failed.
+
+## Next Gate
+
+Monitor the full ROI array until all 602 shards are terminal. If any children fail, inspect the shard summaries and rerun only failed shards. If the array succeeds, sync or inventory ROI parquet outputs, then move to AVA latent export staging under `autoencoded-vocal-analysis-obi.4.1.2`.

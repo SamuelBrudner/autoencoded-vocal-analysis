@@ -78,10 +78,13 @@ def _sync_one(
     quiet: bool,
 ) -> dict:
     start = time.time()
-    # Include patterns only take effect when exclude-all is set first.
+    # Include patterns only take effect when exclude-all is set first. The
+    # trailing excludes prevent macOS AppleDouble sidecars from masquerading as
+    # audio while still preserving explicit user include patterns.
     cmd = [aws, "s3", "sync", audio_dir, s3_target, "--exclude", "*"]
     for pattern in include_patterns:
         cmd.extend(["--include", pattern])
+    cmd.extend(["--exclude", "._*.wav", "--exclude", "._*.WAV"])
     if quiet:
         cmd.append("--only-show-errors")
 
@@ -118,7 +121,10 @@ def main() -> None:
         "--include",
         action="append",
         default=None,
-        help="File patterns to include (repeatable). Default: *.wav and *.WAV",
+        help=(
+            "File patterns to include (repeatable). Default: *.wav and *.WAV. "
+            "Hidden AppleDouble sidecars matching ._*.wav are always excluded."
+        ),
     )
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--no-quiet", action="store_true")

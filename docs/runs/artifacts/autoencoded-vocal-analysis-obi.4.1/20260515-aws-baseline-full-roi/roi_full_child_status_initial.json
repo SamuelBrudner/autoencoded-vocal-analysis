@@ -1,0 +1,287 @@
+{
+  "created_utc": "2026-05-16T04:38:37Z",
+  "array_job_id": "07e63d32-1441-4904-9600-773282a69ed5",
+  "counts": {
+    "SUBMITTED": 0,
+    "PENDING": 0,
+    "RUNNABLE": 590,
+    "STARTING": 4,
+    "RUNNING": 3,
+    "SUCCEEDED": 5,
+    "FAILED": 0
+  },
+  "examples": {
+    "RUNNABLE": [
+      {
+        "jobId": "07e63d32-1441-4904-9600-773282a69ed5:12",
+        "jobName": "ava-developmental-baseline-roi-full-20260515",
+        "status": "RUNNABLE",
+        "createdAt": 1778906222496,
+        "startedAt": null,
+        "stoppedAt": null,
+        "arrayProperties": {
+          "index": 12,
+          "statusSummary": {}
+        }
+      },
+      {
+        "jobId": "07e63d32-1441-4904-9600-773282a69ed5:13",
+        "jobName": "ava-developmental-baseline-roi-full-20260515",
+        "status": "RUNNABLE",
+        "createdAt": 1778906222498,
+        "startedAt": null,
+        "stoppedAt": null,
+        "arrayProperties": {
+          "index": 13,
+          "statusSummary": {}
+        }
+      },
+      {
+        "jobId": "07e63d32-1441-4904-9600-773282a69ed5:14",
+        "jobName": "ava-developmental-baseline-roi-full-20260515",
+        "status": "RUNNABLE",
+        "createdAt": 1778906222499,
+        "startedAt": null,
+        "stoppedAt": null,
+        "arrayProperties": {
+          "index": 14,
+          "statusSummary": {}
+        }
+      },
+      {
+        "jobId": "07e63d32-1441-4904-9600-773282a69ed5:15",
+        "jobName": "ava-developmental-baseline-roi-full-20260515",
+        "status": "RUNNABLE",
+        "createdAt": 1778906222502,
+        "startedAt": null,
+        "stoppedAt": null,
+        "arrayProperties": {
+          "index": 15,
+          "statusSummary": {}
+        }
+      },
+      {
+        "jobId": "07e63d32-1441-4904-9600-773282a69ed5:16",
+        "jobName": "ava-developmental-baseline-roi-full-20260515",
+        "status": "RUNNABLE",
+        "createdAt": 1778906222503,
+        "startedAt": null,
+        "stoppedAt": null,
+        "arrayProperties": {
+          "index": 16,
+          "statusSummary": {}
+        }
+      },
+      {
+        "jobId": "07e63d32-1441-4904-9600-773282a69ed5:17",
+        "jobName": "ava-developmental-baseline-roi-full-20260515",
+        "status": "RUNNABLE",
+        "createdAt": 1778906222503,
+        "startedAt": null,
+        "stoppedAt": null,
+        "arrayProperties": {
+          "index": 17,
+          "statusSummary": {}
+        }
+      },
+      {
+        "jobId": "07e63d32-1441-4904-9600-773282a69ed5:18",
+        "jobName": "ava-developmental-baseline-roi-full-20260515",
+        "status": "RUNNABLE",
+        "createdAt": 1778906222505,
+        "startedAt": null,
+        "stoppedAt": null,
+        "arrayProperties": {
+          "index": 18,
+          "statusSummary": {}
+        }
+      },
+      {
+        "jobId": "07e63d32-1441-4904-9600-773282a69ed5:19",
+        "jobName": "ava-developmental-baseline-roi-full-20260515",
+        "status": "RUNNABLE",
+        "createdAt": 1778906222506,
+        "startedAt": null,
+        "stoppedAt": null,
+        "arrayProperties": {
+          "index": 19,
+          "statusSummary": {}
+        }
+      },
+      {
+        "jobId": "07e63d32-1441-4904-9600-773282a69ed5:20",
+        "jobName": "ava-developmental-baseline-roi-full-20260515",
+        "status": "RUNNABLE",
+        "createdAt": 1778906222506,
+        "startedAt": null,
+        "stoppedAt": null,
+        "arrayProperties": {
+          "index": 20,
+          "statusSummary": {}
+        }
+      },
+      {
+        "jobId": "07e63d32-1441-4904-9600-773282a69ed5:21",
+        "jobName": "ava-developmental-baseline-roi-full-20260515",
+        "status": "RUNNABLE",
+        "createdAt": 1778906222514,
+        "startedAt": null,
+        "stoppedAt": null,
+        "arrayProperties": {
+          "index": 21,
+          "statusSummary": {}
+        }
+      }
+    ],
+    "STARTING": [
+      {
+        "jobId": "07e63d32-1441-4904-9600-773282a69ed5:7",
+        "jobName": "ava-developmental-baseline-roi-full-20260515",
+        "status": "STARTING",
+        "createdAt": 1778906222477,
+        "startedAt": null,
+        "stoppedAt": null,
+        "arrayProperties": {
+          "index": 7,
+          "statusSummary": {}
+        }
+      },
+      {
+        "jobId": "07e63d32-1441-4904-9600-773282a69ed5:9",
+        "jobName": "ava-developmental-baseline-roi-full-20260515",
+        "status": "STARTING",
+        "createdAt": 1778906222475,
+        "startedAt": null,
+        "stoppedAt": null,
+        "arrayProperties": {
+          "index": 9,
+          "statusSummary": {}
+        }
+      },
+      {
+        "jobId": "07e63d32-1441-4904-9600-773282a69ed5:10",
+        "jobName": "ava-developmental-baseline-roi-full-20260515",
+        "status": "STARTING",
+        "createdAt": 1778906222487,
+        "startedAt": null,
+        "stoppedAt": null,
+        "arrayProperties": {
+          "index": 10,
+          "statusSummary": {}
+        }
+      },
+      {
+        "jobId": "07e63d32-1441-4904-9600-773282a69ed5:11",
+        "jobName": "ava-developmental-baseline-roi-full-20260515",
+        "status": "STARTING",
+        "createdAt": 1778906222496,
+        "startedAt": null,
+        "stoppedAt": null,
+        "arrayProperties": {
+          "index": 11,
+          "statusSummary": {}
+        }
+      }
+    ],
+    "RUNNING": [
+      {
+        "jobId": "07e63d32-1441-4904-9600-773282a69ed5:5",
+        "jobName": "ava-developmental-baseline-roi-full-20260515",
+        "status": "RUNNING",
+        "createdAt": 1778906222474,
+        "startedAt": 1778906256043,
+        "stoppedAt": null,
+        "arrayProperties": {
+          "index": 5,
+          "statusSummary": {}
+        }
+      },
+      {
+        "jobId": "07e63d32-1441-4904-9600-773282a69ed5:6",
+        "jobName": "ava-developmental-baseline-roi-full-20260515",
+        "status": "RUNNING",
+        "createdAt": 1778906222474,
+        "startedAt": 1778906252987,
+        "stoppedAt": null,
+        "arrayProperties": {
+          "index": 6,
+          "statusSummary": {}
+        }
+      },
+      {
+        "jobId": "07e63d32-1441-4904-9600-773282a69ed5:8",
+        "jobName": "ava-developmental-baseline-roi-full-20260515",
+        "status": "RUNNING",
+        "createdAt": 1778906222475,
+        "startedAt": 1778906253909,
+        "stoppedAt": null,
+        "arrayProperties": {
+          "index": 8,
+          "statusSummary": {}
+        }
+      }
+    ],
+    "SUCCEEDED": [
+      {
+        "jobId": "07e63d32-1441-4904-9600-773282a69ed5:0",
+        "jobName": "ava-developmental-baseline-roi-full-20260515",
+        "status": "SUCCEEDED",
+        "createdAt": 1778906222470,
+        "startedAt": 1778906252273,
+        "stoppedAt": 1778906292025,
+        "arrayProperties": {
+          "index": 0,
+          "statusSummary": {}
+        }
+      },
+      {
+        "jobId": "07e63d32-1441-4904-9600-773282a69ed5:1",
+        "jobName": "ava-developmental-baseline-roi-full-20260515",
+        "status": "SUCCEEDED",
+        "createdAt": 1778906222470,
+        "startedAt": 1778906249031,
+        "stoppedAt": 1778906289216,
+        "arrayProperties": {
+          "index": 1,
+          "statusSummary": {}
+        }
+      },
+      {
+        "jobId": "07e63d32-1441-4904-9600-773282a69ed5:2",
+        "jobName": "ava-developmental-baseline-roi-full-20260515",
+        "status": "SUCCEEDED",
+        "createdAt": 1778906222470,
+        "startedAt": 1778906251591,
+        "stoppedAt": 1778906292481,
+        "arrayProperties": {
+          "index": 2,
+          "statusSummary": {}
+        }
+      },
+      {
+        "jobId": "07e63d32-1441-4904-9600-773282a69ed5:3",
+        "jobName": "ava-developmental-baseline-roi-full-20260515",
+        "status": "SUCCEEDED",
+        "createdAt": 1778906222471,
+        "startedAt": 1778906257004,
+        "stoppedAt": 1778906311012,
+        "arrayProperties": {
+          "index": 3,
+          "statusSummary": {}
+        }
+      },
+      {
+        "jobId": "07e63d32-1441-4904-9600-773282a69ed5:4",
+        "jobName": "ava-developmental-baseline-roi-full-20260515",
+        "status": "SUCCEEDED",
+        "createdAt": 1778906222473,
+        "startedAt": 1778906252379,
+        "stoppedAt": 1778906300184,
+        "arrayProperties": {
+          "index": 4,
+          "statusSummary": {}
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "created_utc": "2026-05-16T04:39:59Z",
+  "array_job_id": "07e63d32-1441-4904-9600-773282a69ed5",
+  "counts": {
+    "SUBMITTED": 0,
+    "PENDING": 0,
+    "RUNNABLE": 585,
+    "STARTING": 1,
+    "RUNNING": 6,
+    "SUCCEEDED": 10,
+    "FAILED": 0
+  }
+}

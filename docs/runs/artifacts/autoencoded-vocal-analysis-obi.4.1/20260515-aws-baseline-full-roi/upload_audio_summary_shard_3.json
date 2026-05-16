@@ -1,0 +1,148 @@
+{
+  "created_utc": "2026-05-16T04:11:38Z",
+  "manifest_path": "docs/runs/artifacts/autoencoded-vocal-analysis-obi.4.1/20260513-011500-developmental-input-inventory/developmental_cohort_manifest.json",
+  "split": "all",
+  "audio_root": "/Volumes/samsung_ssd/data/birdsong",
+  "s3_audio_root": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/audio",
+  "jobs": 8,
+  "num_shards": 4,
+  "shard_index": 3,
+  "tasks": 150,
+  "failures": 6,
+  "elapsed_sec": 40103.520073890686,
+  "tasks_per_sec": 0.0037403200448146495,
+  "errors": [
+    {
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day 90 simple/R404/66",
+      "s3_target": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/audio/day 90 simple/R404/66",
+      "status": "error",
+      "returncode": 1,
+      "elapsed_sec": 11430.490286111832,
+      "output": "upload failed: ../../../../../../Volumes/samsung_ssd/data/birdsong/day 90 simple/R404/66/404_June_13_2003_00_58_51.wav to s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/audio/day 90 simple/R404/66/404_June_13_2003_00_58_51.wav SSL validation failed for https://ava-birdsong-us-east-1-a1859d31.s3.us-east-1.amazonaws.com/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/audio/day%2090%20simple/R404/66/404_June_13_2003_00_58_51.wav [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)\nupload failed: ../../../../../../Volumes/samsung_ssd/data/birdsong/day 90 simple/R404/66/404_June_13_2003_00_56_31.wav to s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/audio/day 90 simple/R404/66/404_June_13_2003_00_56_31.wav An error occurred (RequestTimeout) when calling the PutObject operation (reached max retries: 2): Your socket connection to the server was not read from or written to within the timeout period. Idle connections will be closed.",
+      "cmd": [
+        "/opt/homebrew/bin/aws",
+        "s3",
+        "sync",
+        "/Volumes/samsung_ssd/data/birdsong/day 90 simple/R404/66",
+        "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/audio/day 90 simple/R404/66",
+        "--exclude",
+        "*",
+        "--include",
+        "*.wav",
+        "--include",
+        "*.WAV",
+        "--only-show-errors"
+      ]
+    },
+    {
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day 60 samba/Day_60_SAMBA/R150/81",
+      "s3_target": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/audio/day 60 samba/Day_60_SAMBA/R150/81",
+      "status": "error",
+      "returncode": 1,
+      "elapsed_sec": 1442.9290680885315,
+      "output": "upload failed: ../../../../../../Volumes/samsung_ssd/data/birdsong/day 60 samba/Day_60_SAMBA/R150/81/bird150_30106_on_Oct_06_16_30.wav to s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/audio/day 60 samba/Day_60_SAMBA/R150/81/bird150_30106_on_Oct_06_16_30.wav An error occurred (RequestTimeout) when calling the PutObject operation (reached max retries: 2): Your socket connection to the server was not read from or written to within the timeout period. Idle connections will be closed.\nupload failed: ../../../../../../Volumes/samsung_ssd/data/birdsong/day 60 samba/Day_60_SAMBA/R150/81/bird150_30101_on_Oct_06_16_27.wav to s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/audio/day 60 samba/Day_60_SAMBA/R150/81/bird150_30101_on_Oct_06_16_27.wav An error occurred (RequestTimeout) when calling the PutObject operation (reached max retries: 2): Your socket connection to the server was not read from or written to within the timeout period. Idle connections will be closed.\nupload failed: ../../../../../../Volumes/samsung_ssd/data/birdsong/day 60 samba/Day_60_SAMBA/R150/81/bird150_30100_on_Oct_06_16_26.wav to s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/audio/day 60 samba/Day_60_SAMBA/R150/81/bird150_30100_on_Oct_06_16_26.wav An error occurred (RequestTimeout) when calling the PutObject operation (reached max retries: 2): Your socket connection to the server was not read from or written to within the timeout period. Idle connections will be closed.\nupload failed: ../../../../../../Volumes/samsung_ssd/data/birdsong/day 60 samba/Day_60_SAMBA/R150/81/bird150_30108_on_Oct_06_16_30.wav to s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/audio/day 60 samba/Day_60_SAMBA/R150/81/bird150_30108_on_Oct_06_16_30.wav An error occurred (RequestTimeout) when calling the PutObject operation (reached max retries: 2): Your socket connection to the server was not read from or written to within the timeout period. Idle connections will be closed.",
+      "cmd": [
+        "/opt/homebrew/bin/aws",
+        "s3",
+        "sync",
+        "/Volumes/samsung_ssd/data/birdsong/day 60 samba/Day_60_SAMBA/R150/81",
+        "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/audio/day 60 samba/Day_60_SAMBA/R150/81",
+        "--exclude",
+        "*",
+        "--include",
+        "*.wav",
+        "--include",
+        "*.WAV",
+        "--only-show-errors"
+      ]
+    },
+    {
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day 60 samba/Day_60_SAMBA/R150/72",
+      "s3_target": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/audio/day 60 samba/Day_60_SAMBA/R150/72",
+      "status": "error",
+      "returncode": 1,
+      "elapsed_sec": 2512.99742102623,
+      "output": "upload failed: ../../../../../../Volumes/samsung_ssd/data/birdsong/day 60 samba/Day_60_SAMBA/R150/72/bird150_17621_on_Sep_27_16_36.wav to s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/audio/day 60 samba/Day_60_SAMBA/R150/72/bird150_17621_on_Sep_27_16_36.wav An error occurred (RequestTimeout) when calling the PutObject operation (reached max retries: 2): Your socket connection to the server was not read from or written to within the timeout period. Idle connections will be closed.",
+      "cmd": [
+        "/opt/homebrew/bin/aws",
+        "s3",
+        "sync",
+        "/Volumes/samsung_ssd/data/birdsong/day 60 samba/Day_60_SAMBA/R150/72",
+        "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/audio/day 60 samba/Day_60_SAMBA/R150/72",
+        "--exclude",
+        "*",
+        "--include",
+        "*.wav",
+        "--include",
+        "*.WAV",
+        "--only-show-errors"
+      ]
+    },
+    {
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day 60 samba/Day_60_SAMBA/R150/68",
+      "s3_target": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/audio/day 60 samba/Day_60_SAMBA/R150/68",
+      "status": "error",
+      "returncode": 1,
+      "elapsed_sec": 3249.6608061790466,
+      "output": "upload failed: ../../../../../../Volumes/samsung_ssd/data/birdsong/day 60 samba/Day_60_SAMBA/R150/68/bird150_9672_on_Sep_23_13_02.wav to s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/audio/day 60 samba/Day_60_SAMBA/R150/68/bird150_9672_on_Sep_23_13_02.wav An error occurred (RequestTimeout) when calling the PutObject operation (reached max retries: 2): Your socket connection to the server was not read from or written to within the timeout period. Idle connections will be closed.\nupload failed: ../../../../../../Volumes/samsung_ssd/data/birdsong/day 60 samba/Day_60_SAMBA/R150/68/bird150_9685_on_Sep_23_13_04.wav to s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/audio/day 60 samba/Day_60_SAMBA/R150/68/bird150_9685_on_Sep_23_13_04.wav An error occurred (RequestTimeout) when calling the PutObject operation (reached max retries: 2): Your socket connection to the server was not read from or written to within the timeout period. Idle connections will be closed.\nupload failed: ../../../../../../Volumes/samsung_ssd/data/birdsong/day 60 samba/Day_60_SAMBA/R150/68/bird150_9683_on_Sep_23_13_03.wav to s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/audio/day 60 samba/Day_60_SAMBA/R150/68/bird150_9683_on_Sep_23_13_03.wav An error occurred (RequestTimeout) when calling the PutObject operation (reached max retries: 2): Your socket connection to the server was not read from or written to within the timeout period. Idle connections will be closed.",
+      "cmd": [
+        "/opt/homebrew/bin/aws",
+        "s3",
+        "sync",
+        "/Volumes/samsung_ssd/data/birdsong/day 60 samba/Day_60_SAMBA/R150/68",
+        "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/audio/day 60 samba/Day_60_SAMBA/R150/68",
+        "--exclude",
+        "*",
+        "--include",
+        "*.wav",
+        "--include",
+        "*.WAV",
+        "--only-show-errors"
+      ]
+    },
+    {
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day 60 samba/Day_60_SAMBA/R150/83",
+      "s3_target": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/audio/day 60 samba/Day_60_SAMBA/R150/83",
+      "status": "error",
+      "returncode": 1,
+      "elapsed_sec": 2067.6336872577667,
+      "output": "upload failed: ../../../../../../Volumes/samsung_ssd/data/birdsong/day 60 samba/Day_60_SAMBA/R150/83/bird150_32590_on_Oct_08_13_52.wav to s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/audio/day 60 samba/Day_60_SAMBA/R150/83/bird150_32590_on_Oct_08_13_52.wav SSL validation failed for https://ava-birdsong-us-east-1-a1859d31.s3.us-east-1.amazonaws.com/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/audio/day%2060%20samba/Day_60_SAMBA/R150/83/bird150_32590_on_Oct_08_13_52.wav TLS/SSL connection has been closed (EOF) (_ssl.c:1032)",
+      "cmd": [
+        "/opt/homebrew/bin/aws",
+        "s3",
+        "sync",
+        "/Volumes/samsung_ssd/data/birdsong/day 60 samba/Day_60_SAMBA/R150/83",
+        "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/audio/day 60 samba/Day_60_SAMBA/R150/83",
+        "--exclude",
+        "*",
+        "--include",
+        "*.wav",
+        "--include",
+        "*.WAV",
+        "--only-show-errors"
+      ]
+    },
+    {
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day 60 samba/Day_60_SAMBA/R150/87",
+      "s3_target": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/audio/day 60 samba/Day_60_SAMBA/R150/87",
+      "status": "error",
+      "returncode": 1,
+      "elapsed_sec": 1932.592600107193,
+      "output": "upload failed: ../../../../../../Volumes/samsung_ssd/data/birdsong/day 60 samba/Day_60_SAMBA/R150/87/bird150_37992_on_Oct_12_13_59.wav to s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/audio/day 60 samba/Day_60_SAMBA/R150/87/bird150_37992_on_Oct_12_13_59.wav An error occurred (RequestTimeout) when calling the PutObject operation (reached max retries: 2): Your socket connection to the server was not read from or written to within the timeout period. Idle connections will be closed.",
+      "cmd": [
+        "/opt/homebrew/bin/aws",
+        "s3",
+        "sync",
+        "/Volumes/samsung_ssd/data/birdsong/day 60 samba/Day_60_SAMBA/R150/87",
+        "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/audio/day 60 samba/Day_60_SAMBA/R150/87",
+        "--exclude",
+        "*",
+        "--include",
+        "*.wav",
+        "--include",
+        "*.WAV",
+        "--only-show-errors"
+      ]
+    }
+  ]
+}

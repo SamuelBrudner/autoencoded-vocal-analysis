@@ -59,6 +59,7 @@ def test_summarize_manifest_audio_coverage_counts_expected_prefixes() -> None:
 	keys = [
 		"root/audio/day43 Bells/pk249/33/a.wav",
 		"root/audio/day43 Bells/pk249/33/b.WAV",
+		"root/audio/day43 Bells/pk249/33/._b.wav",
 		"root/audio/day 60 samba/Day_60_SAMBA/R150/36/c.wav",
 		"root/audio/untracked/file.wav",
 		"root/audio/day43 Bells/pk249/33/not_audio.txt",
