@@ -1,0 +1,20 @@
+{
+  "created_utc": "2026-05-18T14:41:08Z",
+  "manifest_path": "/tmp/ava_latent_workdir/inputs/manifest_subset.json",
+  "config_path": "/tmp/ava_latent_workdir/inputs/config.yaml",
+  "checkpoint_path": "/tmp/ava_latent_workdir/inputs/checkpoint.tar",
+  "out_dir": "/tmp/ava_latent_workdir/latent",
+  "split": "all",
+  "roi_format": "parquet",
+  "roi_parquet_name": "roi.parquet",
+  "num_shards": 1,
+  "shard_index": 0,
+  "total": 2,
+  "exported": 2,
+  "skipped": 0,
+  "skipped_existing": 0,
+  "skipped_no_roi": 0,
+  "skipped_no_windows": 0,
+  "failed": 0,
+  "errors": []
+}

@@ -1,0 +1,47 @@
+{
+  "created_utc": "2026-05-18T14:44:34Z",
+  "object_count": 8,
+  "total_size_bytes": 14843,
+  "objects": [
+    {
+      "timestamp": "2026-05-18 10:41:10",
+      "size_bytes": 786,
+      "key": "autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/latents/ava_latent/day43 Bells/pk249/33/9249_38453.4161111111_4_11_9_59_12.json"
+    },
+    {
+      "timestamp": "2026-05-18 10:41:10",
+      "size_bytes": 2975,
+      "key": "autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/latents/ava_latent/day43 Bells/pk249/33/9249_38453.4161111111_4_11_9_59_12.npz"
+    },
+    {
+      "timestamp": "2026-05-18 10:41:10",
+      "size_bytes": 786,
+      "key": "autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/latents/ava_latent/day43 Bells/pk249/33/9249_38453.4183101852_4_11_10_2_22.json"
+    },
+    {
+      "timestamp": "2026-05-18 10:41:10",
+      "size_bytes": 4173,
+      "key": "autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/latents/ava_latent/day43 Bells/pk249/33/9249_38453.4183101852_4_11_10_2_22.npz"
+    },
+    {
+      "timestamp": "2026-05-18 10:41:11",
+      "size_bytes": 786,
+      "key": "autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/latents/ava_latent/day43 Bells/pk249/34/9249_38454.4158564815_4_12_9_58_50.json"
+    },
+    {
+      "timestamp": "2026-05-18 10:41:11",
+      "size_bytes": 1944,
+      "key": "autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/latents/ava_latent/day43 Bells/pk249/34/9249_38454.4158564815_4_12_9_58_50.npz"
+    },
+    {
+      "timestamp": "2026-05-18 10:41:11",
+      "size_bytes": 786,
+      "key": "autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/latents/ava_latent/day43 Bells/pk249/34/9249_38454.4161111111_4_12_9_59_12.json"
+    },
+    {
+      "timestamp": "2026-05-18 10:41:11",
+      "size_bytes": 2607,
+      "key": "autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/latents/ava_latent/day43 Bells/pk249/34/9249_38454.4161111111_4_12_9_59_12.npz"
+    }
+  ]
+}

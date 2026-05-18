@@ -1,0 +1,5 @@
+{
+    "jobArn": "arn:aws:batch:us-east-1:108633434817:job/fc42735b-b329-4b2d-9c10-b5546fad3a37",
+    "jobName": "ava-developmental-baseline-latent-benchmark",
+    "jobId": "fc42735b-b329-4b2d-9c10-b5546fad3a37"
+}

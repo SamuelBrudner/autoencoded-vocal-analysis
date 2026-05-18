@@ -1,0 +1,54 @@
+{
+  "created_utc": "2026-05-18T14:41:11Z",
+  "status": "ok",
+  "manifest_s3_uri": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/inputs/developmental_cohort_manifest.json",
+  "config_s3_uri": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/inputs/config.yaml",
+  "checkpoint_s3_uri": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/inputs/checkpoint_050.tar",
+  "s3_audio_root": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/audio",
+  "s3_roi_root": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/roi",
+  "s3_latent_root": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/latents/ava_latent",
+  "split": "all",
+  "num_shards": 2,
+  "shard_index": 1,
+  "max_dirs": 2,
+  "max_files_per_dir": 2,
+  "max_clips": null,
+  "subset_manifest_counts": {
+    "train": 1,
+    "test": 0
+  },
+  "export_split": "all",
+  "download_jobs": 8,
+  "download_total": 2,
+  "download_elapsed_sec": 5.25722861289978,
+  "audio_wav_counts": [
+    {
+      "audio_dir_rel": "day43 Bells/pk249/34",
+      "wav_count": 328
+    }
+  ],
+  "roi_format": "parquet",
+  "no_rois": false,
+  "planned_total": 2,
+  "selected_for_shard": 1,
+  "latent_summary": {
+    "created_utc": "2026-05-18T14:41:09Z",
+    "manifest_path": "/tmp/ava_latent_workdir/inputs/manifest_subset.json",
+    "config_path": "/tmp/ava_latent_workdir/inputs/config.yaml",
+    "checkpoint_path": "/tmp/ava_latent_workdir/inputs/checkpoint.tar",
+    "out_dir": "/tmp/ava_latent_workdir/latent",
+    "split": "all",
+    "roi_format": "parquet",
+    "roi_parquet_name": "roi.parquet",
+    "num_shards": 1,
+    "shard_index": 0,
+    "total": 2,
+    "exported": 2,
+    "skipped": 0,
+    "skipped_existing": 0,
+    "skipped_no_roi": 0,
+    "skipped_no_windows": 0,
+    "failed": 0,
+    "errors": []
+  }
+}

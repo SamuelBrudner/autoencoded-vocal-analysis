@@ -1,0 +1,61 @@
+{
+  "created_utc": "2026-05-18T14:43:08Z",
+  "array_job_id": "7e0a05d5-8443-4182-bac8-7931885fd9ee",
+  "counts": {
+    "SUBMITTED": 0,
+    "PENDING": 0,
+    "RUNNABLE": 0,
+    "STARTING": 0,
+    "RUNNING": 0,
+    "SUCCEEDED": 2,
+    "FAILED": 0
+  },
+  "examples": {
+    "SUCCEEDED": [
+      {
+        "jobId": "7e0a05d5-8443-4182-bac8-7931885fd9ee:0",
+        "jobName": "ava-developmental-baseline-latent-smoke",
+        "capacityUsage": [
+          {
+            "capacityUnit": "VCPU",
+            "quantity": 2.0
+          }
+        ],
+        "createdAt": 1779115204248,
+        "status": "SUCCEEDED",
+        "statusReason": "Essential container in task exited",
+        "startedAt": 1779115256521,
+        "stoppedAt": 1779115296202,
+        "container": {
+          "exitCode": 0
+        },
+        "arrayProperties": {
+          "index": 0,
+          "statusSummary": {}
+        }
+      },
+      {
+        "jobId": "7e0a05d5-8443-4182-bac8-7931885fd9ee:1",
+        "jobName": "ava-developmental-baseline-latent-smoke",
+        "capacityUsage": [
+          {
+            "capacityUnit": "VCPU",
+            "quantity": 2.0
+          }
+        ],
+        "createdAt": 1779115204248,
+        "status": "SUCCEEDED",
+        "statusReason": "Essential container in task exited",
+        "startedAt": 1779115256234,
+        "stoppedAt": 1779115297813,
+        "container": {
+          "exitCode": 0
+        },
+        "arrayProperties": {
+          "index": 1,
+          "statusSummary": {}
+        }
+      }
+    ]
+  }
+}

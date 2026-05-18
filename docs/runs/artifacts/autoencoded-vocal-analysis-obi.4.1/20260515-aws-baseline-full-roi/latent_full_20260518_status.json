@@ -1,0 +1,254 @@
+{
+  "created_utc": "2026-05-18T14:57:12Z",
+  "array_job_id": "5956c373-8e36-4fbf-aad1-da43cabb5dd8",
+  "counts": {
+    "SUBMITTED": 0,
+    "PENDING": 0,
+    "RUNNABLE": 592,
+    "STARTING": 1,
+    "RUNNING": 7,
+    "SUCCEEDED": 2,
+    "FAILED": 0
+  },
+  "examples": {
+    "RUNNABLE": [
+      {
+        "jobId": "5956c373-8e36-4fbf-aad1-da43cabb5dd8:3",
+        "jobName": "ava-developmental-baseline-latent-full",
+        "capacityUsage": [
+          {
+            "capacityUnit": "VCPU",
+            "quantity": 2.0
+          }
+        ],
+        "createdAt": 1779115852738,
+        "status": "RUNNABLE",
+        "arrayProperties": {
+          "index": 3,
+          "statusSummary": {}
+        }
+      },
+      {
+        "jobId": "5956c373-8e36-4fbf-aad1-da43cabb5dd8:4",
+        "jobName": "ava-developmental-baseline-latent-full",
+        "capacityUsage": [
+          {
+            "capacityUnit": "VCPU",
+            "quantity": 2.0
+          }
+        ],
+        "createdAt": 1779115852739,
+        "status": "RUNNABLE",
+        "arrayProperties": {
+          "index": 4,
+          "statusSummary": {}
+        }
+      },
+      {
+        "jobId": "5956c373-8e36-4fbf-aad1-da43cabb5dd8:5",
+        "jobName": "ava-developmental-baseline-latent-full",
+        "capacityUsage": [
+          {
+            "capacityUnit": "VCPU",
+            "quantity": 2.0
+          }
+        ],
+        "createdAt": 1779115852739,
+        "status": "RUNNABLE",
+        "arrayProperties": {
+          "index": 5,
+          "statusSummary": {}
+        }
+      },
+      {
+        "jobId": "5956c373-8e36-4fbf-aad1-da43cabb5dd8:13",
+        "jobName": "ava-developmental-baseline-latent-full",
+        "capacityUsage": [
+          {
+            "capacityUnit": "VCPU",
+            "quantity": 2.0
+          }
+        ],
+        "createdAt": 1779115852768,
+        "status": "RUNNABLE",
+        "arrayProperties": {
+          "index": 13,
+          "statusSummary": {}
+        }
+      },
+      {
+        "jobId": "5956c373-8e36-4fbf-aad1-da43cabb5dd8:14",
+        "jobName": "ava-developmental-baseline-latent-full",
+        "capacityUsage": [
+          {
+            "capacityUnit": "VCPU",
+            "quantity": 2.0
+          }
+        ],
+        "createdAt": 1779115852768,
+        "status": "RUNNABLE",
+        "arrayProperties": {
+          "index": 14,
+          "statusSummary": {}
+        }
+      }
+    ],
+    "STARTING": [
+      {
+        "jobId": "5956c373-8e36-4fbf-aad1-da43cabb5dd8:2",
+        "jobName": "ava-developmental-baseline-latent-full",
+        "capacityUsage": [
+          {
+            "capacityUnit": "VCPU",
+            "quantity": 2.0
+          }
+        ],
+        "createdAt": 1779115852738,
+        "status": "STARTING",
+        "container": {},
+        "arrayProperties": {
+          "index": 2,
+          "statusSummary": {}
+        }
+      }
+    ],
+    "RUNNING": [
+      {
+        "jobId": "5956c373-8e36-4fbf-aad1-da43cabb5dd8:6",
+        "jobName": "ava-developmental-baseline-latent-full",
+        "capacityUsage": [
+          {
+            "capacityUnit": "VCPU",
+            "quantity": 2.0
+          }
+        ],
+        "createdAt": 1779115852740,
+        "status": "RUNNING",
+        "startedAt": 1779115902307,
+        "container": {},
+        "arrayProperties": {
+          "index": 6,
+          "statusSummary": {}
+        }
+      },
+      {
+        "jobId": "5956c373-8e36-4fbf-aad1-da43cabb5dd8:7",
+        "jobName": "ava-developmental-baseline-latent-full",
+        "capacityUsage": [
+          {
+            "capacityUnit": "VCPU",
+            "quantity": 2.0
+          }
+        ],
+        "createdAt": 1779115852740,
+        "status": "RUNNING",
+        "startedAt": 1779115902506,
+        "container": {},
+        "arrayProperties": {
+          "index": 7,
+          "statusSummary": {}
+        }
+      },
+      {
+        "jobId": "5956c373-8e36-4fbf-aad1-da43cabb5dd8:8",
+        "jobName": "ava-developmental-baseline-latent-full",
+        "capacityUsage": [
+          {
+            "capacityUnit": "VCPU",
+            "quantity": 2.0
+          }
+        ],
+        "createdAt": 1779115852741,
+        "status": "RUNNING",
+        "startedAt": 1779115902662,
+        "container": {},
+        "arrayProperties": {
+          "index": 8,
+          "statusSummary": {}
+        }
+      },
+      {
+        "jobId": "5956c373-8e36-4fbf-aad1-da43cabb5dd8:9",
+        "jobName": "ava-developmental-baseline-latent-full",
+        "capacityUsage": [
+          {
+            "capacityUnit": "VCPU",
+            "quantity": 2.0
+          }
+        ],
+        "createdAt": 1779115852742,
+        "status": "RUNNING",
+        "startedAt": 1779115902262,
+        "container": {},
+        "arrayProperties": {
+          "index": 9,
+          "statusSummary": {}
+        }
+      },
+      {
+        "jobId": "5956c373-8e36-4fbf-aad1-da43cabb5dd8:10",
+        "jobName": "ava-developmental-baseline-latent-full",
+        "capacityUsage": [
+          {
+            "capacityUnit": "VCPU",
+            "quantity": 2.0
+          }
+        ],
+        "createdAt": 1779115852751,
+        "status": "RUNNING",
+        "startedAt": 1779115902388,
+        "container": {},
+        "arrayProperties": {
+          "index": 10,
+          "statusSummary": {}
+        }
+      }
+    ],
+    "SUCCEEDED": [
+      {
+        "jobId": "5956c373-8e36-4fbf-aad1-da43cabb5dd8:0",
+        "jobName": "ava-developmental-baseline-latent-full",
+        "capacityUsage": [
+          {
+            "capacityUnit": "VCPU",
+            "quantity": 2.0
+          }
+        ],
+        "createdAt": 1779115852737,
+        "status": "SUCCEEDED",
+        "statusReason": "Essential container in task exited",
+        "startedAt": 1779116144448,
+        "stoppedAt": 1779116213520,
+        "container": {
+          "exitCode": 0
+        },
+        "arrayProperties": {
+          "index": 0,
+          "statusSummary": {}
+        }
+      },
+      {
+        "jobId": "5956c373-8e36-4fbf-aad1-da43cabb5dd8:1",
+        "jobName": "ava-developmental-baseline-latent-full",
+        "capacityUsage": [
+          {
+            "capacityUnit": "VCPU",
+            "quantity": 2.0
+          }
+        ],
+        "createdAt": 1779115852737,
+        "status": "SUCCEEDED",
+        "statusReason": "Essential container in task exited",
+        "startedAt": 1779115902565,
+        "stoppedAt": 1779116095476,
+        "container": {
+          "exitCode": 0
+        },
+        "arrayProperties": {
+          "index": 1,
+          "statusSummary": {}
+        }
+      }
+    ]
+  }
+}

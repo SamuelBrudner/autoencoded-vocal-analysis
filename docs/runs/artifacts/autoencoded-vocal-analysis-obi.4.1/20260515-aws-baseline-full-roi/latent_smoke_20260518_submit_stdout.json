@@ -1,0 +1,5 @@
+{
+    "jobArn": "arn:aws:batch:us-east-1:108633434817:job/7e0a05d5-8443-4182-bac8-7931885fd9ee",
+    "jobName": "ava-developmental-baseline-latent-smoke",
+    "jobId": "7e0a05d5-8443-4182-bac8-7931885fd9ee"
+}
