@@ -1,0 +1,332 @@
+{
+  "created_utc": "2026-05-18T14:35:52Z",
+  "rows": [
+    {
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day 90 samba/R470/38",
+      "audio_dir_rel": "day 90 samba/R470/38",
+      "total_wavs": 1583,
+      "bad_header_count": 222,
+      "zero_size_count": 0,
+      "bad_examples": [
+        {
+          "file": "470_May_26_2003_14_57_03.wav",
+          "header_hex": "00000000",
+          "size": 97324
+        },
+        {
+          "file": "470_May_26_2003_14_57_04.wav",
+          "header_hex": "00000000",
+          "size": 166444
+        },
+        {
+          "file": "470_May_26_2003_14_57_07.wav",
+          "header_hex": "00000000",
+          "size": 94764
+        },
+        {
+          "file": "470_May_26_2003_14_57_09.wav",
+          "header_hex": "00000000",
+          "size": 97324
+        },
+        {
+          "file": "470_May_26_2003_14_57_11.wav",
+          "header_hex": "00000000",
+          "size": 176684
+        },
+        {
+          "file": "470_May_26_2003_14_57_13.wav",
+          "header_hex": "00000000",
+          "size": 184364
+        },
+        {
+          "file": "470_May_26_2003_14_57_15.wav",
+          "header_hex": "00000000",
+          "size": 97324
+        },
+        {
+          "file": "470_May_26_2003_14_57_19.wav",
+          "header_hex": "00000000",
+          "size": 97324
+        },
+        {
+          "file": "470_May_26_2003_14_57_23.wav",
+          "header_hex": "00000000",
+          "size": 194604
+        },
+        {
+          "file": "470_May_26_2003_14_57_25.wav",
+          "header_hex": "00000000",
+          "size": 169004
+        },
+        {
+          "file": "470_May_26_2003_14_57_27.wav",
+          "header_hex": "00000000",
+          "size": 217644
+        },
+        {
+          "file": "470_May_26_2003_14_57_31.wav",
+          "header_hex": "00000000",
+          "size": 92204
+        },
+        {
+          "file": "470_May_26_2003_14_57_33.wav",
+          "header_hex": "00000000",
+          "size": 99884
+        },
+        {
+          "file": "470_May_26_2003_14_57_34.wav",
+          "header_hex": "00000000",
+          "size": 99884
+        },
+        {
+          "file": "470_May_26_2003_14_57_37.wav",
+          "header_hex": "00000000",
+          "size": 94764
+        },
+        {
+          "file": "470_May_26_2003_14_57_38.wav",
+          "header_hex": "00000000",
+          "size": 97324
+        },
+        {
+          "file": "470_May_26_2003_14_57_40.wav",
+          "header_hex": "00000000",
+          "size": 97324
+        },
+        {
+          "file": "470_May_26_2003_14_57_43.wav",
+          "header_hex": "00000000",
+          "size": 94764
+        },
+        {
+          "file": "470_May_26_2003_14_57_44.wav",
+          "header_hex": "00000000",
+          "size": 97324
+        },
+        {
+          "file": "470_May_26_2003_14_57_46.wav",
+          "header_hex": "00000000",
+          "size": 92204
+        }
+      ]
+    },
+    {
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day 90 samba/R470/42",
+      "audio_dir_rel": "day 90 samba/R470/42",
+      "total_wavs": 1234,
+      "bad_header_count": 365,
+      "zero_size_count": 0,
+      "bad_examples": [
+        {
+          "file": "470_May_30_2003_16_33_04.wav",
+          "header_hex": "00000000",
+          "size": 89644
+        },
+        {
+          "file": "470_May_30_2003_16_33_06.wav",
+          "header_hex": "00000000",
+          "size": 92204
+        },
+        {
+          "file": "470_May_30_2003_16_33_18.wav",
+          "header_hex": "00000000",
+          "size": 89644
+        },
+        {
+          "file": "470_May_30_2003_16_33_25.wav",
+          "header_hex": "00000000",
+          "size": 135724
+        },
+        {
+          "file": "470_May_30_2003_16_33_28.wav",
+          "header_hex": "00000000",
+          "size": 89644
+        },
+        {
+          "file": "470_May_30_2003_16_33_30.wav",
+          "header_hex": "00000000",
+          "size": 92204
+        },
+        {
+          "file": "470_May_30_2003_16_33_32.wav",
+          "header_hex": "00000000",
+          "size": 184364
+        },
+        {
+          "file": "470_May_30_2003_16_33_36.wav",
+          "header_hex": "00000000",
+          "size": 94764
+        },
+        {
+          "file": "470_May_30_2003_16_33_39.wav",
+          "header_hex": "00000000",
+          "size": 133164
+        },
+        {
+          "file": "470_May_30_2003_16_33_46.wav",
+          "header_hex": "00000000",
+          "size": 335404
+        },
+        {
+          "file": "470_May_30_2003_16_33_54.wav",
+          "header_hex": "00000000",
+          "size": 153644
+        },
+        {
+          "file": "470_May_30_2003_16_33_57.wav",
+          "header_hex": "00000000",
+          "size": 92204
+        },
+        {
+          "file": "470_May_30_2003_16_34_21.wav",
+          "header_hex": "00000000",
+          "size": 181804
+        },
+        {
+          "file": "470_May_30_2003_16_34_23.wav",
+          "header_hex": "00000000",
+          "size": 122924
+        },
+        {
+          "file": "470_May_30_2003_16_34_27.wav",
+          "header_hex": "00000000",
+          "size": 130604
+        },
+        {
+          "file": "470_May_30_2003_16_35_39.wav",
+          "header_hex": "00000000",
+          "size": 89644
+        },
+        {
+          "file": "470_May_30_2003_16_35_42.wav",
+          "header_hex": "00000000",
+          "size": 89644
+        },
+        {
+          "file": "470_May_30_2003_16_35_47.wav",
+          "header_hex": "00000000",
+          "size": 102444
+        },
+        {
+          "file": "470_May_30_2003_16_36_47.wav",
+          "header_hex": "00000000",
+          "size": 89644
+        },
+        {
+          "file": "470_May_30_2003_16_36_49.wav",
+          "header_hex": "00000000",
+          "size": 89644
+        }
+      ]
+    },
+    {
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day 90 samba/R470/47",
+      "audio_dir_rel": "day 90 samba/R470/47",
+      "total_wavs": 1884,
+      "bad_header_count": 130,
+      "zero_size_count": 0,
+      "bad_examples": [
+        {
+          "file": "470_June_04_2003_15_16_19.wav",
+          "header_hex": "00000000",
+          "size": 192044
+        },
+        {
+          "file": "470_June_04_2003_15_16_22.wav",
+          "header_hex": "00000000",
+          "size": 94764
+        },
+        {
+          "file": "470_June_04_2003_15_20_20.wav",
+          "header_hex": "00000000",
+          "size": 148524
+        },
+        {
+          "file": "470_June_04_2003_15_20_30.wav",
+          "header_hex": "00000000",
+          "size": 102444
+        },
+        {
+          "file": "470_June_04_2003_15_20_51.wav",
+          "header_hex": "00000000",
+          "size": 102444
+        },
+        {
+          "file": "470_June_04_2003_15_21_01.wav",
+          "header_hex": "00000000",
+          "size": 181804
+        },
+        {
+          "file": "470_June_04_2003_15_21_13.wav",
+          "header_hex": "00000000",
+          "size": 281644
+        },
+        {
+          "file": "470_June_04_2003_15_21_22.wav",
+          "header_hex": "e5268729",
+          "size": 166444
+        },
+        {
+          "file": "470_June_04_2003_15_22_12.wav",
+          "header_hex": "00000000",
+          "size": 181804
+        },
+        {
+          "file": "470_June_04_2003_15_25_34.wav",
+          "header_hex": "00000000",
+          "size": 99884
+        },
+        {
+          "file": "470_June_04_2003_15_26_03.wav",
+          "header_hex": "00000000",
+          "size": 202284
+        },
+        {
+          "file": "470_June_04_2003_15_26_10.wav",
+          "header_hex": "00000000",
+          "size": 245804
+        },
+        {
+          "file": "470_June_04_2003_15_26_19.wav",
+          "header_hex": "00000000",
+          "size": 263724
+        },
+        {
+          "file": "470_June_04_2003_15_26_34.wav",
+          "header_hex": "49004400",
+          "size": 107564
+        },
+        {
+          "file": "470_June_04_2003_15_31_22.wav",
+          "header_hex": "00000000",
+          "size": 122924
+        },
+        {
+          "file": "470_June_04_2003_15_33_00.wav",
+          "header_hex": "00000000",
+          "size": 145964
+        },
+        {
+          "file": "470_June_04_2003_15_33_25.wav",
+          "header_hex": "00000000",
+          "size": 181804
+        },
+        {
+          "file": "470_June_04_2003_15_33_45.wav",
+          "header_hex": "00000000",
+          "size": 89644
+        },
+        {
+          "file": "470_June_04_2003_15_37_59.wav",
+          "header_hex": "00000000",
+          "size": 89644
+        },
+        {
+          "file": "470_June_04_2003_15_38_05.wav",
+          "header_hex": "00000000",
+          "size": 92204
+        }
+      ]
+    }
+  ]
+}

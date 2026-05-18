@@ -1,0 +1,25 @@
+{
+  "created_utc": "2026-05-18T14:35:52Z",
+  "uploads": [
+    {
+      "local_path": "/tmp/ava_roi_r470_recovered/roi/day 90 samba/R470/38/roi.parquet",
+      "s3_uri": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/roi/day 90 samba/R470/38/roi.parquet",
+      "size_bytes": 28047
+    },
+    {
+      "local_path": "/tmp/ava_roi_r470_recovered/roi/day 90 samba/R470/42/roi.parquet",
+      "s3_uri": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/roi/day 90 samba/R470/42/roi.parquet",
+      "size_bytes": 28257
+    },
+    {
+      "local_path": "/tmp/ava_roi_r470_recovered/roi/day 90 samba/R470/47/roi.parquet",
+      "s3_uri": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/roi/day 90 samba/R470/47/roi.parquet",
+      "size_bytes": 69535
+    },
+    {
+      "local_path": "docs/runs/artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/roi_retry_r470_recovered_summary.json",
+      "s3_uri": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/summaries/roi-local-recovery-20260518/roi_retry_r470_recovered_summary.json",
+      "size_bytes": 13117
+    }
+  ]
+}

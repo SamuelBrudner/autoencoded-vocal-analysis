@@ -1,0 +1,35 @@
+{
+  "train": [
+    {
+      "audio_dir_rel": "day 90 samba/R470/38",
+      "bird_id_norm": "R470",
+      "dph": 38.0,
+      "num_files": 1583,
+      "regime": "samba",
+      "split": "train",
+      "source_array_index": 364,
+      "retry_manifest_index": 4
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/42",
+      "bird_id_norm": "R470",
+      "dph": 42.0,
+      "num_files": 1234,
+      "regime": "samba",
+      "split": "train",
+      "source_array_index": 368,
+      "retry_manifest_index": 5
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/47",
+      "bird_id_norm": "R470",
+      "dph": 47.0,
+      "num_files": 1884,
+      "regime": "samba",
+      "split": "train",
+      "source_array_index": 373,
+      "retry_manifest_index": 6
+    }
+  ],
+  "test": []
+}

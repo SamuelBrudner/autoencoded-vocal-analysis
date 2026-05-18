@@ -1,0 +1,49 @@
+{
+  "created_utc": "2026-05-18T14:29:50Z",
+  "manifest_path": "/Users/samuelbrudner/.codex/worktrees/cc22/autoencoded-vocal-analysis/docs/runs/artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/roi_retry_r470_local_debug_manifest.json",
+  "segment_config": "examples/configs/birdsong_roi_medium_pilot.yaml",
+  "split": "all",
+  "audio_root": "/Volumes/samsung_ssd/data/birdsong",
+  "roi_root": "/tmp/ava_roi_r470_debug/roi",
+  "num_shards": 1,
+  "shard_index": 0,
+  "planned_total": 3,
+  "skipped_existing": 0,
+  "total": 3,
+  "ok": 0,
+  "failed": 3,
+  "elapsed_sec": 6.752232074737549,
+  "dirs_per_sec": 0.44429752514343285,
+  "errors": [
+    {
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day 90 samba/R470/38",
+      "roi_dir": "/tmp/ava_roi_r470_debug/roi/day 90 samba/R470/38",
+      "status": "error",
+      "attempts": 1,
+      "elapsed_sec": 2.5970988273620605,
+      "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported.",
+      "clips_total": null,
+      "segments_total": null
+    },
+    {
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day 90 samba/R470/42",
+      "roi_dir": "/tmp/ava_roi_r470_debug/roi/day 90 samba/R470/42",
+      "status": "error",
+      "attempts": 1,
+      "elapsed_sec": 3.688271999359131,
+      "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported.",
+      "clips_total": null,
+      "segments_total": null
+    },
+    {
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day 90 samba/R470/47",
+      "roi_dir": "/tmp/ava_roi_r470_debug/roi/day 90 samba/R470/47",
+      "status": "error",
+      "attempts": 1,
+      "elapsed_sec": 5.880864858627319,
+      "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported.",
+      "clips_total": null,
+      "segments_total": null
+    }
+  ]
+}

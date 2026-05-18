@@ -1,0 +1,299 @@
+{
+  "created_utc": "2026-05-18T14:33:20Z",
+  "manifest_path": "docs/runs/artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/roi_retry_r470_local_debug_manifest.json",
+  "segment_config": "examples/configs/birdsong_roi_medium_pilot.yaml",
+  "split": "all",
+  "audio_root": "/Volumes/samsung_ssd/data/birdsong",
+  "roi_root": "/tmp/ava_roi_r470_recovered/roi",
+  "num_shards": 1,
+  "shard_index": 0,
+  "planned_total": 3,
+  "skipped_existing": 0,
+  "total": 3,
+  "ok": 3,
+  "failed": 0,
+  "clips_total": 3984,
+  "segments_total": 19745,
+  "clips_failed_read": 717,
+  "elapsed_sec": 5.791613817214966,
+  "dirs_per_sec": 0.517990338216753,
+  "results": [
+    {
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day 90 samba/R470/38",
+      "roi_dir": "/tmp/ava_roi_r470_recovered/roi/day 90 samba/R470/38",
+      "status": "ok",
+      "attempts": 1,
+      "elapsed_sec": 3.32029390335083,
+      "clips_total": 1361,
+      "segments_total": 3662,
+      "clips_failed_read": 222,
+      "clip_read_error_examples": [
+        {
+          "clip_stem": "470_May_26_2003_14_57_03",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_May_26_2003_14_57_04",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_May_26_2003_14_57_07",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_May_26_2003_14_57_09",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_May_26_2003_14_57_11",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_May_26_2003_14_57_13",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_May_26_2003_14_57_15",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_May_26_2003_14_57_19",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_May_26_2003_14_57_23",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_May_26_2003_14_57_25",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_May_26_2003_14_57_27",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_May_26_2003_14_57_31",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_May_26_2003_14_57_33",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_May_26_2003_14_57_34",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_May_26_2003_14_57_37",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_May_26_2003_14_57_38",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_May_26_2003_14_57_40",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_May_26_2003_14_57_43",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_May_26_2003_14_57_44",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_May_26_2003_14_57_46",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        }
+      ]
+    },
+    {
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day 90 samba/R470/42",
+      "roi_dir": "/tmp/ava_roi_r470_recovered/roi/day 90 samba/R470/42",
+      "status": "ok",
+      "attempts": 1,
+      "elapsed_sec": 2.6216440200805664,
+      "clips_total": 869,
+      "segments_total": 4461,
+      "clips_failed_read": 365,
+      "clip_read_error_examples": [
+        {
+          "clip_stem": "470_May_30_2003_16_33_04",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_May_30_2003_16_33_06",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_May_30_2003_16_33_18",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_May_30_2003_16_33_25",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_May_30_2003_16_33_28",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_May_30_2003_16_33_30",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_May_30_2003_16_33_32",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_May_30_2003_16_33_36",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_May_30_2003_16_33_39",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_May_30_2003_16_33_46",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_May_30_2003_16_33_54",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_May_30_2003_16_33_57",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_May_30_2003_16_34_21",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_May_30_2003_16_34_23",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_May_30_2003_16_34_27",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_May_30_2003_16_35_39",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_May_30_2003_16_35_42",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_May_30_2003_16_35_47",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_May_30_2003_16_36_47",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_May_30_2003_16_36_49",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        }
+      ]
+    },
+    {
+      "audio_dir": "/Volumes/samsung_ssd/data/birdsong/day 90 samba/R470/47",
+      "roi_dir": "/tmp/ava_roi_r470_recovered/roi/day 90 samba/R470/47",
+      "status": "ok",
+      "attempts": 1,
+      "elapsed_sec": 4.894505977630615,
+      "clips_total": 1754,
+      "segments_total": 11622,
+      "clips_failed_read": 130,
+      "clip_read_error_examples": [
+        {
+          "clip_stem": "470_June_04_2003_15_16_19",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_June_04_2003_15_16_22",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_June_04_2003_15_20_20",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_June_04_2003_15_20_30",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_June_04_2003_15_20_51",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_June_04_2003_15_21_01",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_June_04_2003_15_21_13",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_June_04_2003_15_21_22",
+          "error": "File format b'\\xe5&\\x87)' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_June_04_2003_15_22_12",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_June_04_2003_15_25_34",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_June_04_2003_15_26_03",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_June_04_2003_15_26_10",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_June_04_2003_15_26_19",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_June_04_2003_15_26_34",
+          "error": "File format b'I\\x00D\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_June_04_2003_15_31_22",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_June_04_2003_15_33_00",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_June_04_2003_15_33_25",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_June_04_2003_15_33_45",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_June_04_2003_15_37_59",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        },
+        {
+          "clip_stem": "470_June_04_2003_15_38_05",
+          "error": "File format b'\\x00\\x00\\x00\\x00' not understood. Only 'RIFF', 'RIFX', and 'RF64' supported."
+        }
+      ]
+    }
+  ],
+  "errors": []
+}

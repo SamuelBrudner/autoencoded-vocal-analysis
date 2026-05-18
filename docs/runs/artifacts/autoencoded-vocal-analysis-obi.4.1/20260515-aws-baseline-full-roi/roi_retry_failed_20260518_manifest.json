@@ -1,0 +1,123 @@
+{
+  "train": [
+    {
+      "audio_dir_rel": "day90 bells/R467/80",
+      "bird_id_norm": "R467",
+      "dph": 80.0,
+      "num_files": 1,
+      "regime": "bells",
+      "split": "train",
+      "source_array_index": 152,
+      "retry_manifest_index": 0
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/83",
+      "bird_id_norm": "R467",
+      "dph": 83.0,
+      "num_files": 2,
+      "regime": "bells",
+      "split": "train",
+      "source_array_index": 154,
+      "retry_manifest_index": 1
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/44",
+      "bird_id_norm": "R404",
+      "dph": 44.0,
+      "num_files": 772,
+      "regime": "simple",
+      "split": "train",
+      "source_array_index": 165,
+      "retry_manifest_index": 2
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/86",
+      "bird_id_norm": "R150",
+      "dph": 86.0,
+      "num_files": 1455,
+      "regime": "samba",
+      "split": "train",
+      "source_array_index": 298,
+      "retry_manifest_index": 3
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/38",
+      "bird_id_norm": "R470",
+      "dph": 38.0,
+      "num_files": 1583,
+      "regime": "samba",
+      "split": "train",
+      "source_array_index": 364,
+      "retry_manifest_index": 4
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/42",
+      "bird_id_norm": "R470",
+      "dph": 42.0,
+      "num_files": 1234,
+      "regime": "samba",
+      "split": "train",
+      "source_array_index": 368,
+      "retry_manifest_index": 5
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/47",
+      "bird_id_norm": "R470",
+      "dph": 47.0,
+      "num_files": 1884,
+      "regime": "samba",
+      "split": "train",
+      "source_array_index": 373,
+      "retry_manifest_index": 6
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/66",
+      "bird_id_norm": "R203",
+      "dph": 66.0,
+      "num_files": 1323,
+      "regime": "isolates",
+      "split": "train",
+      "source_array_index": 431,
+      "retry_manifest_index": 7
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/75",
+      "bird_id_norm": "R203",
+      "dph": 75.0,
+      "num_files": 1082,
+      "regime": "isolates",
+      "split": "train",
+      "source_array_index": 440,
+      "retry_manifest_index": 8
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/81",
+      "bird_id_norm": "R203",
+      "dph": 81.0,
+      "num_files": 1778,
+      "regime": "isolates",
+      "split": "train",
+      "source_array_index": 446,
+      "retry_manifest_index": 9
+    }
+  ],
+  "test": [],
+  "metadata": {
+    "created_utc": "2026-05-18T14:23:04Z",
+    "source_manifest": "docs/runs/artifacts/autoencoded-vocal-analysis-obi.4.1/20260513-011500-developmental-input-inventory/developmental_cohort_manifest.json",
+    "source_array_job_id": "07e63d32-1441-4904-9600-773282a69ed5",
+    "source_failed_indices": [
+      152,
+      154,
+      165,
+      298,
+      364,
+      368,
+      373,
+      431,
+      440,
+      446
+    ],
+    "purpose": "Retry failed full ROI Batch array children after 592/602 succeeded."
+  }
+}

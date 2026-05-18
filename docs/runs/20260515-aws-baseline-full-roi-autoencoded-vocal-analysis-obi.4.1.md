@@ -35,6 +35,14 @@
 - `roi_full_child_status_initial`: `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/roi_full_child_status_initial.json`
 - `roi_full_child_status_followup`: `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/roi_full_child_status_followup.json`
 - `roi_full_child_status_latest`: `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/roi_full_child_status_latest.json`
+- `roi_retry_manifest`: `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/roi_retry_failed_20260518_manifest.json`
+- `roi_retry_index_map`: `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/roi_retry_failed_20260518_index_map.json`
+- `roi_retry_submit_stdout`: `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/roi_retry_20260518_submit_stdout.json`
+- `roi_retry_status`: `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/roi_retry_20260518_status.json`
+- `roi_retry_r470_bad_wav_inventory`: `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/roi_retry_r470_bad_wav_inventory.json`
+- `roi_retry_r470_local_debug_summary`: `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/roi_retry_r470_local_debug_summary.json`
+- `roi_retry_r470_recovered_summary`: `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/roi_retry_r470_recovered_summary.json`
+- `roi_retry_r470_recovered_uploads`: `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/roi_retry_r470_recovered_uploads.json`
 - `aws_staging_plan`: `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/aws_staging_plan.json`
 - `aws_preflight`: `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/aws_preflight.json`
 
@@ -62,8 +70,18 @@ The final strict audio coverage gate passed:
 - Count mismatch directories: 0.
 - Unmatched WAV keys: 0.
 
-The full ROI Batch array was submitted after the coverage gate passed. Initial child status showed 590 runnable, 4 starting, 3 running, 5 succeeded, and 0 failed. A follow-up snapshot showed 585 runnable, 1 starting, 6 running, 10 succeeded, and 0 failed. The latest snapshot before commit showed 563 runnable, 1 starting, 7 running, 31 succeeded, and 0 failed.
+The full ROI Batch array was submitted after the coverage gate passed. Initial child status showed 590 runnable, 4 starting, 3 running, 5 succeeded, and 0 failed. A follow-up snapshot showed 585 runnable, 1 starting, 6 running, 10 succeeded, and 0 failed. The latest snapshot before the first full-run commit showed 563 runnable, 1 starting, 7 running, 31 succeeded, and 0 failed.
+
+The full array reached terminal state with 592 succeeded and 10 failed. Seven failures were infrastructure/no-start failures and succeeded in a targeted 10-shard retry. The remaining three failures were R470 dph 38, 42, and 47; local reproduction showed unreadable WAV headers in those folders, so parquet ROI generation was patched to skip only clips that fail at `wavfile.read` and record read-skip counts in the ROI summary.
+
+The R470 local recovery generated ROI parquet bundles for all three remaining directories and uploaded them to the staged ROI prefix:
+
+- R470 dph 38: 1,361 readable clips, 3,662 ROI segments, 222 unreadable WAV headers skipped.
+- R470 dph 42: 869 readable clips, 4,461 ROI segments, 365 unreadable WAV headers skipped.
+- R470 dph 47: 1,754 readable clips, 11,622 ROI segments, 130 unreadable WAV headers skipped.
+
+Final ROI staging status is complete: 602/602 cohort directories now have `roi.parquet` in S3 and in the synced local ROI root. The post-recovery local inventory reports ROI parquet artifacts for all 11 requested birds; the only remaining input gap is latent export for the ten non-PK249 birds.
 
 ## Next Gate
 
-Monitor the full ROI array until all 602 shards are terminal. If any children fail, inspect the shard summaries and rerun only failed shards. If the array succeeds, sync or inventory ROI parquet outputs, then move to AVA latent export staging under `autoencoded-vocal-analysis-obi.4.1.2`.
+Move to AVA latent export staging under `autoencoded-vocal-analysis-obi.4.1.2`. Start with the existing two-shard smoke payload, then scale to the full cohort export once the smoke summaries show exported latents and expected no-ROI skips for unreadable R470 clips.

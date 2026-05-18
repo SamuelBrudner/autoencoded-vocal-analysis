@@ -1,0 +1,109 @@
+{
+  "created_utc": "2026-05-18T14:27:18Z",
+  "array_job_id": "f1deab0f-4d75-49ff-943c-c79b61d23f34",
+  "counts": {
+    "SUBMITTED": 0,
+    "PENDING": 0,
+    "RUNNABLE": 0,
+    "STARTING": 0,
+    "RUNNING": 0,
+    "SUCCEEDED": 7,
+    "FAILED": 3
+  },
+  "examples": {
+    "SUCCEEDED": [
+      {
+        "jobId": "f1deab0f-4d75-49ff-943c-c79b61d23f34:0",
+        "status": "SUCCEEDED",
+        "statusReason": "Essential container in task exited",
+        "arrayProperties": {
+          "index": 0,
+          "statusSummary": {}
+        }
+      },
+      {
+        "jobId": "f1deab0f-4d75-49ff-943c-c79b61d23f34:1",
+        "status": "SUCCEEDED",
+        "statusReason": "Essential container in task exited",
+        "arrayProperties": {
+          "index": 1,
+          "statusSummary": {}
+        }
+      },
+      {
+        "jobId": "f1deab0f-4d75-49ff-943c-c79b61d23f34:2",
+        "status": "SUCCEEDED",
+        "statusReason": "Essential container in task exited",
+        "arrayProperties": {
+          "index": 2,
+          "statusSummary": {}
+        }
+      },
+      {
+        "jobId": "f1deab0f-4d75-49ff-943c-c79b61d23f34:3",
+        "status": "SUCCEEDED",
+        "statusReason": "Essential container in task exited",
+        "arrayProperties": {
+          "index": 3,
+          "statusSummary": {}
+        }
+      },
+      {
+        "jobId": "f1deab0f-4d75-49ff-943c-c79b61d23f34:7",
+        "status": "SUCCEEDED",
+        "statusReason": "Essential container in task exited",
+        "arrayProperties": {
+          "index": 7,
+          "statusSummary": {}
+        }
+      },
+      {
+        "jobId": "f1deab0f-4d75-49ff-943c-c79b61d23f34:8",
+        "status": "SUCCEEDED",
+        "statusReason": "Essential container in task exited",
+        "arrayProperties": {
+          "index": 8,
+          "statusSummary": {}
+        }
+      },
+      {
+        "jobId": "f1deab0f-4d75-49ff-943c-c79b61d23f34:9",
+        "status": "SUCCEEDED",
+        "statusReason": "Essential container in task exited",
+        "arrayProperties": {
+          "index": 9,
+          "statusSummary": {}
+        }
+      }
+    ],
+    "FAILED": [
+      {
+        "jobId": "f1deab0f-4d75-49ff-943c-c79b61d23f34:4",
+        "status": "FAILED",
+        "statusReason": "Essential container in task exited",
+        "arrayProperties": {
+          "index": 4,
+          "statusSummary": {}
+        }
+      },
+      {
+        "jobId": "f1deab0f-4d75-49ff-943c-c79b61d23f34:5",
+        "status": "FAILED",
+        "statusReason": "Essential container in task exited",
+        "arrayProperties": {
+          "index": 5,
+          "statusSummary": {}
+        }
+      },
+      {
+        "jobId": "f1deab0f-4d75-49ff-943c-c79b61d23f34:6",
+        "status": "FAILED",
+        "statusReason": "Essential container in task exited",
+        "arrayProperties": {
+          "index": 6,
+          "statusSummary": {}
+        }
+      }
+    ]
+  }
+}

@@ -35,6 +35,7 @@ ALGORITHMS = {
 
 APPLEDOUBLE_PREFIX = "._"
 DEFAULT_ROI_PARQUET_NAME = "roi.parquet"
+MAX_CLIP_ERROR_EXAMPLES = 20
 
 
 def _load_segment_params(path: Path) -> dict:
@@ -171,7 +172,7 @@ def _segment_directory_to_parquet(
     roi_dir: str,
     params: dict,
     parquet_name: str,
-) -> tuple[int, int]:
+) -> tuple[int, int, int, list[dict]]:
     try:
         import pyarrow as pa  # type: ignore
         import pyarrow.parquet as pq  # type: ignore
@@ -196,6 +197,8 @@ def _segment_directory_to_parquet(
     wavs = _list_wavs(audio_dir)
     segments_total = 0
     clips_total = 0
+    clips_failed_read = 0
+    clip_read_error_examples: list[dict] = []
 
     try:
         with pq.ParquetWriter(str(tmp_path), schema=schema) as writer:
@@ -220,9 +223,20 @@ def _segment_directory_to_parquet(
                 batch_offsets.clear()
 
             for wav_path in wavs:
-                with warnings.catch_warnings():
-                    warnings.filterwarnings("ignore", category=WavFileWarning)
-                    fs, audio = wavfile.read(wav_path)
+                try:
+                    with warnings.catch_warnings():
+                        warnings.filterwarnings("ignore", category=WavFileWarning)
+                        fs, audio = wavfile.read(wav_path)
+                except Exception as exc:
+                    clips_failed_read += 1
+                    if len(clip_read_error_examples) < MAX_CLIP_ERROR_EXAMPLES:
+                        clip_read_error_examples.append(
+                            {
+                                "clip_stem": Path(wav_path).stem,
+                                "error": str(exc),
+                            }
+                        )
+                    continue
                 expected_fs = params.get("fs")
                 local_params = params
                 if expected_fs is not None and fs != expected_fs:
@@ -262,7 +276,7 @@ def _segment_directory_to_parquet(
                 tmp_path.unlink()
             except OSError:
                 pass
-    return clips_total, segments_total
+    return clips_total, segments_total, clips_failed_read, clip_read_error_examples
 
 
 def _run_segment_task(
@@ -278,19 +292,26 @@ def _run_segment_task(
     last_error = None
     clips_total = None
     segments_total = None
+    clips_failed_read = None
+    clip_read_error_examples: list[dict] = []
     while attempts <= max_retries:
         attempts += 1
         try:
             if roi_output_format == "txt":
                 segment(audio_dir, roi_dir, params, verbose=True)
             else:
-                clips_total, segments_total = _segment_directory_to_parquet(
+                (
+                    clips_total,
+                    segments_total,
+                    clips_failed_read,
+                    clip_read_error_examples,
+                ) = _segment_directory_to_parquet(
                     audio_dir,
                     roi_dir,
                     params,
                     parquet_name=roi_parquet_name,
                 )
-            return {
+            result = {
                 "audio_dir": audio_dir,
                 "roi_dir": roi_dir,
                 "status": "ok",
@@ -299,6 +320,11 @@ def _run_segment_task(
                 "clips_total": clips_total,
                 "segments_total": segments_total,
             }
+            if roi_output_format == "parquet":
+                result["clips_failed_read"] = int(clips_failed_read or 0)
+                if clip_read_error_examples:
+                    result["clip_read_error_examples"] = clip_read_error_examples
+            return result
         except Exception as exc:  # pragma: no cover - exercised via integration runs
             last_error = str(exc)
     return {
@@ -452,6 +478,9 @@ def main() -> None:
     )
 
     if args.summary_out is not None:
+        clips_total = sum(int(r.get("clips_total") or 0) for r in results)
+        segments_total = sum(int(r.get("segments_total") or 0) for r in results)
+        clips_failed_read = sum(int(r.get("clips_failed_read") or 0) for r in results)
         summary = {
             "created_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
             "manifest_path": args.manifest.as_posix() if args.manifest else None,
@@ -466,8 +495,12 @@ def main() -> None:
             "total": int(total),
             "ok": int(len(ok)),
             "failed": int(len(failed)),
+            "clips_total": int(clips_total),
+            "segments_total": int(segments_total),
+            "clips_failed_read": int(clips_failed_read),
             "elapsed_sec": float(elapsed),
             "dirs_per_sec": float(rate),
+            "results": results,
             "errors": failed,
         }
         args.summary_out.parent.mkdir(parents=True, exist_ok=True)
