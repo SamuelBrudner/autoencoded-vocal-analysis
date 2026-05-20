@@ -1,0 +1,1219 @@
+{
+  "analyzed_birds": [
+    "PK249",
+    "R122",
+    "R150",
+    "R203",
+    "R229",
+    "R404",
+    "R425",
+    "R426",
+    "R467",
+    "R470",
+    "R493"
+  ],
+  "branch_metrics": {
+    "branch_confidence": {
+      "bootstrap_iterations": 1000,
+      "bootstrap_mean_rho_ci95": [
+        0.45064976240364085,
+        0.7229642598990658
+      ],
+      "expected_sign": 1,
+      "expected_sign_count": 11,
+      "mean_rho": 0.6012620518041829,
+      "median_rho": 0.7004375799920866,
+      "n_birds": 11,
+      "per_bird": [
+        {
+          "bird_id": "PK249",
+          "bootstrap_rho_ci95": [
+            0.6604939604035351,
+            0.8754886947262539
+          ],
+          "regime": "bells",
+          "spearman_rho": 0.7887075660488807
+        },
+        {
+          "bird_id": "R122",
+          "bootstrap_rho_ci95": [
+            0.2859793499216888,
+            0.8199830743235157
+          ],
+          "regime": "bells",
+          "spearman_rho": 0.5989724652703418
+        },
+        {
+          "bird_id": "R150",
+          "bootstrap_rho_ci95": [
+            0.24446988203303605,
+            0.7843809084259903
+          ],
+          "regime": "samba",
+          "spearman_rho": 0.527023818866589
+        },
+        {
+          "bird_id": "R203",
+          "bootstrap_rho_ci95": [
+            0.4396056254159251,
+            0.9162964390844387
+          ],
+          "regime": "isolates",
+          "spearman_rho": 0.7472288359887264
+        },
+        {
+          "bird_id": "R229",
+          "bootstrap_rho_ci95": [
+            0.4752446834390665,
+            0.9010259386177711
+          ],
+          "regime": "bells",
+          "spearman_rho": 0.7306061573700702
+        },
+        {
+          "bird_id": "R404",
+          "bootstrap_rho_ci95": [
+            -0.039290303180434846,
+            0.5570288258000745
+          ],
+          "regime": "simple",
+          "spearman_rho": 0.28226963320208664
+        },
+        {
+          "bird_id": "R425",
+          "bootstrap_rho_ci95": [
+            -0.16031618432885794,
+            0.2735360416053357
+          ],
+          "regime": "samba",
+          "spearman_rho": 0.06405126152203486
+        },
+        {
+          "bird_id": "R426",
+          "bootstrap_rho_ci95": [
+            0.3299316124239391,
+            0.7794005684825113
+          ],
+          "regime": "bells",
+          "spearman_rho": 0.6025380161208523
+        },
+        {
+          "bird_id": "R467",
+          "bootstrap_rho_ci95": [
+            0.7210017172666354,
+            0.9081371636135761
+          ],
+          "regime": "bells",
+          "spearman_rho": 0.8417241169315407
+        },
+        {
+          "bird_id": "R470",
+          "bootstrap_rho_ci95": [
+            0.5389791635927604,
+            0.8567844879818189
+          ],
+          "regime": "samba",
+          "spearman_rho": 0.7303231185328022
+        },
+        {
+          "bird_id": "R493",
+          "bootstrap_rho_ci95": [
+            0.4889729746652058,
+            0.8467926812568671
+          ],
+          "regime": "samba",
+          "spearman_rho": 0.7004375799920866
+        }
+      ]
+    },
+    "branch_distance_margin": {
+      "bootstrap_iterations": 1000,
+      "bootstrap_mean_rho_ci95": [
+        0.467946333849426,
+        0.7342628925142084
+      ],
+      "expected_sign": 1,
+      "expected_sign_count": 11,
+      "mean_rho": 0.6118554901682626,
+      "median_rho": 0.7004600772360465,
+      "n_birds": 11,
+      "per_bird": [
+        {
+          "bird_id": "PK249",
+          "bootstrap_rho_ci95": [
+            0.7569930647631373,
+            0.9204893550950661
+          ],
+          "regime": "bells",
+          "spearman_rho": 0.8590937453760769
+        },
+        {
+          "bird_id": "R122",
+          "bootstrap_rho_ci95": [
+            0.30015875892642685,
+            0.8426484509018213
+          ],
+          "regime": "bells",
+          "spearman_rho": 0.6155942899844264
+        },
+        {
+          "bird_id": "R150",
+          "bootstrap_rho_ci95": [
+            0.21306433630575816,
+            0.7645156165205508
+          ],
+          "regime": "samba",
+          "spearman_rho": 0.5029499232216039
+        },
+        {
+          "bird_id": "R203",
+          "bootstrap_rho_ci95": [
+            0.4396056254159251,
+            0.9162964390844387
+          ],
+          "regime": "isolates",
+          "spearman_rho": 0.7472288359887264
+        },
+        {
+          "bird_id": "R229",
+          "bootstrap_rho_ci95": [
+            0.49527119882805537,
+            0.9109491579386657
+          ],
+          "regime": "bells",
+          "spearman_rho": 0.7367589655370457
+        },
+        {
+          "bird_id": "R404",
+          "bootstrap_rho_ci95": [
+            0.0847655468452339,
+            0.6055749080529714
+          ],
+          "regime": "simple",
+          "spearman_rho": 0.3759590492987931
+        },
+        {
+          "bird_id": "R425",
+          "bootstrap_rho_ci95": [
+            -0.16031618432885794,
+            0.2735360416053357
+          ],
+          "regime": "samba",
+          "spearman_rho": 0.06405126152203486
+        },
+        {
+          "bird_id": "R426",
+          "bootstrap_rho_ci95": [
+            0.29743703890645695,
+            0.766425343434064
+          ],
+          "regime": "bells",
+          "spearman_rho": 0.5795634456390721
+        },
+        {
+          "bird_id": "R467",
+          "bootstrap_rho_ci95": [
+            0.6911171397257284,
+            0.8903146771724635
+          ],
+          "regime": "bells",
+          "spearman_rho": 0.8161891892970734
+        },
+        {
+          "bird_id": "R470",
+          "bootstrap_rho_ci95": [
+            0.5408508463209208,
+            0.8603033403856397
+          ],
+          "regime": "samba",
+          "spearman_rho": 0.7325616087499888
+        },
+        {
+          "bird_id": "R493",
+          "bootstrap_rho_ci95": [
+            0.48924318832766317,
+            0.8467926812568671
+          ],
+          "regime": "samba",
+          "spearman_rho": 0.7004600772360465
+        }
+      ]
+    },
+    "branch_entropy": {
+      "bootstrap_iterations": 1000,
+      "bootstrap_mean_rho_ci95": [
+        -0.7196180113969689,
+        -0.47321348139827035
+      ],
+      "expected_sign": -1,
+      "expected_sign_count": 11,
+      "mean_rho": -0.6120202266208014,
+      "median_rho": -0.7004375799920866,
+      "n_birds": 11,
+      "per_bird": [
+        {
+          "bird_id": "PK249",
+          "bootstrap_rho_ci95": [
+            -0.8712316025521762,
+            -0.6571685123208576
+          ],
+          "regime": "bells",
+          "spearman_rho": -0.7839707934013077
+        },
+        {
+          "bird_id": "R122",
+          "bootstrap_rho_ci95": [
+            -0.8323829579747811,
+            -0.27921837256883825
+          ],
+          "regime": "bells",
+          "spearman_rho": -0.6024725722251091
+        },
+        {
+          "bird_id": "R150",
+          "bootstrap_rho_ci95": [
+            -0.7843809084259904,
+            -0.24446988203303607
+          ],
+          "regime": "samba",
+          "spearman_rho": -0.527023818866589
+        },
+        {
+          "bird_id": "R203",
+          "bootstrap_rho_ci95": [
+            -0.9162964390844387,
+            -0.43960562541592524
+          ],
+          "regime": "isolates",
+          "spearman_rho": -0.7472288359887264
+        },
+        {
+          "bird_id": "R229",
+          "bootstrap_rho_ci95": [
+            -0.8777180683529026,
+            -0.47013077596757724
+          ],
+          "regime": "bells",
+          "spearman_rho": -0.7067629661349702
+        },
+        {
+          "bird_id": "R404",
+          "bootstrap_rho_ci95": [
+            -0.6955371686783947,
+            -0.14769186795413244
+          ],
+          "regime": "simple",
+          "spearman_rho": -0.45816381874884254
+        },
+        {
+          "bird_id": "R425",
+          "bootstrap_rho_ci95": [
+            -0.27585092497811,
+            0.16189728873402726
+          ],
+          "regime": "samba",
+          "spearman_rho": -0.059791385081504445
+        },
+        {
+          "bird_id": "R426",
+          "bootstrap_rho_ci95": [
+            -0.7678152182245898,
+            -0.3028595442381859
+          ],
+          "regime": "bells",
+          "spearman_rho": -0.5813450425806812
+        },
+        {
+          "bird_id": "R467",
+          "bootstrap_rho_ci95": [
+            -0.9117279959728275,
+            -0.7408082340479547
+          ],
+          "regime": "bells",
+          "spearman_rho": -0.8507812624628791
+        },
+        {
+          "bird_id": "R470",
+          "bootstrap_rho_ci95": [
+            -0.8402455334062283,
+            -0.5225412073798341
+          ],
+          "regime": "samba",
+          "spearman_rho": -0.7142444173461183
+        },
+        {
+          "bird_id": "R493",
+          "bootstrap_rho_ci95": [
+            -0.8467926812568671,
+            -0.48897297466520584
+          ],
+          "regime": "samba",
+          "spearman_rho": -0.7004375799920866
+        }
+      ]
+    },
+    "branch_nearest_distance": {
+      "bootstrap_iterations": 1000,
+      "bootstrap_mean_rho_ci95": [
+        -0.6371904483710752,
+        -0.43184496462276634
+      ],
+      "expected_sign": -1,
+      "expected_sign_count": 11,
+      "mean_rho": -0.5321633037098518,
+      "median_rho": -0.5699328748031443,
+      "n_birds": 11,
+      "per_bird": [
+        {
+          "bird_id": "PK249",
+          "bootstrap_rho_ci95": [
+            -0.834034471763853,
+            -0.39950650748056005
+          ],
+          "regime": "bells",
+          "spearman_rho": -0.6459957316153161
+        },
+        {
+          "bird_id": "R122",
+          "bootstrap_rho_ci95": [
+            -0.8015584223281275,
+            -0.3432074843281204
+          ],
+          "regime": "bells",
+          "spearman_rho": -0.6128161591397031
+        },
+        {
+          "bird_id": "R150",
+          "bootstrap_rho_ci95": [
+            -0.6454753902857067,
+            -0.010429825814776672
+          ],
+          "regime": "samba",
+          "spearman_rho": -0.3080570546254146
+        },
+        {
+          "bird_id": "R203",
+          "bootstrap_rho_ci95": [
+            -0.9158793749362141,
+            -0.48449946910708513
+          ],
+          "regime": "isolates",
+          "spearman_rho": -0.7512292465457722
+        },
+        {
+          "bird_id": "R229",
+          "bootstrap_rho_ci95": [
+            -0.7569512141420219,
+            -0.17213936057454152
+          ],
+          "regime": "bells",
+          "spearman_rho": -0.4798620576403816
+        },
+        {
+          "bird_id": "R404",
+          "bootstrap_rho_ci95": [
+            -0.54502348672144,
+            0.035132554428751336
+          ],
+          "regime": "simple",
+          "spearman_rho": -0.28109408823625565
+        },
+        {
+          "bird_id": "R425",
+          "bootstrap_rho_ci95": [
+            -0.7346891023126009,
+            -0.3650207267493995
+          ],
+          "regime": "samba",
+          "spearman_rho": -0.5699328748031443
+        },
+        {
+          "bird_id": "R426",
+          "bootstrap_rho_ci95": [
+            -0.5477088829973519,
+            0.018896887722607517
+          ],
+          "regime": "bells",
+          "spearman_rho": -0.28558949216681734
+        },
+        {
+          "bird_id": "R467",
+          "bootstrap_rho_ci95": [
+            -0.8806677159307926,
+            -0.6590331683398084
+          ],
+          "regime": "bells",
+          "spearman_rho": -0.8056483123187785
+        },
+        {
+          "bird_id": "R470",
+          "bootstrap_rho_ci95": [
+            -0.7186902617897986,
+            -0.22720955167164977
+          ],
+          "regime": "samba",
+          "spearman_rho": -0.5021664217624491
+        },
+        {
+          "bird_id": "R493",
+          "bootstrap_rho_ci95": [
+            -0.7695051689737081,
+            -0.39204424410398886
+          ],
+          "regime": "samba",
+          "spearman_rho": -0.6114049019543362
+        }
+      ]
+    },
+    "branch_probability_margin": {
+      "bootstrap_iterations": 1000,
+      "bootstrap_mean_rho_ci95": [
+        0.4572348447946824,
+        0.7157724339115289
+      ],
+      "expected_sign": 1,
+      "expected_sign_count": 11,
+      "mean_rho": 0.6012313477388977,
+      "median_rho": 0.7004600772360465,
+      "n_birds": 11,
+      "per_bird": [
+        {
+          "bird_id": "PK249",
+          "bootstrap_rho_ci95": [
+            0.7050665145661162,
+            0.8897420559034271
+          ],
+          "regime": "bells",
+          "spearman_rho": 0.8219006235595583
+        },
+        {
+          "bird_id": "R122",
+          "bootstrap_rho_ci95": [
+            0.31783640297352417,
+            0.8543628006801982
+          ],
+          "regime": "bells",
+          "spearman_rho": 0.6297379012528412
+        },
+        {
+          "bird_id": "R150",
+          "bootstrap_rho_ci95": [
+            0.24551386891537008,
+            0.7841052498082774
+          ],
+          "regime": "samba",
+          "spearman_rho": 0.527678866522821
+        },
+        {
+          "bird_id": "R203",
+          "bootstrap_rho_ci95": [
+            0.4396056254159251,
+            0.9162964390844387
+          ],
+          "regime": "isolates",
+          "spearman_rho": 0.7472288359887264
+        },
+        {
+          "bird_id": "R229",
+          "bootstrap_rho_ci95": [
+            0.4752650325002718,
+            0.8995662397816055
+          ],
+          "regime": "bells",
+          "spearman_rho": 0.7303046296699336
+        },
+        {
+          "bird_id": "R404",
+          "bootstrap_rho_ci95": [
+            0.005680374692283714,
+            0.5854901737471109
+          ],
+          "regime": "simple",
+          "spearman_rho": 0.31423076237218467
+        },
+        {
+          "bird_id": "R425",
+          "bootstrap_rho_ci95": [
+            -0.16031618432885794,
+            0.2735360416053357
+          ],
+          "regime": "samba",
+          "spearman_rho": 0.06405126152203486
+        },
+        {
+          "bird_id": "R426",
+          "bootstrap_rho_ci95": [
+            0.3299316124239391,
+            0.7794005684825113
+          ],
+          "regime": "bells",
+          "spearman_rho": 0.6025380161208523
+        },
+        {
+          "bird_id": "R467",
+          "bootstrap_rho_ci95": [
+            0.5910543195508239,
+            0.8452614567911644
+          ],
+          "regime": "bells",
+          "spearman_rho": 0.744762607844387
+        },
+        {
+          "bird_id": "R470",
+          "bootstrap_rho_ci95": [
+            0.5389912999865559,
+            0.8567869824167884
+          ],
+          "regime": "samba",
+          "spearman_rho": 0.730651243038489
+        },
+        {
+          "bird_id": "R493",
+          "bootstrap_rho_ci95": [
+            0.48924318832766317,
+            0.8467926812568671
+          ],
+          "regime": "samba",
+          "spearman_rho": 0.7004600772360465
+        }
+      ]
+    },
+    "branch_within_standardized_distance": {
+      "bootstrap_iterations": 1000,
+      "bootstrap_mean_rho_ci95": [
+        -0.7286477088618463,
+        -0.5101872728159469
+      ],
+      "expected_sign": -1,
+      "expected_sign_count": 11,
+      "mean_rho": -0.6198412150737729,
+      "median_rho": -0.7138613574626717,
+      "n_birds": 11,
+      "per_bird": [
+        {
+          "bird_id": "PK249",
+          "bootstrap_rho_ci95": [
+            -0.8518454799706772,
+            -0.6116668556359485
+          ],
+          "regime": "bells",
+          "spearman_rho": -0.7496272553929496
+        },
+        {
+          "bird_id": "R122",
+          "bootstrap_rho_ci95": [
+            -0.8326083927080877,
+            -0.4799420957467256
+          ],
+          "regime": "bells",
+          "spearman_rho": -0.7138613574626717
+        },
+        {
+          "bird_id": "R150",
+          "bootstrap_rho_ci95": [
+            -0.897659546240527,
+            -0.5099091520769415
+          ],
+          "regime": "samba",
+          "spearman_rho": -0.7504281590189362
+        },
+        {
+          "bird_id": "R203",
+          "bootstrap_rho_ci95": [
+            -0.9255092023274167,
+            -0.7308627330964248
+          ],
+          "regime": "isolates",
+          "spearman_rho": -0.8514160335199052
+        },
+        {
+          "bird_id": "R229",
+          "bootstrap_rho_ci95": [
+            -0.9174473475612065,
+            -0.5543781400495156
+          ],
+          "regime": "bells",
+          "spearman_rho": -0.7775389591611301
+        },
+        {
+          "bird_id": "R404",
+          "bootstrap_rho_ci95": [
+            -0.6072654961992304,
+            -0.04174185564501917
+          ],
+          "regime": "simple",
+          "spearman_rho": -0.33781512605042013
+        },
+        {
+          "bird_id": "R425",
+          "bootstrap_rho_ci95": [
+            -0.8242691142135642,
+            -0.47707140591763364
+          ],
+          "regime": "samba",
+          "spearman_rho": -0.6830683080023633
+        },
+        {
+          "bird_id": "R426",
+          "bootstrap_rho_ci95": [
+            -0.7756360079405417,
+            -0.2789746577308894
+          ],
+          "regime": "bells",
+          "spearman_rho": -0.5702232351600791
+        },
+        {
+          "bird_id": "R467",
+          "bootstrap_rho_ci95": [
+            -0.5188487262117905,
+            0.05577084537654429
+          ],
+          "regime": "bells",
+          "spearman_rho": -0.2603075201600418
+        },
+        {
+          "bird_id": "R470",
+          "bootstrap_rho_ci95": [
+            -0.5833975757769023,
+            -0.15044148536002494
+          ],
+          "regime": "samba",
+          "spearman_rho": -0.381432224811195
+        },
+        {
+          "bird_id": "R493",
+          "bootstrap_rho_ci95": [
+            -0.861620275690983,
+            -0.5348844989605789
+          ],
+          "regime": "samba",
+          "spearman_rho": -0.7425351870718088
+        }
+      ]
+    }
+  },
+  "created_utc": "2026-05-20T23:19:36Z",
+  "missing_or_failed_birds": [],
+  "n_analyzed_birds": 11,
+  "n_expected_birds": 11,
+  "negative_controls": {
+    "poincare_radius": {
+      "bootstrap_iterations": 1000,
+      "bootstrap_mean_rho_ci95": [
+        -0.10520251305940892,
+        0.22089253235728146
+      ],
+      "expected_sign": 0,
+      "expected_sign_count": null,
+      "mean_rho": 0.066454035198545,
+      "median_rho": 0.1486216942558514,
+      "n_birds": 11,
+      "per_bird": [
+        {
+          "bird_id": "PK249",
+          "bootstrap_rho_ci95": [
+            -0.3359263562844824,
+            0.20288100900084124
+          ],
+          "regime": "bells",
+          "spearman_rho": -0.09523563006198975
+        },
+        {
+          "bird_id": "R122",
+          "bootstrap_rho_ci95": [
+            -0.427165170129208,
+            0.2198529220389368
+          ],
+          "regime": "bells",
+          "spearman_rho": -0.1216727696666873
+        },
+        {
+          "bird_id": "R150",
+          "bootstrap_rho_ci95": [
+            -0.047726697853936705,
+            0.50543264806121
+          ],
+          "regime": "samba",
+          "spearman_rho": 0.2641532609880617
+        },
+        {
+          "bird_id": "R203",
+          "bootstrap_rho_ci95": [
+            -0.25474481552213885,
+            0.5325010125953967
+          ],
+          "regime": "isolates",
+          "spearman_rho": 0.1486216942558514
+        },
+        {
+          "bird_id": "R229",
+          "bootstrap_rho_ci95": [
+            -0.13957871672841118,
+            0.37717010779733023
+          ],
+          "regime": "bells",
+          "spearman_rho": 0.11423718267126826
+        },
+        {
+          "bird_id": "R404",
+          "bootstrap_rho_ci95": [
+            -0.5134390937362107,
+            0.019918123922816864
+          ],
+          "regime": "simple",
+          "spearman_rho": -0.2783184248225026
+        },
+        {
+          "bird_id": "R425",
+          "bootstrap_rho_ci95": [
+            0.02746837164170299,
+            0.5385757660198242
+          ],
+          "regime": "samba",
+          "spearman_rho": 0.29441503795729046
+        },
+        {
+          "bird_id": "R426",
+          "bootstrap_rho_ci95": [
+            0.08622067178399972,
+            0.5927339032660792
+          ],
+          "regime": "bells",
+          "spearman_rho": 0.3739134152384772
+        },
+        {
+          "bird_id": "R467",
+          "bootstrap_rho_ci95": [
+            -0.09258817038939215,
+            0.4574826467794829
+          ],
+          "regime": "bells",
+          "spearman_rho": 0.19723746588834876
+        },
+        {
+          "bird_id": "R470",
+          "bootstrap_rho_ci95": [
+            -0.7160256362134153,
+            -0.27651123836708
+          ],
+          "regime": "samba",
+          "spearman_rho": -0.5301386301108986
+        },
+        {
+          "bird_id": "R493",
+          "bootstrap_rho_ci95": [
+            0.08535332194321359,
+            0.6020057267114813
+          ],
+          "regime": "samba",
+          "spearman_rho": 0.3637817848467754
+        }
+      ]
+    }
+  },
+  "regime_stratified": {
+    "bells": {
+      "birds": [
+        "PK249",
+        "R122",
+        "R229",
+        "R426",
+        "R467"
+      ],
+      "metrics": {
+        "branch_confidence": {
+          "expected_sign_count": 5,
+          "mean_rho": 0.7125096643483371,
+          "median_rho": 0.7306061573700702,
+          "n_birds": 5
+        },
+        "branch_distance_margin": {
+          "expected_sign_count": 5,
+          "mean_rho": 0.7214399271667389,
+          "median_rho": 0.7367589655370457,
+          "n_birds": 5
+        },
+        "branch_entropy": {
+          "expected_sign_count": 5,
+          "mean_rho": -0.7050665273609894,
+          "median_rho": -0.7067629661349702,
+          "n_birds": 5
+        },
+        "branch_nearest_distance": {
+          "expected_sign_count": 5,
+          "mean_rho": -0.5659823505761994,
+          "median_rho": -0.6128161591397031,
+          "n_birds": 5
+        },
+        "branch_probability_margin": {
+          "expected_sign_count": 5,
+          "mean_rho": 0.7058487556895146,
+          "median_rho": 0.7303046296699336,
+          "n_birds": 5
+        },
+        "branch_within_standardized_distance": {
+          "expected_sign_count": 5,
+          "mean_rho": -0.6143116654673744,
+          "median_rho": -0.7138613574626717,
+          "n_birds": 5
+        }
+      }
+    },
+    "isolates": {
+      "birds": [
+        "R203"
+      ],
+      "metrics": {
+        "branch_confidence": {
+          "expected_sign_count": 1,
+          "mean_rho": 0.7472288359887264,
+          "median_rho": 0.7472288359887264,
+          "n_birds": 1
+        },
+        "branch_distance_margin": {
+          "expected_sign_count": 1,
+          "mean_rho": 0.7472288359887264,
+          "median_rho": 0.7472288359887264,
+          "n_birds": 1
+        },
+        "branch_entropy": {
+          "expected_sign_count": 1,
+          "mean_rho": -0.7472288359887264,
+          "median_rho": -0.7472288359887264,
+          "n_birds": 1
+        },
+        "branch_nearest_distance": {
+          "expected_sign_count": 1,
+          "mean_rho": -0.7512292465457722,
+          "median_rho": -0.7512292465457722,
+          "n_birds": 1
+        },
+        "branch_probability_margin": {
+          "expected_sign_count": 1,
+          "mean_rho": 0.7472288359887264,
+          "median_rho": 0.7472288359887264,
+          "n_birds": 1
+        },
+        "branch_within_standardized_distance": {
+          "expected_sign_count": 1,
+          "mean_rho": -0.8514160335199052,
+          "median_rho": -0.8514160335199052,
+          "n_birds": 1
+        }
+      }
+    },
+    "samba": {
+      "birds": [
+        "R150",
+        "R425",
+        "R470",
+        "R493"
+      ],
+      "metrics": {
+        "branch_confidence": {
+          "expected_sign_count": 4,
+          "mean_rho": 0.5054589447283782,
+          "median_rho": 0.6137306994293378,
+          "n_birds": 4
+        },
+        "branch_distance_margin": {
+          "expected_sign_count": 4,
+          "mean_rho": 0.5000057176824185,
+          "median_rho": 0.6017050002288252,
+          "n_birds": 4
+        },
+        "branch_entropy": {
+          "expected_sign_count": 4,
+          "mean_rho": -0.5003743003215746,
+          "median_rho": -0.6137306994293378,
+          "n_birds": 4
+        },
+        "branch_nearest_distance": {
+          "expected_sign_count": 4,
+          "mean_rho": -0.49789031328633604,
+          "median_rho": -0.5360496482827967,
+          "n_birds": 4
+        },
+        "branch_probability_margin": {
+          "expected_sign_count": 4,
+          "mean_rho": 0.5057103620798479,
+          "median_rho": 0.6140694718794337,
+          "n_birds": 4
+        },
+        "branch_within_standardized_distance": {
+          "expected_sign_count": 4,
+          "mean_rho": -0.6393659697260758,
+          "median_rho": -0.712801747537086,
+          "n_birds": 4
+        }
+      }
+    },
+    "simple": {
+      "birds": [
+        "R404"
+      ],
+      "metrics": {
+        "branch_confidence": {
+          "expected_sign_count": 1,
+          "mean_rho": 0.28226963320208664,
+          "median_rho": 0.28226963320208664,
+          "n_birds": 1
+        },
+        "branch_distance_margin": {
+          "expected_sign_count": 1,
+          "mean_rho": 0.3759590492987931,
+          "median_rho": 0.3759590492987931,
+          "n_birds": 1
+        },
+        "branch_entropy": {
+          "expected_sign_count": 1,
+          "mean_rho": -0.45816381874884254,
+          "median_rho": -0.45816381874884254,
+          "n_birds": 1
+        },
+        "branch_nearest_distance": {
+          "expected_sign_count": 1,
+          "mean_rho": -0.28109408823625565,
+          "median_rho": -0.28109408823625565,
+          "n_birds": 1
+        },
+        "branch_probability_margin": {
+          "expected_sign_count": 1,
+          "mean_rho": 0.31423076237218467,
+          "median_rho": 0.31423076237218467,
+          "n_birds": 1
+        },
+        "branch_within_standardized_distance": {
+          "expected_sign_count": 1,
+          "mean_rho": -0.33781512605042013,
+          "median_rho": -0.33781512605042013,
+          "n_birds": 1
+        }
+      }
+    }
+  },
+  "replication_success": {
+    "criteria": {
+      "branch_confidence": {
+        "bootstrap_ci_excludes_zero": true,
+        "expected_sign_count": 11,
+        "passes": true,
+        "required_sign_count": 9,
+        "sign_count_pass": true
+      },
+      "branch_distance_margin": {
+        "bootstrap_ci_excludes_zero": true,
+        "expected_sign_count": 11,
+        "passes": true,
+        "required_sign_count": 9,
+        "sign_count_pass": true
+      },
+      "branch_entropy": {
+        "bootstrap_ci_excludes_zero": true,
+        "expected_sign_count": 11,
+        "passes": true,
+        "required_sign_count": 9,
+        "sign_count_pass": true
+      },
+      "branch_nearest_distance": {
+        "bootstrap_ci_excludes_zero": true,
+        "expected_sign_count": 11,
+        "passes": true,
+        "required_sign_count": 9,
+        "sign_count_pass": true
+      }
+    },
+    "min_success_birds": 9,
+    "n_expected_total": 11,
+    "passes": true
+  },
+  "sign_consistency_table": [
+    {
+      "bird_id": "PK249",
+      "branch_confidence_expected": true,
+      "branch_confidence_rho": 0.7887075660488807,
+      "branch_distance_margin_expected": true,
+      "branch_distance_margin_rho": 0.8590937453760769,
+      "branch_entropy_expected": true,
+      "branch_entropy_rho": -0.7839707934013077,
+      "branch_nearest_distance_expected": true,
+      "branch_nearest_distance_rho": -0.6459957316153161,
+      "branch_probability_margin_expected": true,
+      "branch_probability_margin_rho": 0.8219006235595583,
+      "branch_within_standardized_distance_expected": true,
+      "branch_within_standardized_distance_rho": -0.7496272553929496,
+      "poincare_radius_rho": -0.09523563006198975,
+      "regime": "bells"
+    },
+    {
+      "bird_id": "R122",
+      "branch_confidence_expected": true,
+      "branch_confidence_rho": 0.5989724652703418,
+      "branch_distance_margin_expected": true,
+      "branch_distance_margin_rho": 0.6155942899844264,
+      "branch_entropy_expected": true,
+      "branch_entropy_rho": -0.6024725722251091,
+      "branch_nearest_distance_expected": true,
+      "branch_nearest_distance_rho": -0.6128161591397031,
+      "branch_probability_margin_expected": true,
+      "branch_probability_margin_rho": 0.6297379012528412,
+      "branch_within_standardized_distance_expected": true,
+      "branch_within_standardized_distance_rho": -0.7138613574626717,
+      "poincare_radius_rho": -0.1216727696666873,
+      "regime": "bells"
+    },
+    {
+      "bird_id": "R150",
+      "branch_confidence_expected": true,
+      "branch_confidence_rho": 0.527023818866589,
+      "branch_distance_margin_expected": true,
+      "branch_distance_margin_rho": 0.5029499232216039,
+      "branch_entropy_expected": true,
+      "branch_entropy_rho": -0.527023818866589,
+      "branch_nearest_distance_expected": true,
+      "branch_nearest_distance_rho": -0.3080570546254146,
+      "branch_probability_margin_expected": true,
+      "branch_probability_margin_rho": 0.527678866522821,
+      "branch_within_standardized_distance_expected": true,
+      "branch_within_standardized_distance_rho": -0.7504281590189362,
+      "poincare_radius_rho": 0.2641532609880617,
+      "regime": "samba"
+    },
+    {
+      "bird_id": "R203",
+      "branch_confidence_expected": true,
+      "branch_confidence_rho": 0.7472288359887264,
+      "branch_distance_margin_expected": true,
+      "branch_distance_margin_rho": 0.7472288359887264,
+      "branch_entropy_expected": true,
+      "branch_entropy_rho": -0.7472288359887264,
+      "branch_nearest_distance_expected": true,
+      "branch_nearest_distance_rho": -0.7512292465457722,
+      "branch_probability_margin_expected": true,
+      "branch_probability_margin_rho": 0.7472288359887264,
+      "branch_within_standardized_distance_expected": true,
+      "branch_within_standardized_distance_rho": -0.8514160335199052,
+      "poincare_radius_rho": 0.1486216942558514,
+      "regime": "isolates"
+    },
+    {
+      "bird_id": "R229",
+      "branch_confidence_expected": true,
+      "branch_confidence_rho": 0.7306061573700702,
+      "branch_distance_margin_expected": true,
+      "branch_distance_margin_rho": 0.7367589655370457,
+      "branch_entropy_expected": true,
+      "branch_entropy_rho": -0.7067629661349702,
+      "branch_nearest_distance_expected": true,
+      "branch_nearest_distance_rho": -0.4798620576403816,
+      "branch_probability_margin_expected": true,
+      "branch_probability_margin_rho": 0.7303046296699336,
+      "branch_within_standardized_distance_expected": true,
+      "branch_within_standardized_distance_rho": -0.7775389591611301,
+      "poincare_radius_rho": 0.11423718267126826,
+      "regime": "bells"
+    },
+    {
+      "bird_id": "R404",
+      "branch_confidence_expected": true,
+      "branch_confidence_rho": 0.28226963320208664,
+      "branch_distance_margin_expected": true,
+      "branch_distance_margin_rho": 0.3759590492987931,
+      "branch_entropy_expected": true,
+      "branch_entropy_rho": -0.45816381874884254,
+      "branch_nearest_distance_expected": true,
+      "branch_nearest_distance_rho": -0.28109408823625565,
+      "branch_probability_margin_expected": true,
+      "branch_probability_margin_rho": 0.31423076237218467,
+      "branch_within_standardized_distance_expected": true,
+      "branch_within_standardized_distance_rho": -0.33781512605042013,
+      "poincare_radius_rho": -0.2783184248225026,
+      "regime": "simple"
+    },
+    {
+      "bird_id": "R425",
+      "branch_confidence_expected": true,
+      "branch_confidence_rho": 0.06405126152203486,
+      "branch_distance_margin_expected": true,
+      "branch_distance_margin_rho": 0.06405126152203486,
+      "branch_entropy_expected": true,
+      "branch_entropy_rho": -0.059791385081504445,
+      "branch_nearest_distance_expected": true,
+      "branch_nearest_distance_rho": -0.5699328748031443,
+      "branch_probability_margin_expected": true,
+      "branch_probability_margin_rho": 0.06405126152203486,
+      "branch_within_standardized_distance_expected": true,
+      "branch_within_standardized_distance_rho": -0.6830683080023633,
+      "poincare_radius_rho": 0.29441503795729046,
+      "regime": "samba"
+    },
+    {
+      "bird_id": "R426",
+      "branch_confidence_expected": true,
+      "branch_confidence_rho": 0.6025380161208523,
+      "branch_distance_margin_expected": true,
+      "branch_distance_margin_rho": 0.5795634456390721,
+      "branch_entropy_expected": true,
+      "branch_entropy_rho": -0.5813450425806812,
+      "branch_nearest_distance_expected": true,
+      "branch_nearest_distance_rho": -0.28558949216681734,
+      "branch_probability_margin_expected": true,
+      "branch_probability_margin_rho": 0.6025380161208523,
+      "branch_within_standardized_distance_expected": true,
+      "branch_within_standardized_distance_rho": -0.5702232351600791,
+      "poincare_radius_rho": 0.3739134152384772,
+      "regime": "bells"
+    },
+    {
+      "bird_id": "R467",
+      "branch_confidence_expected": true,
+      "branch_confidence_rho": 0.8417241169315407,
+      "branch_distance_margin_expected": true,
+      "branch_distance_margin_rho": 0.8161891892970734,
+      "branch_entropy_expected": true,
+      "branch_entropy_rho": -0.8507812624628791,
+      "branch_nearest_distance_expected": true,
+      "branch_nearest_distance_rho": -0.8056483123187785,
+      "branch_probability_margin_expected": true,
+      "branch_probability_margin_rho": 0.744762607844387,
+      "branch_within_standardized_distance_expected": true,
+      "branch_within_standardized_distance_rho": -0.2603075201600418,
+      "poincare_radius_rho": 0.19723746588834876,
+      "regime": "bells"
+    },
+    {
+      "bird_id": "R470",
+      "branch_confidence_expected": true,
+      "branch_confidence_rho": 0.7303231185328022,
+      "branch_distance_margin_expected": true,
+      "branch_distance_margin_rho": 0.7325616087499888,
+      "branch_entropy_expected": true,
+      "branch_entropy_rho": -0.7142444173461183,
+      "branch_nearest_distance_expected": true,
+      "branch_nearest_distance_rho": -0.5021664217624491,
+      "branch_probability_margin_expected": true,
+      "branch_probability_margin_rho": 0.730651243038489,
+      "branch_within_standardized_distance_expected": true,
+      "branch_within_standardized_distance_rho": -0.381432224811195,
+      "poincare_radius_rho": -0.5301386301108986,
+      "regime": "samba"
+    },
+    {
+      "bird_id": "R493",
+      "branch_confidence_expected": true,
+      "branch_confidence_rho": 0.7004375799920866,
+      "branch_distance_margin_expected": true,
+      "branch_distance_margin_rho": 0.7004600772360465,
+      "branch_entropy_expected": true,
+      "branch_entropy_rho": -0.7004375799920866,
+      "branch_nearest_distance_expected": true,
+      "branch_nearest_distance_rho": -0.6114049019543362,
+      "branch_probability_margin_expected": true,
+      "branch_probability_margin_rho": 0.7004600772360465,
+      "branch_within_standardized_distance_expected": true,
+      "branch_within_standardized_distance_rho": -0.7425351870718088,
+      "poincare_radius_rho": 0.3637817848467754,
+      "regime": "samba"
+    }
+  ]
+}

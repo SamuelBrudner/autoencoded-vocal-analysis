@@ -1,0 +1,296 @@
+{
+  "birds": {
+    "PK249": {
+      "bird_id": "PK249",
+      "coverage_metrics": null,
+      "event_table": null,
+      "events_loaded": 114690,
+      "manifest": {
+        "bird_id": "PK249",
+        "dph_max_all": 90.0,
+        "dph_min_all": 33.0,
+        "has_early_reference": true,
+        "has_late_reference": true,
+        "manifest_rows": 58,
+        "num_files": 95402,
+        "regimes": [
+          "bells"
+        ],
+        "splits": [
+          "train"
+        ],
+        "unique_dph_all": 58,
+        "unique_dph_in_range": 58
+      },
+      "reason": null,
+      "source_mode": "full_rebuild",
+      "status": "analyzed"
+    },
+    "R122": {
+      "bird_id": "R122",
+      "coverage_metrics": null,
+      "event_table": null,
+      "events_loaded": 78077,
+      "manifest": {
+        "bird_id": "R122",
+        "dph_max_all": 90.0,
+        "dph_min_all": 36.0,
+        "has_early_reference": true,
+        "has_late_reference": true,
+        "manifest_rows": 40,
+        "num_files": 52654,
+        "regimes": [
+          "bells"
+        ],
+        "splits": [
+          "train"
+        ],
+        "unique_dph_all": 40,
+        "unique_dph_in_range": 40
+      },
+      "reason": null,
+      "source_mode": "full_rebuild",
+      "status": "analyzed"
+    },
+    "R150": {
+      "bird_id": "R150",
+      "coverage_metrics": null,
+      "event_table": null,
+      "events_loaded": 94066,
+      "manifest": {
+        "bird_id": "R150",
+        "dph_max_all": 90.0,
+        "dph_min_all": 36.0,
+        "has_early_reference": true,
+        "has_late_reference": true,
+        "manifest_rows": 95,
+        "num_files": 130668,
+        "regimes": [
+          "samba"
+        ],
+        "splits": [
+          "train"
+        ],
+        "unique_dph_all": 49,
+        "unique_dph_in_range": 49
+      },
+      "reason": null,
+      "source_mode": "full_rebuild",
+      "status": "analyzed"
+    },
+    "R203": {
+      "bird_id": "R203",
+      "coverage_metrics": null,
+      "event_table": null,
+      "events_loaded": 68968,
+      "manifest": {
+        "bird_id": "R203",
+        "dph_max_all": 90.0,
+        "dph_min_all": 35.0,
+        "has_early_reference": true,
+        "has_late_reference": true,
+        "manifest_rows": 39,
+        "num_files": 48509,
+        "regimes": [
+          "isolates"
+        ],
+        "splits": [
+          "train"
+        ],
+        "unique_dph_all": 39,
+        "unique_dph_in_range": 39
+      },
+      "reason": null,
+      "source_mode": "full_rebuild",
+      "status": "analyzed"
+    },
+    "R229": {
+      "bird_id": "R229",
+      "coverage_metrics": null,
+      "event_table": null,
+      "events_loaded": 101328,
+      "manifest": {
+        "bird_id": "R229",
+        "dph_max_all": 90.0,
+        "dph_min_all": 34.0,
+        "has_early_reference": true,
+        "has_late_reference": true,
+        "manifest_rows": 53,
+        "num_files": 66293,
+        "regimes": [
+          "bells"
+        ],
+        "splits": [
+          "train"
+        ],
+        "unique_dph_all": 53,
+        "unique_dph_in_range": 53
+      },
+      "reason": null,
+      "source_mode": "full_rebuild",
+      "status": "analyzed"
+    },
+    "R404": {
+      "bird_id": "R404",
+      "coverage_metrics": null,
+      "event_table": null,
+      "events_loaded": 99163,
+      "manifest": {
+        "bird_id": "R404",
+        "dph_max_all": 90.0,
+        "dph_min_all": 38.0,
+        "has_early_reference": true,
+        "has_late_reference": true,
+        "manifest_rows": 50,
+        "num_files": 146068,
+        "regimes": [
+          "simple"
+        ],
+        "splits": [
+          "train"
+        ],
+        "unique_dph_all": 50,
+        "unique_dph_in_range": 50
+      },
+      "reason": null,
+      "source_mode": "full_rebuild",
+      "status": "analyzed"
+    },
+    "R425": {
+      "bird_id": "R425",
+      "coverage_metrics": null,
+      "event_table": null,
+      "events_loaded": 88525,
+      "manifest": {
+        "bird_id": "R425",
+        "dph_max_all": 90.0,
+        "dph_min_all": 36.0,
+        "has_early_reference": true,
+        "has_late_reference": true,
+        "manifest_rows": 53,
+        "num_files": 77520,
+        "regimes": [
+          "samba"
+        ],
+        "splits": [
+          "train"
+        ],
+        "unique_dph_all": 53,
+        "unique_dph_in_range": 53
+      },
+      "reason": null,
+      "source_mode": "full_rebuild",
+      "status": "analyzed"
+    },
+    "R426": {
+      "bird_id": "R426",
+      "coverage_metrics": null,
+      "event_table": null,
+      "events_loaded": 94686,
+      "manifest": {
+        "bird_id": "R426",
+        "dph_max_all": 90.0,
+        "dph_min_all": 40.0,
+        "has_early_reference": true,
+        "has_late_reference": true,
+        "manifest_rows": 51,
+        "num_files": 160735,
+        "regimes": [
+          "bells"
+        ],
+        "splits": [
+          "train"
+        ],
+        "unique_dph_all": 51,
+        "unique_dph_in_range": 51
+      },
+      "reason": null,
+      "source_mode": "full_rebuild",
+      "status": "analyzed"
+    },
+    "R467": {
+      "bird_id": "R467",
+      "coverage_metrics": null,
+      "event_table": null,
+      "events_loaded": 93171,
+      "manifest": {
+        "bird_id": "R467",
+        "dph_max_all": 90.0,
+        "dph_min_all": 37.0,
+        "has_early_reference": true,
+        "has_late_reference": true,
+        "manifest_rows": 53,
+        "num_files": 158905,
+        "regimes": [
+          "bells"
+        ],
+        "splits": [
+          "train"
+        ],
+        "unique_dph_all": 53,
+        "unique_dph_in_range": 53
+      },
+      "reason": null,
+      "source_mode": "full_rebuild",
+      "status": "analyzed"
+    },
+    "R470": {
+      "bird_id": "R470",
+      "coverage_metrics": null,
+      "event_table": null,
+      "events_loaded": 102795,
+      "manifest": {
+        "bird_id": "R470",
+        "dph_max_all": 90.0,
+        "dph_min_all": 37.0,
+        "has_early_reference": true,
+        "has_late_reference": true,
+        "manifest_rows": 54,
+        "num_files": 73908,
+        "regimes": [
+          "samba"
+        ],
+        "splits": [
+          "train"
+        ],
+        "unique_dph_all": 54,
+        "unique_dph_in_range": 54
+      },
+      "reason": null,
+      "source_mode": "full_rebuild",
+      "status": "analyzed"
+    },
+    "R493": {
+      "bird_id": "R493",
+      "coverage_metrics": null,
+      "event_table": null,
+      "events_loaded": 110474,
+      "manifest": {
+        "bird_id": "R493",
+        "dph_max_all": 90.0,
+        "dph_min_all": 35.0,
+        "has_early_reference": true,
+        "has_late_reference": true,
+        "manifest_rows": 56,
+        "num_files": 127705,
+        "regimes": [
+          "samba"
+        ],
+        "splits": [
+          "train"
+        ],
+        "unique_dph_all": 56,
+        "unique_dph_in_range": 56
+      },
+      "reason": null,
+      "source_mode": "full_rebuild",
+      "status": "analyzed"
+    }
+  },
+  "created_utc": "2026-05-20T22:34:20Z",
+  "event_table_roots": [],
+  "latent_model_id": "ava_latent",
+  "latent_root": "/Volumes/samsung_ssd/data/ava_developmental_baseline_ava_latents/ava_latent",
+  "manifest_path": "/Users/samuelbrudner/.codex/worktrees/cc22/autoencoded-vocal-analysis/docs/runs/artifacts/autoencoded-vocal-analysis-obi.4.1/20260513-011500-developmental-input-inventory/developmental_cohort_manifest.json",
+  "roi_root": "/Volumes/samsung_ssd/data/ava_roi_birdsong_full"
+}
