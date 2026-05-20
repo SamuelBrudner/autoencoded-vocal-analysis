@@ -1,0 +1,10 @@
+{
+  "created_utc": "2026-05-20T14:43:00Z",
+  "status": "nothing_to_do",
+  "manifest_s3_uri": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/inputs/latent_retry_shard265_20260520_manifest.json",
+  "split": "all",
+  "num_shards": 2,
+  "shard_index": 1,
+  "planned_total": 1,
+  "selected_for_shard": 0
+}

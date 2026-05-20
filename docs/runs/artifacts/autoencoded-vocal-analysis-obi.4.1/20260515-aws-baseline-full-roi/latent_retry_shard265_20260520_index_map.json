@@ -1,0 +1,16 @@
+{
+  "created_utc": "2026-05-20T14:41:38Z",
+  "source_array_index": 265,
+  "retry_manifest": "docs/runs/artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/latent_retry_shard265_20260520_manifest.json",
+  "retry_array_size": 2,
+  "processing_retry_index": 0,
+  "noop_retry_index": 1,
+  "entry": {
+    "audio_dir_rel": "day 60 samba/R150/66",
+    "bird_id_norm": "R150",
+    "dph": 66.0,
+    "num_files": 1464,
+    "regime": "samba",
+    "split": "train"
+  }
+}

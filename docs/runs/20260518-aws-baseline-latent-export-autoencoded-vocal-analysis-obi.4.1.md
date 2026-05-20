@@ -47,6 +47,27 @@ The full 602-shard CPU latent export was submitted after the smoke and benchmark
   - `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/latent_full_20260518_submit_stdout.json`
   - `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/latent_full_20260518_status.json`
 
+## Retry
+
+The full array reached terminal state on 2026-05-19 with 601 succeeded and 1 failed. The single failed child was shard 265, which maps to `day 60 samba/R150/66`; it failed before container start due to an image-pull timeout, not an export error.
+
+A targeted retry was launched on 2026-05-20 using a one-directory manifest and a two-child array:
+
+- Retry job id: `92c3b944-93a4-41a6-9755-0129cd9e430b`.
+- Retry child 0 processed `day 60 samba/R150/66`; retry child 1 was the expected no-op shard.
+- Retry status: 2 succeeded, 0 failed.
+- Retry export: 1,464 clips seen, 1,462 exported, 2 skipped without ROI, 0 failed.
+- Combined full-plus-retry coverage: 602/602 shard summaries, 1,138,367 clips seen, 914,788 exported, 223,579 skipped, 0 failed.
+- Combined skip counts: 204,681 no-ROI skips and 18,898 no-window skips.
+- Retry artifacts:
+  - `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/latent_retry_shard265_20260520_manifest.json`
+  - `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/latent_retry_shard265_20260520_index_map.json`
+  - `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/latent_retry_shard265_20260520_payload.json`
+  - `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/latent_retry_shard265_20260520_submit_stdout.json`
+  - `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/latent_retry_shard265_20260520_status.json`
+  - `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/latent_retry_shard265_20260520_summaries/`
+  - `artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/latent_full_plus_retry_20260520_summary.json`
+
 ## Next Gate
 
-Continue monitoring the full export until all 602 children are terminal. Then sync latent outputs locally, rerun `scripts/inventory_developmental_replication_inputs.py`, and run the multi-bird developmental branch-commitment replication with no bird substitutions.
+Sync latent outputs locally, rerun `scripts/inventory_developmental_replication_inputs.py`, and run the multi-bird developmental branch-commitment replication with no bird substitutions.

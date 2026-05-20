@@ -1,0 +1,61 @@
+{
+  "created_utc": "2026-05-20T15:10:44Z",
+  "array_job_id": "92c3b944-93a4-41a6-9755-0129cd9e430b",
+  "counts": {
+    "SUBMITTED": 0,
+    "PENDING": 0,
+    "RUNNABLE": 0,
+    "STARTING": 0,
+    "RUNNING": 0,
+    "SUCCEEDED": 2,
+    "FAILED": 0
+  },
+  "examples": {
+    "SUCCEEDED": [
+      {
+        "jobId": "92c3b944-93a4-41a6-9755-0129cd9e430b:0",
+        "jobName": "ava-developmental-baseline-latent-retry-265",
+        "capacityUsage": [
+          {
+            "capacityUnit": "VCPU",
+            "quantity": 2.0
+          }
+        ],
+        "createdAt": 1779288122693,
+        "status": "SUCCEEDED",
+        "statusReason": "Essential container in task exited",
+        "startedAt": 1779288178368,
+        "stoppedAt": 1779289814092,
+        "container": {
+          "exitCode": 0
+        },
+        "arrayProperties": {
+          "index": 0,
+          "statusSummary": {}
+        }
+      },
+      {
+        "jobId": "92c3b944-93a4-41a6-9755-0129cd9e430b:1",
+        "jobName": "ava-developmental-baseline-latent-retry-265",
+        "capacityUsage": [
+          {
+            "capacityUnit": "VCPU",
+            "quantity": 2.0
+          }
+        ],
+        "createdAt": 1779288122693,
+        "status": "SUCCEEDED",
+        "statusReason": "Essential container in task exited",
+        "startedAt": 1779288176890,
+        "stoppedAt": 1779288205689,
+        "container": {
+          "exitCode": 0
+        },
+        "arrayProperties": {
+          "index": 1,
+          "statusSummary": {}
+        }
+      }
+    ]
+  }
+}

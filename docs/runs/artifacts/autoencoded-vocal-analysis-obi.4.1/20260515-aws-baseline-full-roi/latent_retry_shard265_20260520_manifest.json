@@ -1,0 +1,13 @@
+{
+  "train": [
+    {
+      "audio_dir_rel": "day 60 samba/R150/66",
+      "bird_id_norm": "R150",
+      "dph": 66.0,
+      "num_files": 1464,
+      "regime": "samba",
+      "split": "train"
+    }
+  ],
+  "test": []
+}

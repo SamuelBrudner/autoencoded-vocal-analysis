@@ -1,0 +1,38 @@
+{
+  "created_utc": "2026-05-20T15:11:16Z",
+  "cohort_shards_expected": 602,
+  "cohort_shards_with_export_summary": 602,
+  "missing_shard_indices": [],
+  "retry_recovered_original_shard_index": 265,
+  "retry_summary_path": "docs/runs/artifacts/autoencoded-vocal-analysis-obi.4.1/20260515-aws-baseline-full-roi/latent_retry_shard265_20260520_summaries/latent_export_summary_shard_0.json",
+  "totals": {
+    "total": 1138367,
+    "exported": 914788,
+    "skipped": 223579,
+    "skipped_existing": 0,
+    "skipped_no_roi": 204681,
+    "skipped_no_windows": 18898,
+    "failed": 0
+  },
+  "errors": [],
+  "retry_summary": {
+    "created_utc": "2026-05-20T14:59:02Z",
+    "manifest_path": "/tmp/ava_latent_workdir/inputs/manifest_subset.json",
+    "config_path": "/tmp/ava_latent_workdir/inputs/config.yaml",
+    "checkpoint_path": "/tmp/ava_latent_workdir/inputs/checkpoint.tar",
+    "out_dir": "/tmp/ava_latent_workdir/latent",
+    "split": "all",
+    "roi_format": "parquet",
+    "roi_parquet_name": "roi.parquet",
+    "num_shards": 1,
+    "shard_index": 0,
+    "total": 1464,
+    "exported": 1462,
+    "skipped": 2,
+    "skipped_existing": 0,
+    "skipped_no_roi": 2,
+    "skipped_no_windows": 0,
+    "failed": 0,
+    "errors": []
+  }
+}
