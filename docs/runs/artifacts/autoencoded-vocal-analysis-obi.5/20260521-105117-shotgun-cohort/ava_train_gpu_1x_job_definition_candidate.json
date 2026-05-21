@@ -1,0 +1,51 @@
+{
+  "containerProperties": {
+    "command": [],
+    "environment": [],
+    "executionRoleArn": "<copy from ava-train-gpu-4x>",
+    "image": "108633434817.dkr.ecr.us-east-1.amazonaws.com/ava-train:latest",
+    "jobRoleArn": "<copy from ava-train-gpu-4x>",
+    "linuxParameters": {
+      "devices": [],
+      "initProcessEnabled": true,
+      "sharedMemorySize": 16384,
+      "tmpfs": []
+    },
+    "mountPoints": [
+      {
+        "containerPath": "/mnt/ava_cache",
+        "readOnly": false,
+        "sourceVolume": "ava-cache"
+      }
+    ],
+    "resourceRequirements": [
+      {
+        "type": "VCPU",
+        "value": "8"
+      },
+      {
+        "type": "MEMORY",
+        "value": "32768"
+      },
+      {
+        "type": "GPU",
+        "value": "1"
+      }
+    ],
+    "volumes": [
+      {
+        "host": {
+          "sourcePath": "/mnt/ava_cache"
+        },
+        "name": "ava-cache"
+      }
+    ]
+  },
+  "jobDefinitionName": "ava-train-gpu-1x",
+  "notes": "Candidate only; do not pass this redacted artifact directly to aws batch register-job-definition.",
+  "platformCapabilities": [
+    "EC2"
+  ],
+  "sourceJobDefinition": "ava-train-gpu-4x",
+  "type": "container"
+}
