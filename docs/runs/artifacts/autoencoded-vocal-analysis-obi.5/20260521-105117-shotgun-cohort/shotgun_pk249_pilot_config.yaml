@@ -1,0 +1,97 @@
+preprocess:
+  fs: 44100
+  get_spec: get_spec
+  num_freq_bins: 128
+  num_time_bins: 64
+  nperseg: 512
+  noverlap: 256
+  max_dur: 1000000000.0
+  window_length: 0.03
+  min_freq: 300.0
+  max_freq: 10000.0
+  spec_min_val: 1.0
+  spec_max_val: 6.5
+  mel: true
+  time_stretch: false
+  within_syll_normalize: false
+  normalization_mode: global
+  normalization_method: robust
+  normalization_num_samples: 256
+  normalization_seed: 0
+  file_weight_mode: duration
+  file_weight_cap: null
+  roi_weight_mode: duration
+  sampling_seed: 0
+  log_window_indices: false
+  real_preprocess_params:
+  - min_freq
+  - max_freq
+  - spec_min_val
+  - spec_max_val
+  int_preprocess_params: []
+  binary_preprocess_params:
+  - mel
+  - within_syll_normalize
+augmentations:
+  enabled: false
+  seed: null
+  amplitude_scale:
+  - 0.9
+  - 1.1
+  noise_std: 0.0
+  time_shift_max_bins: 0
+  freq_shift_max_bins: 0
+  time_mask_max_bins: 0
+  time_mask_count: 0
+  freq_mask_max_bins: 0
+  freq_mask_count: 0
+data:
+  batch_size: 128
+  num_workers: null
+  shuffle_train: true
+  shuffle_test: false
+  min_spec_val: null
+  min_audio_energy: null
+  spec_cache_dir: /Volumes/samsung_ssd/data/birdsong/spec_cache
+  audio_cache_size: 16
+  pin_memory: true
+  persistent_workers: true
+  prefetch_factor: 2
+training:
+  lr: 0.001
+  z_dim: 32
+  model_precision: 10.0
+  learn_observation_scale: false
+  log_precision_min: null
+  log_precision_max: null
+  posterior_logvar_min: null
+  posterior_logvar_max: null
+  epochs: 10
+  test_freq: null
+  save_freq: 10
+  vis_freq: 1
+  num_specs: 5
+  gap:
+  - 2
+  - 6
+  vis_filename: reconstruction.pdf
+  input_shape: null
+  posterior_type: diag
+  conv_arch: residual
+  decoder_type: upsample
+  kl_beta: 1.0
+  kl_warmup_epochs: 20
+  kl_capacity_target: null
+  kl_capacity_warmup_epochs: 0
+  kl_capacity_penalty: 1.0
+  invariance_weight: 0.0
+  invariance_warmup_epochs: 0
+  invariance_loss: mse
+  invariance_stop_grad: none
+  compile_model: false
+  compile_kwargs: null
+  trainer_kwargs:
+    accelerator: gpu
+    devices: 1
+    precision: 16-mixed
+  stopping_kwargs: null

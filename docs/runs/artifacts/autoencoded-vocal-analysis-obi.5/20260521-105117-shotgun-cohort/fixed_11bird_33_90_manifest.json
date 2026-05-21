@@ -1,0 +1,4821 @@
+{
+  "test": [],
+  "train": [
+    {
+      "audio_dir_rel": "day43 Bells/pk249/33",
+      "bird_id_norm": "PK249",
+      "dph": 33.0,
+      "num_files": 140,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/34",
+      "bird_id_norm": "PK249",
+      "dph": 34.0,
+      "num_files": 328,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/35",
+      "bird_id_norm": "PK249",
+      "dph": 35.0,
+      "num_files": 471,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/36",
+      "bird_id_norm": "PK249",
+      "dph": 36.0,
+      "num_files": 764,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/37",
+      "bird_id_norm": "PK249",
+      "dph": 37.0,
+      "num_files": 592,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/38",
+      "bird_id_norm": "PK249",
+      "dph": 38.0,
+      "num_files": 1538,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/39",
+      "bird_id_norm": "PK249",
+      "dph": 39.0,
+      "num_files": 2121,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/40",
+      "bird_id_norm": "PK249",
+      "dph": 40.0,
+      "num_files": 2467,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/41",
+      "bird_id_norm": "PK249",
+      "dph": 41.0,
+      "num_files": 2248,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/42",
+      "bird_id_norm": "PK249",
+      "dph": 42.0,
+      "num_files": 2005,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/43",
+      "bird_id_norm": "PK249",
+      "dph": 43.0,
+      "num_files": 1658,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/44",
+      "bird_id_norm": "PK249",
+      "dph": 44.0,
+      "num_files": 1838,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/45",
+      "bird_id_norm": "PK249",
+      "dph": 45.0,
+      "num_files": 2267,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/46",
+      "bird_id_norm": "PK249",
+      "dph": 46.0,
+      "num_files": 1475,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/47",
+      "bird_id_norm": "PK249",
+      "dph": 47.0,
+      "num_files": 1731,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/48",
+      "bird_id_norm": "PK249",
+      "dph": 48.0,
+      "num_files": 1468,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/49",
+      "bird_id_norm": "PK249",
+      "dph": 49.0,
+      "num_files": 1324,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/50",
+      "bird_id_norm": "PK249",
+      "dph": 50.0,
+      "num_files": 1439,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/51",
+      "bird_id_norm": "PK249",
+      "dph": 51.0,
+      "num_files": 1709,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/52",
+      "bird_id_norm": "PK249",
+      "dph": 52.0,
+      "num_files": 1727,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/53",
+      "bird_id_norm": "PK249",
+      "dph": 53.0,
+      "num_files": 1619,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/54",
+      "bird_id_norm": "PK249",
+      "dph": 54.0,
+      "num_files": 1898,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/55",
+      "bird_id_norm": "PK249",
+      "dph": 55.0,
+      "num_files": 1811,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/56",
+      "bird_id_norm": "PK249",
+      "dph": 56.0,
+      "num_files": 1969,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/57",
+      "bird_id_norm": "PK249",
+      "dph": 57.0,
+      "num_files": 1961,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/58",
+      "bird_id_norm": "PK249",
+      "dph": 58.0,
+      "num_files": 1996,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/59",
+      "bird_id_norm": "PK249",
+      "dph": 59.0,
+      "num_files": 1711,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/60",
+      "bird_id_norm": "PK249",
+      "dph": 60.0,
+      "num_files": 2037,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/61",
+      "bird_id_norm": "PK249",
+      "dph": 61.0,
+      "num_files": 1941,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/62",
+      "bird_id_norm": "PK249",
+      "dph": 62.0,
+      "num_files": 1995,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/63",
+      "bird_id_norm": "PK249",
+      "dph": 63.0,
+      "num_files": 1713,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/64",
+      "bird_id_norm": "PK249",
+      "dph": 64.0,
+      "num_files": 1991,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/65",
+      "bird_id_norm": "PK249",
+      "dph": 65.0,
+      "num_files": 1807,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/66",
+      "bird_id_norm": "PK249",
+      "dph": 66.0,
+      "num_files": 1803,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/67",
+      "bird_id_norm": "PK249",
+      "dph": 67.0,
+      "num_files": 2141,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/68",
+      "bird_id_norm": "PK249",
+      "dph": 68.0,
+      "num_files": 2107,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/69",
+      "bird_id_norm": "PK249",
+      "dph": 69.0,
+      "num_files": 2032,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/70",
+      "bird_id_norm": "PK249",
+      "dph": 70.0,
+      "num_files": 1657,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/71",
+      "bird_id_norm": "PK249",
+      "dph": 71.0,
+      "num_files": 1945,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/72",
+      "bird_id_norm": "PK249",
+      "dph": 72.0,
+      "num_files": 1921,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/73",
+      "bird_id_norm": "PK249",
+      "dph": 73.0,
+      "num_files": 1497,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/74",
+      "bird_id_norm": "PK249",
+      "dph": 74.0,
+      "num_files": 1774,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/75",
+      "bird_id_norm": "PK249",
+      "dph": 75.0,
+      "num_files": 1568,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/76",
+      "bird_id_norm": "PK249",
+      "dph": 76.0,
+      "num_files": 1760,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/77",
+      "bird_id_norm": "PK249",
+      "dph": 77.0,
+      "num_files": 1769,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/78",
+      "bird_id_norm": "PK249",
+      "dph": 78.0,
+      "num_files": 1573,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/79",
+      "bird_id_norm": "PK249",
+      "dph": 79.0,
+      "num_files": 1071,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/80",
+      "bird_id_norm": "PK249",
+      "dph": 80.0,
+      "num_files": 1295,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/81",
+      "bird_id_norm": "PK249",
+      "dph": 81.0,
+      "num_files": 1442,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/82",
+      "bird_id_norm": "PK249",
+      "dph": 82.0,
+      "num_files": 1437,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/83",
+      "bird_id_norm": "PK249",
+      "dph": 83.0,
+      "num_files": 1680,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/84",
+      "bird_id_norm": "PK249",
+      "dph": 84.0,
+      "num_files": 1585,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/85",
+      "bird_id_norm": "PK249",
+      "dph": 85.0,
+      "num_files": 1789,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/86",
+      "bird_id_norm": "PK249",
+      "dph": 86.0,
+      "num_files": 1572,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/87",
+      "bird_id_norm": "PK249",
+      "dph": 87.0,
+      "num_files": 1749,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/88",
+      "bird_id_norm": "PK249",
+      "dph": 88.0,
+      "num_files": 1428,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/89",
+      "bird_id_norm": "PK249",
+      "dph": 89.0,
+      "num_files": 1667,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/90",
+      "bird_id_norm": "PK249",
+      "dph": 90.0,
+      "num_files": 1381,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/40",
+      "bird_id_norm": "R426",
+      "dph": 40.0,
+      "num_files": 21,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/41",
+      "bird_id_norm": "R426",
+      "dph": 41.0,
+      "num_files": 157,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/42",
+      "bird_id_norm": "R426",
+      "dph": 42.0,
+      "num_files": 108,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/43",
+      "bird_id_norm": "R426",
+      "dph": 43.0,
+      "num_files": 56,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/44",
+      "bird_id_norm": "R426",
+      "dph": 44.0,
+      "num_files": 132,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/45",
+      "bird_id_norm": "R426",
+      "dph": 45.0,
+      "num_files": 1822,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/46",
+      "bird_id_norm": "R426",
+      "dph": 46.0,
+      "num_files": 1729,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/47",
+      "bird_id_norm": "R426",
+      "dph": 47.0,
+      "num_files": 2935,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/48",
+      "bird_id_norm": "R426",
+      "dph": 48.0,
+      "num_files": 3068,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/49",
+      "bird_id_norm": "R426",
+      "dph": 49.0,
+      "num_files": 3957,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/50",
+      "bird_id_norm": "R426",
+      "dph": 50.0,
+      "num_files": 2654,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/51",
+      "bird_id_norm": "R426",
+      "dph": 51.0,
+      "num_files": 4826,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/52",
+      "bird_id_norm": "R426",
+      "dph": 52.0,
+      "num_files": 6092,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/53",
+      "bird_id_norm": "R426",
+      "dph": 53.0,
+      "num_files": 4817,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/54",
+      "bird_id_norm": "R426",
+      "dph": 54.0,
+      "num_files": 1414,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/55",
+      "bird_id_norm": "R426",
+      "dph": 55.0,
+      "num_files": 1328,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/56",
+      "bird_id_norm": "R426",
+      "dph": 56.0,
+      "num_files": 2590,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/57",
+      "bird_id_norm": "R426",
+      "dph": 57.0,
+      "num_files": 3920,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/58",
+      "bird_id_norm": "R426",
+      "dph": 58.0,
+      "num_files": 3874,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/59",
+      "bird_id_norm": "R426",
+      "dph": 59.0,
+      "num_files": 4707,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/60",
+      "bird_id_norm": "R426",
+      "dph": 60.0,
+      "num_files": 5537,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/61",
+      "bird_id_norm": "R426",
+      "dph": 61.0,
+      "num_files": 5865,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/62",
+      "bird_id_norm": "R426",
+      "dph": 62.0,
+      "num_files": 5242,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/63",
+      "bird_id_norm": "R426",
+      "dph": 63.0,
+      "num_files": 5673,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/64",
+      "bird_id_norm": "R426",
+      "dph": 64.0,
+      "num_files": 5367,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/65",
+      "bird_id_norm": "R426",
+      "dph": 65.0,
+      "num_files": 5361,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/66",
+      "bird_id_norm": "R426",
+      "dph": 66.0,
+      "num_files": 4302,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/67",
+      "bird_id_norm": "R426",
+      "dph": 67.0,
+      "num_files": 3600,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/68",
+      "bird_id_norm": "R426",
+      "dph": 68.0,
+      "num_files": 2669,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/69",
+      "bird_id_norm": "R426",
+      "dph": 69.0,
+      "num_files": 1603,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/70",
+      "bird_id_norm": "R426",
+      "dph": 70.0,
+      "num_files": 4010,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/71",
+      "bird_id_norm": "R426",
+      "dph": 71.0,
+      "num_files": 4376,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/72",
+      "bird_id_norm": "R426",
+      "dph": 72.0,
+      "num_files": 3448,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/73",
+      "bird_id_norm": "R426",
+      "dph": 73.0,
+      "num_files": 3734,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/74",
+      "bird_id_norm": "R426",
+      "dph": 74.0,
+      "num_files": 1467,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/75",
+      "bird_id_norm": "R426",
+      "dph": 75.0,
+      "num_files": 1056,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/76",
+      "bird_id_norm": "R426",
+      "dph": 76.0,
+      "num_files": 2701,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/77",
+      "bird_id_norm": "R426",
+      "dph": 77.0,
+      "num_files": 3251,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/78",
+      "bird_id_norm": "R426",
+      "dph": 78.0,
+      "num_files": 2459,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/79",
+      "bird_id_norm": "R426",
+      "dph": 79.0,
+      "num_files": 1973,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/80",
+      "bird_id_norm": "R426",
+      "dph": 80.0,
+      "num_files": 3328,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/81",
+      "bird_id_norm": "R426",
+      "dph": 81.0,
+      "num_files": 3874,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/82",
+      "bird_id_norm": "R426",
+      "dph": 82.0,
+      "num_files": 3729,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/83",
+      "bird_id_norm": "R426",
+      "dph": 83.0,
+      "num_files": 3028,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/84",
+      "bird_id_norm": "R426",
+      "dph": 84.0,
+      "num_files": 2342,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/85",
+      "bird_id_norm": "R426",
+      "dph": 85.0,
+      "num_files": 2382,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/86",
+      "bird_id_norm": "R426",
+      "dph": 86.0,
+      "num_files": 2493,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/87",
+      "bird_id_norm": "R426",
+      "dph": 87.0,
+      "num_files": 3683,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/88",
+      "bird_id_norm": "R426",
+      "dph": 88.0,
+      "num_files": 1722,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/89",
+      "bird_id_norm": "R426",
+      "dph": 89.0,
+      "num_files": 5965,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 75 bells/R426/90",
+      "bird_id_norm": "R426",
+      "dph": 90.0,
+      "num_files": 4288,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/37",
+      "bird_id_norm": "R467",
+      "dph": 37.0,
+      "num_files": 173,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/38",
+      "bird_id_norm": "R467",
+      "dph": 38.0,
+      "num_files": 1147,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/39",
+      "bird_id_norm": "R467",
+      "dph": 39.0,
+      "num_files": 619,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/40",
+      "bird_id_norm": "R467",
+      "dph": 40.0,
+      "num_files": 336,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/41",
+      "bird_id_norm": "R467",
+      "dph": 41.0,
+      "num_files": 594,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/42",
+      "bird_id_norm": "R467",
+      "dph": 42.0,
+      "num_files": 1025,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/43",
+      "bird_id_norm": "R467",
+      "dph": 43.0,
+      "num_files": 1153,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/44",
+      "bird_id_norm": "R467",
+      "dph": 44.0,
+      "num_files": 1251,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/45",
+      "bird_id_norm": "R467",
+      "dph": 45.0,
+      "num_files": 1651,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/46",
+      "bird_id_norm": "R467",
+      "dph": 46.0,
+      "num_files": 1249,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/47",
+      "bird_id_norm": "R467",
+      "dph": 47.0,
+      "num_files": 1074,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/48",
+      "bird_id_norm": "R467",
+      "dph": 48.0,
+      "num_files": 807,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/49",
+      "bird_id_norm": "R467",
+      "dph": 49.0,
+      "num_files": 2002,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/50",
+      "bird_id_norm": "R467",
+      "dph": 50.0,
+      "num_files": 2858,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/51",
+      "bird_id_norm": "R467",
+      "dph": 51.0,
+      "num_files": 3156,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/52",
+      "bird_id_norm": "R467",
+      "dph": 52.0,
+      "num_files": 3552,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/53",
+      "bird_id_norm": "R467",
+      "dph": 53.0,
+      "num_files": 1164,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/54",
+      "bird_id_norm": "R467",
+      "dph": 54.0,
+      "num_files": 1193,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/55",
+      "bird_id_norm": "R467",
+      "dph": 55.0,
+      "num_files": 1231,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/56",
+      "bird_id_norm": "R467",
+      "dph": 56.0,
+      "num_files": 1272,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/57",
+      "bird_id_norm": "R467",
+      "dph": 57.0,
+      "num_files": 915,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/58",
+      "bird_id_norm": "R467",
+      "dph": 58.0,
+      "num_files": 897,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/59",
+      "bird_id_norm": "R467",
+      "dph": 59.0,
+      "num_files": 1276,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/60",
+      "bird_id_norm": "R467",
+      "dph": 60.0,
+      "num_files": 2606,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/61",
+      "bird_id_norm": "R467",
+      "dph": 61.0,
+      "num_files": 4410,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/62",
+      "bird_id_norm": "R467",
+      "dph": 62.0,
+      "num_files": 4213,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/63",
+      "bird_id_norm": "R467",
+      "dph": 63.0,
+      "num_files": 5606,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/64",
+      "bird_id_norm": "R467",
+      "dph": 64.0,
+      "num_files": 3042,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/65",
+      "bird_id_norm": "R467",
+      "dph": 65.0,
+      "num_files": 3237,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/66",
+      "bird_id_norm": "R467",
+      "dph": 66.0,
+      "num_files": 6762,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/67",
+      "bird_id_norm": "R467",
+      "dph": 67.0,
+      "num_files": 6671,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/68",
+      "bird_id_norm": "R467",
+      "dph": 68.0,
+      "num_files": 8331,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/69",
+      "bird_id_norm": "R467",
+      "dph": 69.0,
+      "num_files": 13369,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/70",
+      "bird_id_norm": "R467",
+      "dph": 70.0,
+      "num_files": 10101,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/71",
+      "bird_id_norm": "R467",
+      "dph": 71.0,
+      "num_files": 6500,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/72",
+      "bird_id_norm": "R467",
+      "dph": 72.0,
+      "num_files": 10956,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/73",
+      "bird_id_norm": "R467",
+      "dph": 73.0,
+      "num_files": 8260,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/74",
+      "bird_id_norm": "R467",
+      "dph": 74.0,
+      "num_files": 6644,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/75",
+      "bird_id_norm": "R467",
+      "dph": 75.0,
+      "num_files": 6072,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/76",
+      "bird_id_norm": "R467",
+      "dph": 76.0,
+      "num_files": 8725,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/77",
+      "bird_id_norm": "R467",
+      "dph": 77.0,
+      "num_files": 5134,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/78",
+      "bird_id_norm": "R467",
+      "dph": 78.0,
+      "num_files": 4624,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/79",
+      "bird_id_norm": "R467",
+      "dph": 79.0,
+      "num_files": 1,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/80",
+      "bird_id_norm": "R467",
+      "dph": 80.0,
+      "num_files": 1,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/82",
+      "bird_id_norm": "R467",
+      "dph": 82.0,
+      "num_files": 2,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/83",
+      "bird_id_norm": "R467",
+      "dph": 83.0,
+      "num_files": 2,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/84",
+      "bird_id_norm": "R467",
+      "dph": 84.0,
+      "num_files": 5,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/85",
+      "bird_id_norm": "R467",
+      "dph": 85.0,
+      "num_files": 384,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/86",
+      "bird_id_norm": "R467",
+      "dph": 86.0,
+      "num_files": 751,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/87",
+      "bird_id_norm": "R467",
+      "dph": 87.0,
+      "num_files": 552,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/88",
+      "bird_id_norm": "R467",
+      "dph": 88.0,
+      "num_files": 15,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/89",
+      "bird_id_norm": "R467",
+      "dph": 89.0,
+      "num_files": 582,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day90 bells/R467/90",
+      "bird_id_norm": "R467",
+      "dph": 90.0,
+      "num_files": 752,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/38",
+      "bird_id_norm": "R404",
+      "dph": 38.0,
+      "num_files": 93,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/39",
+      "bird_id_norm": "R404",
+      "dph": 39.0,
+      "num_files": 220,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/42",
+      "bird_id_norm": "R404",
+      "dph": 42.0,
+      "num_files": 310,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/44",
+      "bird_id_norm": "R404",
+      "dph": 44.0,
+      "num_files": 772,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/45",
+      "bird_id_norm": "R404",
+      "dph": 45.0,
+      "num_files": 1761,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/46",
+      "bird_id_norm": "R404",
+      "dph": 46.0,
+      "num_files": 1230,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/47",
+      "bird_id_norm": "R404",
+      "dph": 47.0,
+      "num_files": 1808,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/48",
+      "bird_id_norm": "R404",
+      "dph": 48.0,
+      "num_files": 1668,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/49",
+      "bird_id_norm": "R404",
+      "dph": 49.0,
+      "num_files": 2986,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/50",
+      "bird_id_norm": "R404",
+      "dph": 50.0,
+      "num_files": 1965,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/51",
+      "bird_id_norm": "R404",
+      "dph": 51.0,
+      "num_files": 1791,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/52",
+      "bird_id_norm": "R404",
+      "dph": 52.0,
+      "num_files": 1970,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/53",
+      "bird_id_norm": "R404",
+      "dph": 53.0,
+      "num_files": 2499,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/54",
+      "bird_id_norm": "R404",
+      "dph": 54.0,
+      "num_files": 2456,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/55",
+      "bird_id_norm": "R404",
+      "dph": 55.0,
+      "num_files": 1930,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/56",
+      "bird_id_norm": "R404",
+      "dph": 56.0,
+      "num_files": 2336,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/57",
+      "bird_id_norm": "R404",
+      "dph": 57.0,
+      "num_files": 2365,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/58",
+      "bird_id_norm": "R404",
+      "dph": 58.0,
+      "num_files": 1223,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/59",
+      "bird_id_norm": "R404",
+      "dph": 59.0,
+      "num_files": 165,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/60",
+      "bird_id_norm": "R404",
+      "dph": 60.0,
+      "num_files": 1252,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/61",
+      "bird_id_norm": "R404",
+      "dph": 61.0,
+      "num_files": 2572,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/62",
+      "bird_id_norm": "R404",
+      "dph": 62.0,
+      "num_files": 3001,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/63",
+      "bird_id_norm": "R404",
+      "dph": 63.0,
+      "num_files": 2371,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/64",
+      "bird_id_norm": "R404",
+      "dph": 64.0,
+      "num_files": 2138,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/65",
+      "bird_id_norm": "R404",
+      "dph": 65.0,
+      "num_files": 1690,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/66",
+      "bird_id_norm": "R404",
+      "dph": 66.0,
+      "num_files": 2531,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/67",
+      "bird_id_norm": "R404",
+      "dph": 67.0,
+      "num_files": 4052,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/68",
+      "bird_id_norm": "R404",
+      "dph": 68.0,
+      "num_files": 1027,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/69",
+      "bird_id_norm": "R404",
+      "dph": 69.0,
+      "num_files": 821,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/70",
+      "bird_id_norm": "R404",
+      "dph": 70.0,
+      "num_files": 542,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/71",
+      "bird_id_norm": "R404",
+      "dph": 71.0,
+      "num_files": 370,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/72",
+      "bird_id_norm": "R404",
+      "dph": 72.0,
+      "num_files": 651,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/73",
+      "bird_id_norm": "R404",
+      "dph": 73.0,
+      "num_files": 887,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/74",
+      "bird_id_norm": "R404",
+      "dph": 74.0,
+      "num_files": 3220,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/75",
+      "bird_id_norm": "R404",
+      "dph": 75.0,
+      "num_files": 8211,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/76",
+      "bird_id_norm": "R404",
+      "dph": 76.0,
+      "num_files": 6669,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/77",
+      "bird_id_norm": "R404",
+      "dph": 77.0,
+      "num_files": 6464,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/78",
+      "bird_id_norm": "R404",
+      "dph": 78.0,
+      "num_files": 9391,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/79",
+      "bird_id_norm": "R404",
+      "dph": 79.0,
+      "num_files": 11709,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/80",
+      "bird_id_norm": "R404",
+      "dph": 80.0,
+      "num_files": 12087,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/81",
+      "bird_id_norm": "R404",
+      "dph": 81.0,
+      "num_files": 5888,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/82",
+      "bird_id_norm": "R404",
+      "dph": 82.0,
+      "num_files": 1198,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/83",
+      "bird_id_norm": "R404",
+      "dph": 83.0,
+      "num_files": 1326,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/84",
+      "bird_id_norm": "R404",
+      "dph": 84.0,
+      "num_files": 1098,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/85",
+      "bird_id_norm": "R404",
+      "dph": 85.0,
+      "num_files": 4600,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/86",
+      "bird_id_norm": "R404",
+      "dph": 86.0,
+      "num_files": 7796,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/87",
+      "bird_id_norm": "R404",
+      "dph": 87.0,
+      "num_files": 5206,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/88",
+      "bird_id_norm": "R404",
+      "dph": 88.0,
+      "num_files": 4515,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/89",
+      "bird_id_norm": "R404",
+      "dph": 89.0,
+      "num_files": 2961,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 simple/R404/90",
+      "bird_id_norm": "R404",
+      "dph": 90.0,
+      "num_files": 276,
+      "regime": "simple",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/36",
+      "bird_id_norm": "R150",
+      "dph": 36.0,
+      "num_files": 211,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/36",
+      "bird_id_norm": "R150",
+      "dph": 36.0,
+      "num_files": 211,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/37",
+      "bird_id_norm": "R150",
+      "dph": 37.0,
+      "num_files": 383,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/37",
+      "bird_id_norm": "R150",
+      "dph": 37.0,
+      "num_files": 383,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/38",
+      "bird_id_norm": "R150",
+      "dph": 38.0,
+      "num_files": 572,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/38",
+      "bird_id_norm": "R150",
+      "dph": 38.0,
+      "num_files": 572,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/39",
+      "bird_id_norm": "R150",
+      "dph": 39.0,
+      "num_files": 958,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/39",
+      "bird_id_norm": "R150",
+      "dph": 39.0,
+      "num_files": 958,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/40",
+      "bird_id_norm": "R150",
+      "dph": 40.0,
+      "num_files": 1059,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/40",
+      "bird_id_norm": "R150",
+      "dph": 40.0,
+      "num_files": 1059,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/41",
+      "bird_id_norm": "R150",
+      "dph": 41.0,
+      "num_files": 1243,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/41",
+      "bird_id_norm": "R150",
+      "dph": 41.0,
+      "num_files": 1243,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/42",
+      "bird_id_norm": "R150",
+      "dph": 42.0,
+      "num_files": 1298,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/42",
+      "bird_id_norm": "R150",
+      "dph": 42.0,
+      "num_files": 1298,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/43",
+      "bird_id_norm": "R150",
+      "dph": 43.0,
+      "num_files": 1220,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/43",
+      "bird_id_norm": "R150",
+      "dph": 43.0,
+      "num_files": 1220,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/44",
+      "bird_id_norm": "R150",
+      "dph": 44.0,
+      "num_files": 1340,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/44",
+      "bird_id_norm": "R150",
+      "dph": 44.0,
+      "num_files": 1340,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/45",
+      "bird_id_norm": "R150",
+      "dph": 45.0,
+      "num_files": 1677,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/45",
+      "bird_id_norm": "R150",
+      "dph": 45.0,
+      "num_files": 1677,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/46",
+      "bird_id_norm": "R150",
+      "dph": 46.0,
+      "num_files": 1498,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/46",
+      "bird_id_norm": "R150",
+      "dph": 46.0,
+      "num_files": 1498,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/47",
+      "bird_id_norm": "R150",
+      "dph": 47.0,
+      "num_files": 1405,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/47",
+      "bird_id_norm": "R150",
+      "dph": 47.0,
+      "num_files": 1405,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/48",
+      "bird_id_norm": "R150",
+      "dph": 48.0,
+      "num_files": 1248,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/48",
+      "bird_id_norm": "R150",
+      "dph": 48.0,
+      "num_files": 1248,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/49",
+      "bird_id_norm": "R150",
+      "dph": 49.0,
+      "num_files": 1399,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/49",
+      "bird_id_norm": "R150",
+      "dph": 49.0,
+      "num_files": 1399,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/50",
+      "bird_id_norm": "R150",
+      "dph": 50.0,
+      "num_files": 1866,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/50",
+      "bird_id_norm": "R150",
+      "dph": 50.0,
+      "num_files": 1866,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/51",
+      "bird_id_norm": "R150",
+      "dph": 51.0,
+      "num_files": 1934,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/51",
+      "bird_id_norm": "R150",
+      "dph": 51.0,
+      "num_files": 1934,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/52",
+      "bird_id_norm": "R150",
+      "dph": 52.0,
+      "num_files": 2062,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/52",
+      "bird_id_norm": "R150",
+      "dph": 52.0,
+      "num_files": 2062,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/53",
+      "bird_id_norm": "R150",
+      "dph": 53.0,
+      "num_files": 2112,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/53",
+      "bird_id_norm": "R150",
+      "dph": 53.0,
+      "num_files": 2112,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/54",
+      "bird_id_norm": "R150",
+      "dph": 54.0,
+      "num_files": 1823,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/54",
+      "bird_id_norm": "R150",
+      "dph": 54.0,
+      "num_files": 1823,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/55",
+      "bird_id_norm": "R150",
+      "dph": 55.0,
+      "num_files": 1845,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/55",
+      "bird_id_norm": "R150",
+      "dph": 55.0,
+      "num_files": 1845,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/56",
+      "bird_id_norm": "R150",
+      "dph": 56.0,
+      "num_files": 2054,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/56",
+      "bird_id_norm": "R150",
+      "dph": 56.0,
+      "num_files": 2054,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/57",
+      "bird_id_norm": "R150",
+      "dph": 57.0,
+      "num_files": 2238,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/57",
+      "bird_id_norm": "R150",
+      "dph": 57.0,
+      "num_files": 2238,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/58",
+      "bird_id_norm": "R150",
+      "dph": 58.0,
+      "num_files": 1727,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/58",
+      "bird_id_norm": "R150",
+      "dph": 58.0,
+      "num_files": 1727,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/59",
+      "bird_id_norm": "R150",
+      "dph": 59.0,
+      "num_files": 2002,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/59",
+      "bird_id_norm": "R150",
+      "dph": 59.0,
+      "num_files": 2002,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/60",
+      "bird_id_norm": "R150",
+      "dph": 60.0,
+      "num_files": 2081,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/60",
+      "bird_id_norm": "R150",
+      "dph": 60.0,
+      "num_files": 2081,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/61",
+      "bird_id_norm": "R150",
+      "dph": 61.0,
+      "num_files": 1677,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/61",
+      "bird_id_norm": "R150",
+      "dph": 61.0,
+      "num_files": 1677,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/65",
+      "bird_id_norm": "R150",
+      "dph": 65.0,
+      "num_files": 823,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/66",
+      "bird_id_norm": "R150",
+      "dph": 66.0,
+      "num_files": 1464,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/67",
+      "bird_id_norm": "R150",
+      "dph": 67.0,
+      "num_files": 1945,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/68",
+      "bird_id_norm": "R150",
+      "dph": 68.0,
+      "num_files": 1962,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/68",
+      "bird_id_norm": "R150",
+      "dph": 68.0,
+      "num_files": 1962,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/69",
+      "bird_id_norm": "R150",
+      "dph": 69.0,
+      "num_files": 2003,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/69",
+      "bird_id_norm": "R150",
+      "dph": 69.0,
+      "num_files": 2003,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/70",
+      "bird_id_norm": "R150",
+      "dph": 70.0,
+      "num_files": 1541,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/70",
+      "bird_id_norm": "R150",
+      "dph": 70.0,
+      "num_files": 1541,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/71",
+      "bird_id_norm": "R150",
+      "dph": 71.0,
+      "num_files": 1740,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/71",
+      "bird_id_norm": "R150",
+      "dph": 71.0,
+      "num_files": 1740,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/72",
+      "bird_id_norm": "R150",
+      "dph": 72.0,
+      "num_files": 1489,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/72",
+      "bird_id_norm": "R150",
+      "dph": 72.0,
+      "num_files": 1489,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/73",
+      "bird_id_norm": "R150",
+      "dph": 73.0,
+      "num_files": 1510,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/73",
+      "bird_id_norm": "R150",
+      "dph": 73.0,
+      "num_files": 1510,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/74",
+      "bird_id_norm": "R150",
+      "dph": 74.0,
+      "num_files": 2,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/74",
+      "bird_id_norm": "R150",
+      "dph": 74.0,
+      "num_files": 2,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/75",
+      "bird_id_norm": "R150",
+      "dph": 75.0,
+      "num_files": 1703,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/75",
+      "bird_id_norm": "R150",
+      "dph": 75.0,
+      "num_files": 1703,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/76",
+      "bird_id_norm": "R150",
+      "dph": 76.0,
+      "num_files": 594,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/76",
+      "bird_id_norm": "R150",
+      "dph": 76.0,
+      "num_files": 594,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/80",
+      "bird_id_norm": "R150",
+      "dph": 80.0,
+      "num_files": 209,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/80",
+      "bird_id_norm": "R150",
+      "dph": 80.0,
+      "num_files": 209,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/81",
+      "bird_id_norm": "R150",
+      "dph": 81.0,
+      "num_files": 772,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/81",
+      "bird_id_norm": "R150",
+      "dph": 81.0,
+      "num_files": 772,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/82",
+      "bird_id_norm": "R150",
+      "dph": 82.0,
+      "num_files": 1763,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/82",
+      "bird_id_norm": "R150",
+      "dph": 82.0,
+      "num_files": 1763,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/83",
+      "bird_id_norm": "R150",
+      "dph": 83.0,
+      "num_files": 1239,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/83",
+      "bird_id_norm": "R150",
+      "dph": 83.0,
+      "num_files": 1239,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/84",
+      "bird_id_norm": "R150",
+      "dph": 84.0,
+      "num_files": 1441,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/84",
+      "bird_id_norm": "R150",
+      "dph": 84.0,
+      "num_files": 1441,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/85",
+      "bird_id_norm": "R150",
+      "dph": 85.0,
+      "num_files": 1332,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/85",
+      "bird_id_norm": "R150",
+      "dph": 85.0,
+      "num_files": 1332,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/86",
+      "bird_id_norm": "R150",
+      "dph": 86.0,
+      "num_files": 1455,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/86",
+      "bird_id_norm": "R150",
+      "dph": 86.0,
+      "num_files": 1455,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/87",
+      "bird_id_norm": "R150",
+      "dph": 87.0,
+      "num_files": 1107,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/87",
+      "bird_id_norm": "R150",
+      "dph": 87.0,
+      "num_files": 1107,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/88",
+      "bird_id_norm": "R150",
+      "dph": 88.0,
+      "num_files": 8,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/88",
+      "bird_id_norm": "R150",
+      "dph": 88.0,
+      "num_files": 8,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/89",
+      "bird_id_norm": "R150",
+      "dph": 89.0,
+      "num_files": 1090,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/89",
+      "bird_id_norm": "R150",
+      "dph": 89.0,
+      "num_files": 1090,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/Day_60_SAMBA/R150/90",
+      "bird_id_norm": "R150",
+      "dph": 90.0,
+      "num_files": 1326,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 samba/R150/90",
+      "bird_id_norm": "R150",
+      "dph": 90.0,
+      "num_files": 1326,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/35",
+      "bird_id_norm": "R493",
+      "dph": 35.0,
+      "num_files": 958,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/36",
+      "bird_id_norm": "R493",
+      "dph": 36.0,
+      "num_files": 6790,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/37",
+      "bird_id_norm": "R493",
+      "dph": 37.0,
+      "num_files": 8508,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/38",
+      "bird_id_norm": "R493",
+      "dph": 38.0,
+      "num_files": 11713,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/39",
+      "bird_id_norm": "R493",
+      "dph": 39.0,
+      "num_files": 4445,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/40",
+      "bird_id_norm": "R493",
+      "dph": 40.0,
+      "num_files": 1048,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/41",
+      "bird_id_norm": "R493",
+      "dph": 41.0,
+      "num_files": 4861,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/42",
+      "bird_id_norm": "R493",
+      "dph": 42.0,
+      "num_files": 5868,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/43",
+      "bird_id_norm": "R493",
+      "dph": 43.0,
+      "num_files": 7346,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/44",
+      "bird_id_norm": "R493",
+      "dph": 44.0,
+      "num_files": 7570,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/45",
+      "bird_id_norm": "R493",
+      "dph": 45.0,
+      "num_files": 4196,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/46",
+      "bird_id_norm": "R493",
+      "dph": 46.0,
+      "num_files": 2293,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/47",
+      "bird_id_norm": "R493",
+      "dph": 47.0,
+      "num_files": 8522,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/48",
+      "bird_id_norm": "R493",
+      "dph": 48.0,
+      "num_files": 8710,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/49",
+      "bird_id_norm": "R493",
+      "dph": 49.0,
+      "num_files": 8004,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/50",
+      "bird_id_norm": "R493",
+      "dph": 50.0,
+      "num_files": 3447,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/51",
+      "bird_id_norm": "R493",
+      "dph": 51.0,
+      "num_files": 305,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/52",
+      "bird_id_norm": "R493",
+      "dph": 52.0,
+      "num_files": 285,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/53",
+      "bird_id_norm": "R493",
+      "dph": 53.0,
+      "num_files": 214,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/54",
+      "bird_id_norm": "R493",
+      "dph": 54.0,
+      "num_files": 325,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/55",
+      "bird_id_norm": "R493",
+      "dph": 55.0,
+      "num_files": 748,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/56",
+      "bird_id_norm": "R493",
+      "dph": 56.0,
+      "num_files": 616,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/57",
+      "bird_id_norm": "R493",
+      "dph": 57.0,
+      "num_files": 238,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/58",
+      "bird_id_norm": "R493",
+      "dph": 58.0,
+      "num_files": 482,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/59",
+      "bird_id_norm": "R493",
+      "dph": 59.0,
+      "num_files": 614,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/60",
+      "bird_id_norm": "R493",
+      "dph": 60.0,
+      "num_files": 555,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/61",
+      "bird_id_norm": "R493",
+      "dph": 61.0,
+      "num_files": 684,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/62",
+      "bird_id_norm": "R493",
+      "dph": 62.0,
+      "num_files": 888,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/63",
+      "bird_id_norm": "R493",
+      "dph": 63.0,
+      "num_files": 971,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/64",
+      "bird_id_norm": "R493",
+      "dph": 64.0,
+      "num_files": 815,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/65",
+      "bird_id_norm": "R493",
+      "dph": 65.0,
+      "num_files": 772,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/66",
+      "bird_id_norm": "R493",
+      "dph": 66.0,
+      "num_files": 923,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/67",
+      "bird_id_norm": "R493",
+      "dph": 67.0,
+      "num_files": 1012,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/68",
+      "bird_id_norm": "R493",
+      "dph": 68.0,
+      "num_files": 1002,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/69",
+      "bird_id_norm": "R493",
+      "dph": 69.0,
+      "num_files": 1187,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/70",
+      "bird_id_norm": "R493",
+      "dph": 70.0,
+      "num_files": 993,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/71",
+      "bird_id_norm": "R493",
+      "dph": 71.0,
+      "num_files": 1104,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/72",
+      "bird_id_norm": "R493",
+      "dph": 72.0,
+      "num_files": 1143,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/73",
+      "bird_id_norm": "R493",
+      "dph": 73.0,
+      "num_files": 1038,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/74",
+      "bird_id_norm": "R493",
+      "dph": 74.0,
+      "num_files": 1170,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/75",
+      "bird_id_norm": "R493",
+      "dph": 75.0,
+      "num_files": 1222,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/76",
+      "bird_id_norm": "R493",
+      "dph": 76.0,
+      "num_files": 1059,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/77",
+      "bird_id_norm": "R493",
+      "dph": 77.0,
+      "num_files": 1006,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/78",
+      "bird_id_norm": "R493",
+      "dph": 78.0,
+      "num_files": 879,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/79",
+      "bird_id_norm": "R493",
+      "dph": 79.0,
+      "num_files": 904,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/80",
+      "bird_id_norm": "R493",
+      "dph": 80.0,
+      "num_files": 932,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/81",
+      "bird_id_norm": "R493",
+      "dph": 81.0,
+      "num_files": 1062,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/82",
+      "bird_id_norm": "R493",
+      "dph": 82.0,
+      "num_files": 1077,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/83",
+      "bird_id_norm": "R493",
+      "dph": 83.0,
+      "num_files": 1183,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/84",
+      "bird_id_norm": "R493",
+      "dph": 84.0,
+      "num_files": 1157,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/85",
+      "bird_id_norm": "R493",
+      "dph": 85.0,
+      "num_files": 979,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/86",
+      "bird_id_norm": "R493",
+      "dph": 86.0,
+      "num_files": 1185,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/87",
+      "bird_id_norm": "R493",
+      "dph": 87.0,
+      "num_files": 757,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/88",
+      "bird_id_norm": "R493",
+      "dph": 88.0,
+      "num_files": 497,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/89",
+      "bird_id_norm": "R493",
+      "dph": 89.0,
+      "num_files": 873,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R493/90",
+      "bird_id_norm": "R493",
+      "dph": 90.0,
+      "num_files": 570,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/37",
+      "bird_id_norm": "R470",
+      "dph": 37.0,
+      "num_files": 608,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/38",
+      "bird_id_norm": "R470",
+      "dph": 38.0,
+      "num_files": 1583,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/39",
+      "bird_id_norm": "R470",
+      "dph": 39.0,
+      "num_files": 545,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/40",
+      "bird_id_norm": "R470",
+      "dph": 40.0,
+      "num_files": 600,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/41",
+      "bird_id_norm": "R470",
+      "dph": 41.0,
+      "num_files": 640,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/42",
+      "bird_id_norm": "R470",
+      "dph": 42.0,
+      "num_files": 1234,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/43",
+      "bird_id_norm": "R470",
+      "dph": 43.0,
+      "num_files": 1324,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/44",
+      "bird_id_norm": "R470",
+      "dph": 44.0,
+      "num_files": 2080,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/45",
+      "bird_id_norm": "R470",
+      "dph": 45.0,
+      "num_files": 2823,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/46",
+      "bird_id_norm": "R470",
+      "dph": 46.0,
+      "num_files": 2148,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/47",
+      "bird_id_norm": "R470",
+      "dph": 47.0,
+      "num_files": 1884,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/48",
+      "bird_id_norm": "R470",
+      "dph": 48.0,
+      "num_files": 1629,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/49",
+      "bird_id_norm": "R470",
+      "dph": 49.0,
+      "num_files": 2948,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/50",
+      "bird_id_norm": "R470",
+      "dph": 50.0,
+      "num_files": 4482,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/51",
+      "bird_id_norm": "R470",
+      "dph": 51.0,
+      "num_files": 3861,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/52",
+      "bird_id_norm": "R470",
+      "dph": 52.0,
+      "num_files": 3346,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/53",
+      "bird_id_norm": "R470",
+      "dph": 53.0,
+      "num_files": 117,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/54",
+      "bird_id_norm": "R470",
+      "dph": 54.0,
+      "num_files": 2206,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/55",
+      "bird_id_norm": "R470",
+      "dph": 55.0,
+      "num_files": 2779,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/56",
+      "bird_id_norm": "R470",
+      "dph": 56.0,
+      "num_files": 2647,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/57",
+      "bird_id_norm": "R470",
+      "dph": 57.0,
+      "num_files": 2867,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/58",
+      "bird_id_norm": "R470",
+      "dph": 58.0,
+      "num_files": 2252,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/59",
+      "bird_id_norm": "R470",
+      "dph": 59.0,
+      "num_files": 1693,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/60",
+      "bird_id_norm": "R470",
+      "dph": 60.0,
+      "num_files": 1990,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/61",
+      "bird_id_norm": "R470",
+      "dph": 61.0,
+      "num_files": 1868,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/62",
+      "bird_id_norm": "R470",
+      "dph": 62.0,
+      "num_files": 1394,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/63",
+      "bird_id_norm": "R470",
+      "dph": 63.0,
+      "num_files": 1370,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/64",
+      "bird_id_norm": "R470",
+      "dph": 64.0,
+      "num_files": 1670,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/65",
+      "bird_id_norm": "R470",
+      "dph": 65.0,
+      "num_files": 1029,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/66",
+      "bird_id_norm": "R470",
+      "dph": 66.0,
+      "num_files": 1238,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/67",
+      "bird_id_norm": "R470",
+      "dph": 67.0,
+      "num_files": 900,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/68",
+      "bird_id_norm": "R470",
+      "dph": 68.0,
+      "num_files": 1797,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/69",
+      "bird_id_norm": "R470",
+      "dph": 69.0,
+      "num_files": 1669,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/70",
+      "bird_id_norm": "R470",
+      "dph": 70.0,
+      "num_files": 917,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/71",
+      "bird_id_norm": "R470",
+      "dph": 71.0,
+      "num_files": 859,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/72",
+      "bird_id_norm": "R470",
+      "dph": 72.0,
+      "num_files": 1016,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/73",
+      "bird_id_norm": "R470",
+      "dph": 73.0,
+      "num_files": 727,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/74",
+      "bird_id_norm": "R470",
+      "dph": 74.0,
+      "num_files": 998,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/75",
+      "bird_id_norm": "R470",
+      "dph": 75.0,
+      "num_files": 802,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/76",
+      "bird_id_norm": "R470",
+      "dph": 76.0,
+      "num_files": 1120,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/77",
+      "bird_id_norm": "R470",
+      "dph": 77.0,
+      "num_files": 1012,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/78",
+      "bird_id_norm": "R470",
+      "dph": 78.0,
+      "num_files": 746,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/79",
+      "bird_id_norm": "R470",
+      "dph": 79.0,
+      "num_files": 132,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/80",
+      "bird_id_norm": "R470",
+      "dph": 80.0,
+      "num_files": 148,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/81",
+      "bird_id_norm": "R470",
+      "dph": 81.0,
+      "num_files": 89,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/82",
+      "bird_id_norm": "R470",
+      "dph": 82.0,
+      "num_files": 105,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/83",
+      "bird_id_norm": "R470",
+      "dph": 83.0,
+      "num_files": 46,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/84",
+      "bird_id_norm": "R470",
+      "dph": 84.0,
+      "num_files": 30,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/85",
+      "bird_id_norm": "R470",
+      "dph": 85.0,
+      "num_files": 668,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/86",
+      "bird_id_norm": "R470",
+      "dph": 86.0,
+      "num_files": 874,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/87",
+      "bird_id_norm": "R470",
+      "dph": 87.0,
+      "num_files": 671,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/88",
+      "bird_id_norm": "R470",
+      "dph": 88.0,
+      "num_files": 4,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/89",
+      "bird_id_norm": "R470",
+      "dph": 89.0,
+      "num_files": 788,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R470/90",
+      "bird_id_norm": "R470",
+      "dph": 90.0,
+      "num_files": 935,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/35",
+      "bird_id_norm": "R203",
+      "dph": 35.0,
+      "num_files": 1,
+      "regime": "isolates",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/36",
+      "bird_id_norm": "R203",
+      "dph": 36.0,
+      "num_files": 38,
+      "regime": "isolates",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/38",
+      "bird_id_norm": "R203",
+      "dph": 38.0,
+      "num_files": 6,
+      "regime": "isolates",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/42",
+      "bird_id_norm": "R203",
+      "dph": 42.0,
+      "num_files": 40,
+      "regime": "isolates",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/43",
+      "bird_id_norm": "R203",
+      "dph": 43.0,
+      "num_files": 24,
+      "regime": "isolates",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/57",
+      "bird_id_norm": "R203",
+      "dph": 57.0,
+      "num_files": 181,
+      "regime": "isolates",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/58",
+      "bird_id_norm": "R203",
+      "dph": 58.0,
+      "num_files": 858,
+      "regime": "isolates",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/59",
+      "bird_id_norm": "R203",
+      "dph": 59.0,
+      "num_files": 913,
+      "regime": "isolates",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/60",
+      "bird_id_norm": "R203",
+      "dph": 60.0,
+      "num_files": 1207,
+      "regime": "isolates",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/61",
+      "bird_id_norm": "R203",
+      "dph": 61.0,
+      "num_files": 1170,
+      "regime": "isolates",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/62",
+      "bird_id_norm": "R203",
+      "dph": 62.0,
+      "num_files": 1286,
+      "regime": "isolates",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/63",
+      "bird_id_norm": "R203",
+      "dph": 63.0,
+      "num_files": 1114,
+      "regime": "isolates",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/64",
+      "bird_id_norm": "R203",
+      "dph": 64.0,
+      "num_files": 1099,
+      "regime": "isolates",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/65",
+      "bird_id_norm": "R203",
+      "dph": 65.0,
+      "num_files": 1306,
+      "regime": "isolates",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/66",
+      "bird_id_norm": "R203",
+      "dph": 66.0,
+      "num_files": 1323,
+      "regime": "isolates",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/67",
+      "bird_id_norm": "R203",
+      "dph": 67.0,
+      "num_files": 1575,
+      "regime": "isolates",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/68",
+      "bird_id_norm": "R203",
+      "dph": 68.0,
+      "num_files": 1198,
+      "regime": "isolates",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/69",
+      "bird_id_norm": "R203",
+      "dph": 69.0,
+      "num_files": 1085,
+      "regime": "isolates",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/70",
+      "bird_id_norm": "R203",
+      "dph": 70.0,
+      "num_files": 1801,
+      "regime": "isolates",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/71",
+      "bird_id_norm": "R203",
+      "dph": 71.0,
+      "num_files": 1857,
+      "regime": "isolates",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/72",
+      "bird_id_norm": "R203",
+      "dph": 72.0,
+      "num_files": 968,
+      "regime": "isolates",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/73",
+      "bird_id_norm": "R203",
+      "dph": 73.0,
+      "num_files": 1527,
+      "regime": "isolates",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/74",
+      "bird_id_norm": "R203",
+      "dph": 74.0,
+      "num_files": 1827,
+      "regime": "isolates",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/75",
+      "bird_id_norm": "R203",
+      "dph": 75.0,
+      "num_files": 1082,
+      "regime": "isolates",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/76",
+      "bird_id_norm": "R203",
+      "dph": 76.0,
+      "num_files": 1772,
+      "regime": "isolates",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/77",
+      "bird_id_norm": "R203",
+      "dph": 77.0,
+      "num_files": 1652,
+      "regime": "isolates",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/78",
+      "bird_id_norm": "R203",
+      "dph": 78.0,
+      "num_files": 1930,
+      "regime": "isolates",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/79",
+      "bird_id_norm": "R203",
+      "dph": 79.0,
+      "num_files": 1392,
+      "regime": "isolates",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/80",
+      "bird_id_norm": "R203",
+      "dph": 80.0,
+      "num_files": 1478,
+      "regime": "isolates",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/81",
+      "bird_id_norm": "R203",
+      "dph": 81.0,
+      "num_files": 1778,
+      "regime": "isolates",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/82",
+      "bird_id_norm": "R203",
+      "dph": 82.0,
+      "num_files": 1780,
+      "regime": "isolates",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/83",
+      "bird_id_norm": "R203",
+      "dph": 83.0,
+      "num_files": 1613,
+      "regime": "isolates",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/84",
+      "bird_id_norm": "R203",
+      "dph": 84.0,
+      "num_files": 1346,
+      "regime": "isolates",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/85",
+      "bird_id_norm": "R203",
+      "dph": 85.0,
+      "num_files": 1689,
+      "regime": "isolates",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/86",
+      "bird_id_norm": "R203",
+      "dph": 86.0,
+      "num_files": 1631,
+      "regime": "isolates",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/87",
+      "bird_id_norm": "R203",
+      "dph": 87.0,
+      "num_files": 1763,
+      "regime": "isolates",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/88",
+      "bird_id_norm": "R203",
+      "dph": 88.0,
+      "num_files": 1810,
+      "regime": "isolates",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/89",
+      "bird_id_norm": "R203",
+      "dph": 89.0,
+      "num_files": 1690,
+      "regime": "isolates",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "isolates/R 203/90",
+      "bird_id_norm": "R203",
+      "dph": 90.0,
+      "num_files": 1699,
+      "regime": "isolates",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/36",
+      "bird_id_norm": "R425",
+      "dph": 36.0,
+      "num_files": 56,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/37",
+      "bird_id_norm": "R425",
+      "dph": 37.0,
+      "num_files": 183,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/39",
+      "bird_id_norm": "R425",
+      "dph": 39.0,
+      "num_files": 177,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/40",
+      "bird_id_norm": "R425",
+      "dph": 40.0,
+      "num_files": 240,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/41",
+      "bird_id_norm": "R425",
+      "dph": 41.0,
+      "num_files": 1205,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/42",
+      "bird_id_norm": "R425",
+      "dph": 42.0,
+      "num_files": 445,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/43",
+      "bird_id_norm": "R425",
+      "dph": 43.0,
+      "num_files": 177,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/44",
+      "bird_id_norm": "R425",
+      "dph": 44.0,
+      "num_files": 289,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/45",
+      "bird_id_norm": "R425",
+      "dph": 45.0,
+      "num_files": 219,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/46",
+      "bird_id_norm": "R425",
+      "dph": 46.0,
+      "num_files": 520,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/47",
+      "bird_id_norm": "R425",
+      "dph": 47.0,
+      "num_files": 433,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/48",
+      "bird_id_norm": "R425",
+      "dph": 48.0,
+      "num_files": 651,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/49",
+      "bird_id_norm": "R425",
+      "dph": 49.0,
+      "num_files": 310,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/50",
+      "bird_id_norm": "R425",
+      "dph": 50.0,
+      "num_files": 495,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/51",
+      "bird_id_norm": "R425",
+      "dph": 51.0,
+      "num_files": 428,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/52",
+      "bird_id_norm": "R425",
+      "dph": 52.0,
+      "num_files": 848,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/53",
+      "bird_id_norm": "R425",
+      "dph": 53.0,
+      "num_files": 1613,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/54",
+      "bird_id_norm": "R425",
+      "dph": 54.0,
+      "num_files": 2374,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/55",
+      "bird_id_norm": "R425",
+      "dph": 55.0,
+      "num_files": 3192,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/56",
+      "bird_id_norm": "R425",
+      "dph": 56.0,
+      "num_files": 1706,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/57",
+      "bird_id_norm": "R425",
+      "dph": 57.0,
+      "num_files": 1614,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/58",
+      "bird_id_norm": "R425",
+      "dph": 58.0,
+      "num_files": 1769,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/59",
+      "bird_id_norm": "R425",
+      "dph": 59.0,
+      "num_files": 856,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/60",
+      "bird_id_norm": "R425",
+      "dph": 60.0,
+      "num_files": 1708,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/61",
+      "bird_id_norm": "R425",
+      "dph": 61.0,
+      "num_files": 2110,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/62",
+      "bird_id_norm": "R425",
+      "dph": 62.0,
+      "num_files": 1747,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/63",
+      "bird_id_norm": "R425",
+      "dph": 63.0,
+      "num_files": 1629,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/65",
+      "bird_id_norm": "R425",
+      "dph": 65.0,
+      "num_files": 689,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/66",
+      "bird_id_norm": "R425",
+      "dph": 66.0,
+      "num_files": 2674,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/67",
+      "bird_id_norm": "R425",
+      "dph": 67.0,
+      "num_files": 3209,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/68",
+      "bird_id_norm": "R425",
+      "dph": 68.0,
+      "num_files": 1926,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/69",
+      "bird_id_norm": "R425",
+      "dph": 69.0,
+      "num_files": 3122,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/70",
+      "bird_id_norm": "R425",
+      "dph": 70.0,
+      "num_files": 2123,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/71",
+      "bird_id_norm": "R425",
+      "dph": 71.0,
+      "num_files": 3724,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/72",
+      "bird_id_norm": "R425",
+      "dph": 72.0,
+      "num_files": 6429,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/73",
+      "bird_id_norm": "R425",
+      "dph": 73.0,
+      "num_files": 6293,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/74",
+      "bird_id_norm": "R425",
+      "dph": 74.0,
+      "num_files": 3102,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/75",
+      "bird_id_norm": "R425",
+      "dph": 75.0,
+      "num_files": 3615,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/76",
+      "bird_id_norm": "R425",
+      "dph": 76.0,
+      "num_files": 1784,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/77",
+      "bird_id_norm": "R425",
+      "dph": 77.0,
+      "num_files": 2129,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/78",
+      "bird_id_norm": "R425",
+      "dph": 78.0,
+      "num_files": 1917,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/79",
+      "bird_id_norm": "R425",
+      "dph": 79.0,
+      "num_files": 2175,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/80",
+      "bird_id_norm": "R425",
+      "dph": 80.0,
+      "num_files": 1549,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/81",
+      "bird_id_norm": "R425",
+      "dph": 81.0,
+      "num_files": 1139,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/82",
+      "bird_id_norm": "R425",
+      "dph": 82.0,
+      "num_files": 3,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/83",
+      "bird_id_norm": "R425",
+      "dph": 83.0,
+      "num_files": 20,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/84",
+      "bird_id_norm": "R425",
+      "dph": 84.0,
+      "num_files": 18,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/85",
+      "bird_id_norm": "R425",
+      "dph": 85.0,
+      "num_files": 11,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/86",
+      "bird_id_norm": "R425",
+      "dph": 86.0,
+      "num_files": 27,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/87",
+      "bird_id_norm": "R425",
+      "dph": 87.0,
+      "num_files": 33,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/88",
+      "bird_id_norm": "R425",
+      "dph": 88.0,
+      "num_files": 691,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/89",
+      "bird_id_norm": "R425",
+      "dph": 89.0,
+      "num_files": 1319,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 90 samba/R425/90",
+      "bird_id_norm": "R425",
+      "dph": 90.0,
+      "num_files": 805,
+      "regime": "samba",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/34",
+      "bird_id_norm": "R229",
+      "dph": 34.0,
+      "num_files": 22,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/35",
+      "bird_id_norm": "R229",
+      "dph": 35.0,
+      "num_files": 78,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/36",
+      "bird_id_norm": "R229",
+      "dph": 36.0,
+      "num_files": 231,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/37",
+      "bird_id_norm": "R229",
+      "dph": 37.0,
+      "num_files": 699,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/39",
+      "bird_id_norm": "R229",
+      "dph": 39.0,
+      "num_files": 331,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/40",
+      "bird_id_norm": "R229",
+      "dph": 40.0,
+      "num_files": 803,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/41",
+      "bird_id_norm": "R229",
+      "dph": 41.0,
+      "num_files": 1062,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/42",
+      "bird_id_norm": "R229",
+      "dph": 42.0,
+      "num_files": 964,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/43",
+      "bird_id_norm": "R229",
+      "dph": 43.0,
+      "num_files": 999,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/44",
+      "bird_id_norm": "R229",
+      "dph": 44.0,
+      "num_files": 1534,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/46",
+      "bird_id_norm": "R229",
+      "dph": 46.0,
+      "num_files": 1454,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/47",
+      "bird_id_norm": "R229",
+      "dph": 47.0,
+      "num_files": 1995,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/48",
+      "bird_id_norm": "R229",
+      "dph": 48.0,
+      "num_files": 1717,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/49",
+      "bird_id_norm": "R229",
+      "dph": 49.0,
+      "num_files": 1343,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/50",
+      "bird_id_norm": "R229",
+      "dph": 50.0,
+      "num_files": 1589,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/51",
+      "bird_id_norm": "R229",
+      "dph": 51.0,
+      "num_files": 2022,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/52",
+      "bird_id_norm": "R229",
+      "dph": 52.0,
+      "num_files": 2131,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/53",
+      "bird_id_norm": "R229",
+      "dph": 53.0,
+      "num_files": 1543,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/54",
+      "bird_id_norm": "R229",
+      "dph": 54.0,
+      "num_files": 2000,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/55",
+      "bird_id_norm": "R229",
+      "dph": 55.0,
+      "num_files": 1544,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/56",
+      "bird_id_norm": "R229",
+      "dph": 56.0,
+      "num_files": 44,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/58",
+      "bird_id_norm": "R229",
+      "dph": 58.0,
+      "num_files": 168,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/60",
+      "bird_id_norm": "R229",
+      "dph": 60.0,
+      "num_files": 1261,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/61",
+      "bird_id_norm": "R229",
+      "dph": 61.0,
+      "num_files": 1371,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/62",
+      "bird_id_norm": "R229",
+      "dph": 62.0,
+      "num_files": 1590,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/63",
+      "bird_id_norm": "R229",
+      "dph": 63.0,
+      "num_files": 1834,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/64",
+      "bird_id_norm": "R229",
+      "dph": 64.0,
+      "num_files": 1060,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/65",
+      "bird_id_norm": "R229",
+      "dph": 65.0,
+      "num_files": 1314,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/66",
+      "bird_id_norm": "R229",
+      "dph": 66.0,
+      "num_files": 557,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/67",
+      "bird_id_norm": "R229",
+      "dph": 67.0,
+      "num_files": 1437,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/68",
+      "bird_id_norm": "R229",
+      "dph": 68.0,
+      "num_files": 1684,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/69",
+      "bird_id_norm": "R229",
+      "dph": 69.0,
+      "num_files": 1871,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/70",
+      "bird_id_norm": "R229",
+      "dph": 70.0,
+      "num_files": 1418,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/71",
+      "bird_id_norm": "R229",
+      "dph": 71.0,
+      "num_files": 1734,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/72",
+      "bird_id_norm": "R229",
+      "dph": 72.0,
+      "num_files": 1441,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/73",
+      "bird_id_norm": "R229",
+      "dph": 73.0,
+      "num_files": 1819,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/74",
+      "bird_id_norm": "R229",
+      "dph": 74.0,
+      "num_files": 1552,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/75",
+      "bird_id_norm": "R229",
+      "dph": 75.0,
+      "num_files": 1698,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/76",
+      "bird_id_norm": "R229",
+      "dph": 76.0,
+      "num_files": 862,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/77",
+      "bird_id_norm": "R229",
+      "dph": 77.0,
+      "num_files": 1304,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/78",
+      "bird_id_norm": "R229",
+      "dph": 78.0,
+      "num_files": 1415,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/79",
+      "bird_id_norm": "R229",
+      "dph": 79.0,
+      "num_files": 1331,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/80",
+      "bird_id_norm": "R229",
+      "dph": 80.0,
+      "num_files": 843,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/81",
+      "bird_id_norm": "R229",
+      "dph": 81.0,
+      "num_files": 1321,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/82",
+      "bird_id_norm": "R229",
+      "dph": 82.0,
+      "num_files": 1488,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/83",
+      "bird_id_norm": "R229",
+      "dph": 83.0,
+      "num_files": 1662,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/84",
+      "bird_id_norm": "R229",
+      "dph": 84.0,
+      "num_files": 1415,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/85",
+      "bird_id_norm": "R229",
+      "dph": 85.0,
+      "num_files": 1383,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/86",
+      "bird_id_norm": "R229",
+      "dph": 86.0,
+      "num_files": 1313,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/87",
+      "bird_id_norm": "R229",
+      "dph": 87.0,
+      "num_files": 675,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/88",
+      "bird_id_norm": "R229",
+      "dph": 88.0,
+      "num_files": 1204,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/89",
+      "bird_id_norm": "R229",
+      "dph": 89.0,
+      "num_files": 1097,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "Day 35 bells/R229/90",
+      "bird_id_norm": "R229",
+      "dph": 90.0,
+      "num_files": 1066,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/36",
+      "bird_id_norm": "R122",
+      "dph": 36.0,
+      "num_files": 13,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/37",
+      "bird_id_norm": "R122",
+      "dph": 37.0,
+      "num_files": 857,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/38",
+      "bird_id_norm": "R122",
+      "dph": 38.0,
+      "num_files": 504,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/39",
+      "bird_id_norm": "R122",
+      "dph": 39.0,
+      "num_files": 1241,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/40",
+      "bird_id_norm": "R122",
+      "dph": 40.0,
+      "num_files": 1473,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/41",
+      "bird_id_norm": "R122",
+      "dph": 41.0,
+      "num_files": 1488,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/42",
+      "bird_id_norm": "R122",
+      "dph": 42.0,
+      "num_files": 1542,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/43",
+      "bird_id_norm": "R122",
+      "dph": 43.0,
+      "num_files": 1509,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/44",
+      "bird_id_norm": "R122",
+      "dph": 44.0,
+      "num_files": 1455,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/45",
+      "bird_id_norm": "R122",
+      "dph": 45.0,
+      "num_files": 1899,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/46",
+      "bird_id_norm": "R122",
+      "dph": 46.0,
+      "num_files": 1754,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/47",
+      "bird_id_norm": "R122",
+      "dph": 47.0,
+      "num_files": 1698,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/48",
+      "bird_id_norm": "R122",
+      "dph": 48.0,
+      "num_files": 1175,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/49",
+      "bird_id_norm": "R122",
+      "dph": 49.0,
+      "num_files": 566,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/59",
+      "bird_id_norm": "R122",
+      "dph": 59.0,
+      "num_files": 1217,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/60",
+      "bird_id_norm": "R122",
+      "dph": 60.0,
+      "num_files": 1730,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/61",
+      "bird_id_norm": "R122",
+      "dph": 61.0,
+      "num_files": 662,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/62",
+      "bird_id_norm": "R122",
+      "dph": 62.0,
+      "num_files": 1278,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/63",
+      "bird_id_norm": "R122",
+      "dph": 63.0,
+      "num_files": 1907,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/64",
+      "bird_id_norm": "R122",
+      "dph": 64.0,
+      "num_files": 1586,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/66",
+      "bird_id_norm": "R122",
+      "dph": 66.0,
+      "num_files": 1394,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/67",
+      "bird_id_norm": "R122",
+      "dph": 67.0,
+      "num_files": 1078,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/68",
+      "bird_id_norm": "R122",
+      "dph": 68.0,
+      "num_files": 1516,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/69",
+      "bird_id_norm": "R122",
+      "dph": 69.0,
+      "num_files": 1586,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/70",
+      "bird_id_norm": "R122",
+      "dph": 70.0,
+      "num_files": 1551,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/71",
+      "bird_id_norm": "R122",
+      "dph": 71.0,
+      "num_files": 1771,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/72",
+      "bird_id_norm": "R122",
+      "dph": 72.0,
+      "num_files": 1503,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/73",
+      "bird_id_norm": "R122",
+      "dph": 73.0,
+      "num_files": 1661,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/74",
+      "bird_id_norm": "R122",
+      "dph": 74.0,
+      "num_files": 1514,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/75",
+      "bird_id_norm": "R122",
+      "dph": 75.0,
+      "num_files": 1677,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/76",
+      "bird_id_norm": "R122",
+      "dph": 76.0,
+      "num_files": 1683,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/77",
+      "bird_id_norm": "R122",
+      "dph": 77.0,
+      "num_files": 1177,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/78",
+      "bird_id_norm": "R122",
+      "dph": 78.0,
+      "num_files": 1273,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/79",
+      "bird_id_norm": "R122",
+      "dph": 79.0,
+      "num_files": 1572,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/80",
+      "bird_id_norm": "R122",
+      "dph": 80.0,
+      "num_files": 684,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/85",
+      "bird_id_norm": "R122",
+      "dph": 85.0,
+      "num_files": 642,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/87",
+      "bird_id_norm": "R122",
+      "dph": 87.0,
+      "num_files": 1153,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/88",
+      "bird_id_norm": "R122",
+      "dph": 88.0,
+      "num_files": 1225,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/89",
+      "bird_id_norm": "R122",
+      "dph": 89.0,
+      "num_files": 1354,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day 60 bells/R122/90",
+      "bird_id_norm": "R122",
+      "dph": 90.0,
+      "num_files": 1086,
+      "regime": "bells",
+      "split": "train"
+    }
+  ]
+}

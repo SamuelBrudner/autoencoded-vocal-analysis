@@ -1,0 +1,35 @@
+{
+  "created_utc": "2026-05-21T14:53:53Z",
+  "files": [
+    {
+      "bytes": 10642,
+      "label": "pilot_manifest",
+      "local_path": "docs/runs/artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/pk249_33_90_manifest.json",
+      "s3_uri": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/inputs/shotgun/20260521-105117-shotgun-cohort/pk249_33_90_manifest.json",
+      "sha256": "098eaea0ca7cd340b7857a5099b0e0a339d3036b2d1808dc2c1c27ef08947bc0"
+    },
+    {
+      "bytes": 2051,
+      "label": "pilot_config",
+      "local_path": "docs/runs/artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/shotgun_pk249_pilot_config.yaml",
+      "s3_uri": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/inputs/shotgun/20260521-105117-shotgun-cohort/shotgun_pk249_pilot_config.yaml",
+      "sha256": "83cc60389252c348050ea719de58a30663df599c2dc2afe384dfea4f16559785"
+    },
+    {
+      "bytes": 110097,
+      "label": "cohort_manifest",
+      "local_path": "docs/runs/artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/fixed_11bird_33_90_manifest.json",
+      "s3_uri": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/inputs/shotgun/20260521-105117-shotgun-cohort/fixed_11bird_33_90_manifest.json",
+      "sha256": "5404851852d60fa42a04c78bca24405b5eaaf9faaa27bb30adde222451a81be7"
+    },
+    {
+      "bytes": 2052,
+      "label": "cohort_config",
+      "local_path": "docs/runs/artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/shotgun_fixed_11bird_config.yaml",
+      "s3_uri": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/inputs/shotgun/20260521-105117-shotgun-cohort/shotgun_fixed_11bird_config.yaml",
+      "sha256": "bd3aa2e20c8c8f4e774f16da7547c3d67f785dc54985c9f6a3aa031064627848"
+    }
+  ],
+  "s3_input_root": "s3://ava-birdsong-us-east-1-a1859d31/autoencoded-vocal-analysis/developmental-baseline-ava-v1-full-20260515/inputs/shotgun/20260521-105117-shotgun-cohort",
+  "status": "ok"
+}

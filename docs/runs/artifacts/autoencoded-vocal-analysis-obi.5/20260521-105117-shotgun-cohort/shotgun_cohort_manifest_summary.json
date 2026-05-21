@@ -1,0 +1,205 @@
+{
+  "artifacts": {
+    "cohort_manifest": "/Users/samuelbrudner/.codex/worktrees/cc22/autoencoded-vocal-analysis/docs/runs/artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/fixed_11bird_33_90_manifest.json",
+    "pilot_manifest": "/Users/samuelbrudner/.codex/worktrees/cc22/autoencoded-vocal-analysis/docs/runs/artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/pk249_33_90_manifest.json",
+    "summary": "/Users/samuelbrudner/.codex/worktrees/cc22/autoencoded-vocal-analysis/docs/runs/artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/shotgun_cohort_manifest_summary.json"
+  },
+  "cohort": {
+    "birds": {
+      "PK249": {
+        "bird_id": "PK249",
+        "dph_max": 90.0,
+        "dph_min": 33.0,
+        "manifest_rows": 58,
+        "num_files": 95402,
+        "regimes": [
+          "bells"
+        ],
+        "splits": [
+          "train"
+        ],
+        "unique_dph": 58
+      },
+      "R122": {
+        "bird_id": "R122",
+        "dph_max": 90.0,
+        "dph_min": 36.0,
+        "manifest_rows": 40,
+        "num_files": 52654,
+        "regimes": [
+          "bells"
+        ],
+        "splits": [
+          "train"
+        ],
+        "unique_dph": 40
+      },
+      "R150": {
+        "bird_id": "R150",
+        "dph_max": 90.0,
+        "dph_min": 36.0,
+        "manifest_rows": 95,
+        "num_files": 130668,
+        "regimes": [
+          "samba"
+        ],
+        "splits": [
+          "train"
+        ],
+        "unique_dph": 49
+      },
+      "R203": {
+        "bird_id": "R203",
+        "dph_max": 90.0,
+        "dph_min": 35.0,
+        "manifest_rows": 39,
+        "num_files": 48509,
+        "regimes": [
+          "isolates"
+        ],
+        "splits": [
+          "train"
+        ],
+        "unique_dph": 39
+      },
+      "R229": {
+        "bird_id": "R229",
+        "dph_max": 90.0,
+        "dph_min": 34.0,
+        "manifest_rows": 53,
+        "num_files": 66293,
+        "regimes": [
+          "bells"
+        ],
+        "splits": [
+          "train"
+        ],
+        "unique_dph": 53
+      },
+      "R404": {
+        "bird_id": "R404",
+        "dph_max": 90.0,
+        "dph_min": 38.0,
+        "manifest_rows": 50,
+        "num_files": 146068,
+        "regimes": [
+          "simple"
+        ],
+        "splits": [
+          "train"
+        ],
+        "unique_dph": 50
+      },
+      "R425": {
+        "bird_id": "R425",
+        "dph_max": 90.0,
+        "dph_min": 36.0,
+        "manifest_rows": 53,
+        "num_files": 77520,
+        "regimes": [
+          "samba"
+        ],
+        "splits": [
+          "train"
+        ],
+        "unique_dph": 53
+      },
+      "R426": {
+        "bird_id": "R426",
+        "dph_max": 90.0,
+        "dph_min": 40.0,
+        "manifest_rows": 51,
+        "num_files": 160735,
+        "regimes": [
+          "bells"
+        ],
+        "splits": [
+          "train"
+        ],
+        "unique_dph": 51
+      },
+      "R467": {
+        "bird_id": "R467",
+        "dph_max": 90.0,
+        "dph_min": 37.0,
+        "manifest_rows": 53,
+        "num_files": 158905,
+        "regimes": [
+          "bells"
+        ],
+        "splits": [
+          "train"
+        ],
+        "unique_dph": 53
+      },
+      "R470": {
+        "bird_id": "R470",
+        "dph_max": 90.0,
+        "dph_min": 37.0,
+        "manifest_rows": 54,
+        "num_files": 73908,
+        "regimes": [
+          "samba"
+        ],
+        "splits": [
+          "train"
+        ],
+        "unique_dph": 54
+      },
+      "R493": {
+        "bird_id": "R493",
+        "dph_max": 90.0,
+        "dph_min": 35.0,
+        "manifest_rows": 56,
+        "num_files": 127705,
+        "regimes": [
+          "samba"
+        ],
+        "splits": [
+          "train"
+        ],
+        "unique_dph": 56
+      }
+    },
+    "total_num_files": 1138367,
+    "total_rows": 602
+  },
+  "cohort_birds": [
+    "PK249",
+    "R426",
+    "R467",
+    "R404",
+    "R150",
+    "R493",
+    "R470",
+    "R203",
+    "R425",
+    "R229",
+    "R122"
+  ],
+  "created_utc": "2026-05-21T14:51:20Z",
+  "dph_max": 90.0,
+  "dph_min": 33.0,
+  "pilot": {
+    "birds": {
+      "PK249": {
+        "bird_id": "PK249",
+        "dph_max": 90.0,
+        "dph_min": 33.0,
+        "manifest_rows": 58,
+        "num_files": 95402,
+        "regimes": [
+          "bells"
+        ],
+        "splits": [
+          "train"
+        ],
+        "unique_dph": 58
+      }
+    },
+    "total_num_files": 95402,
+    "total_rows": 58
+  },
+  "pilot_bird": "PK249",
+  "source_manifest": "docs/runs/artifacts/autoencoded-vocal-analysis-obi.4.1/20260520-181500-post-latent-sync-inventory/developmental_cohort_manifest.json"
+}
