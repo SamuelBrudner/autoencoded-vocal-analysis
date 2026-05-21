@@ -57,6 +57,7 @@ def main() -> None:
 	parser.add_argument("--preflight-sample-segments", type=int, default=50_000)
 	parser.add_argument("--preflight-seed", type=int, default=0)
 	parser.add_argument("--download-jobs", type=int, default=8)
+	parser.add_argument("--gpu-monitor-interval-sec", type=float, default=0.0)
 	parser.add_argument("--roi-format", choices=["txt", "parquet"], default="parquet")
 	parser.add_argument("--roi-parquet-name", type=str, default="roi.parquet")
 	parser.add_argument("--trainer-kwargs-json", type=str, default=None)
@@ -108,6 +109,7 @@ def main() -> None:
 		_payload_env("AVA_TRAIN_PREFLIGHT_SAMPLE_SEGMENTS", int(args.preflight_sample_segments)),
 		_payload_env("AVA_TRAIN_PREFLIGHT_SEED", int(args.preflight_seed)),
 		_payload_env("AVA_TRAIN_DOWNLOAD_JOBS", int(args.download_jobs)),
+		_payload_env("AVA_TRAIN_GPU_MONITOR_INTERVAL_SEC", float(args.gpu_monitor_interval_sec)),
 		_payload_env("AVA_TRAIN_ROI_FORMAT", args.roi_format),
 		_payload_env("AVA_TRAIN_ROI_PARQUET_NAME", args.roi_parquet_name),
 		_payload_env("AVA_TRAIN_TRAINER_KWARGS_JSON", args.trainer_kwargs_json),

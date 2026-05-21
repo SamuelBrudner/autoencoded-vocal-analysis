@@ -33,6 +33,13 @@ def _env_int(name: str, default: int | None = None) -> int | None:
 	return int(val)
 
 
+def _env_float(name: str, default: float | None = None) -> float | None:
+	val = _env(name)
+	if val is None:
+		return default
+	return float(val)
+
+
 def _require_aws_cli() -> str:
 	aws = shutil.which("aws")
 	if not aws:
@@ -224,6 +231,68 @@ def _run_to_log(cmd: list[str], log_path: Path) -> int:
 	return int(proc.returncode)
 
 
+def _start_gpu_monitor(log_path: Path, interval_sec: float) -> tuple[subprocess.Popen[str] | None, object | None, dict]:
+	"""Start a lightweight nvidia-smi CSV logger for utilization assays."""
+	status = {
+		"enabled": bool(interval_sec and float(interval_sec) > 0),
+		"status": "disabled",
+		"log_path": log_path.as_posix(),
+		"interval_sec": float(interval_sec or 0),
+	}
+	if not status["enabled"]:
+		return None, None, status
+	nvidia_smi = shutil.which("nvidia-smi")
+	if not nvidia_smi:
+		status["status"] = "nvidia_smi_not_found"
+		return None, None, status
+	interval = max(1, int(round(float(interval_sec))))
+	cmd = [
+		nvidia_smi,
+		"--query-gpu=timestamp,index,utilization.gpu,utilization.memory,memory.used,memory.total,power.draw",
+		"--format=csv",
+		"-l",
+		str(interval),
+	]
+	log_path.parent.mkdir(parents=True, exist_ok=True)
+	handle = open(log_path, "w", encoding="utf-8")
+	try:
+		proc = subprocess.Popen(cmd, stdout=handle, stderr=subprocess.STDOUT, text=True)
+	except Exception as exc:
+		handle.close()
+		status["status"] = "failed_to_start"
+		status["error"] = str(exc)
+		return None, None, status
+	status["status"] = "running"
+	status["command"] = cmd
+	return proc, handle, status
+
+
+def _stop_gpu_monitor(
+	proc: subprocess.Popen[str] | None,
+	handle: object | None,
+	status: dict,
+) -> dict:
+	if proc is None:
+		return status
+	try:
+		proc.terminate()
+		try:
+			proc.wait(timeout=10)
+			status["status"] = "stopped"
+		except subprocess.TimeoutExpired:
+			proc.kill()
+			proc.wait(timeout=10)
+			status["status"] = "killed"
+		status["returncode"] = int(proc.returncode or 0)
+	except Exception as exc:
+		status["status"] = "stop_error"
+		status["error"] = str(exc)
+	finally:
+		if handle is not None:
+			handle.close()
+	return status
+
+
 def main() -> None:
 	parser = argparse.ArgumentParser(description="Run one shotgun VAE training job inside AWS Batch.")
 	parser.add_argument("--manifest-s3-uri", type=str, default=_env("AVA_TRAIN_MANIFEST_S3_URI"))
@@ -242,6 +311,7 @@ def main() -> None:
 	parser.add_argument("--preflight-sample-segments", type=int, default=_env_int("AVA_TRAIN_PREFLIGHT_SAMPLE_SEGMENTS", 50_000))
 	parser.add_argument("--preflight-seed", type=int, default=_env_int("AVA_TRAIN_PREFLIGHT_SEED", 0))
 	parser.add_argument("--download-jobs", type=int, default=_env_int("AVA_TRAIN_DOWNLOAD_JOBS", 8))
+	parser.add_argument("--gpu-monitor-interval-sec", type=float, default=_env_float("AVA_TRAIN_GPU_MONITOR_INTERVAL_SEC", 0.0))
 	parser.add_argument("--roi-format", choices=["txt", "parquet"], default=_env("AVA_TRAIN_ROI_FORMAT", "parquet"))
 	parser.add_argument("--roi-parquet-name", type=str, default=_env("AVA_TRAIN_ROI_PARQUET_NAME", "roi.parquet"))
 	parser.add_argument("--trainer-kwargs-json", type=str, default=_env("AVA_TRAIN_TRAINER_KWARGS_JSON"))
@@ -273,6 +343,7 @@ def main() -> None:
 	save_dir = args.workdir / "out" / "training_run"
 	summary_path = args.workdir / "out" / "training_job_summary.json"
 	log_path = args.workdir / "out" / "training_stdout.log"
+	gpu_monitor_path = args.workdir / "out" / "gpu_utilization.csv"
 	command = build_training_command(
 		manifest_path=local_manifest,
 		config_path=local_config,
@@ -292,7 +363,12 @@ def main() -> None:
 		trainer_kwargs_json=args.trainer_kwargs_json,
 	)
 	if args.dry_run:
-		print(json.dumps({"run_name": args.run_name, "training_command": command}, indent=2))
+		print(json.dumps({
+			"run_name": args.run_name,
+			"training_command": command,
+			"gpu_monitor_interval_sec": float(args.gpu_monitor_interval_sec or 0),
+			"gpu_monitor_path": gpu_monitor_path.as_posix(),
+		}, indent=2))
 		return
 
 	aws = _require_aws_cli()
@@ -319,7 +395,14 @@ def main() -> None:
 		raise RuntimeError(f"{len(failed_downloads)} S3 sync operations failed.")
 
 	start = time.time()
-	returncode = _run_to_log(command, log_path)
+	monitor_proc, monitor_handle, monitor_status = _start_gpu_monitor(
+		gpu_monitor_path,
+		float(args.gpu_monitor_interval_sec or 0),
+	)
+	try:
+		returncode = _run_to_log(command, log_path)
+	finally:
+		monitor_status = _stop_gpu_monitor(monitor_proc, monitor_handle, monitor_status)
 	status = "ok" if returncode == 0 else "failed_training"
 	summary = {
 		"created_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
@@ -334,6 +417,7 @@ def main() -> None:
 		"s3_output_root": str(args.s3_output_root),
 		"training_command": command,
 		"downloads": download_results,
+		"gpu_monitor": monitor_status,
 	}
 	_write_json(summary_path, summary)
 	s3_out = _join_s3_uri(str(args.s3_output_root), str(args.run_name))

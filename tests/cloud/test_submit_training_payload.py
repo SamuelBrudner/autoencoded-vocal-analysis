@@ -55,6 +55,8 @@ def test_submit_training_payload_omits_command_override_by_default():
 		"10",
 		"--dataset-length",
 		"1234",
+		"--gpu-monitor-interval-sec",
+		"5",
 	]
 	out = subprocess.check_output(cmd, text=True)
 	payload = json.loads(out)
@@ -64,6 +66,7 @@ def test_submit_training_payload_omits_command_override_by_default():
 	assert env["AVA_TRAIN_RUN_NAME"] == "run1"
 	assert env["AVA_TRAIN_EPOCHS"] == "10"
 	assert env["AVA_TRAIN_DATASET_LENGTH"] == "1234"
+	assert env["AVA_TRAIN_GPU_MONITOR_INTERVAL_SEC"] == "5.0"
 	assert env["AVA_TRAIN_ROI_FORMAT"] == "parquet"
 
 

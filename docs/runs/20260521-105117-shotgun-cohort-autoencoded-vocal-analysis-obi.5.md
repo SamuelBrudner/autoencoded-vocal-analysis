@@ -9,6 +9,8 @@
 - Staged the four small shotgun input files to the existing baseline S3 run prefix.
 - Wrote no-submit AWS Batch payloads for the PK249 pilot and fixed-cohort model.
 - Did not submit a GPU job. Current AVA training Batch definition reserves 4 GPUs, so the next action should be an explicit PK249 pilot launch decision.
+- Static utilization audit: the original PK249 pilot payload is wasteful as written because the Batch job reserves 4 GPUs while the shotgun config requests `devices: 1`.
+- Added an explicit 4-GPU utilization assay payload that overrides Lightning to `devices=4, strategy=ddp` and records `nvidia-smi` utilization every 5 seconds during a one-epoch PK249 run.
 
 ## Launch Package
 
@@ -21,7 +23,11 @@
 - `pilot_training_payload`: `artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/shotgun_pk249_pilot_training_payload.json`
 - `cohort_training_payload`: `artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/shotgun_fixed_cohort_training_payload.json`
 - `pilot_runner_dry_run`: `artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/shotgun_pk249_pilot_runner_dry_run.json`
+- `4gpu_utilization_assay_payload`: `artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/shotgun_pk249_4gpu_utilization_assay_payload.json`
+- `4gpu_utilization_assay_runner_dry_run`: `artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/shotgun_pk249_4gpu_utilization_assay_runner_dry_run.json`
 
-## Next Action
+## Utilization Assay
 
-Submit the PK249 pilot only after confirming the 4-GPU Batch allocation is acceptable for a 10-epoch pipeline validation run. If that is too wasteful, create or select a 1-GPU AVA training job definition before launching.
+Do not submit the original PK249 pilot payload to the 4-GPU job definition; it would run with one Lightning device and leave the other three GPUs idle.
+
+The utilization assay payload is the appropriate next paid run if we want to evaluate the existing 4-GPU definition. It is intentionally short: PK249 only, one epoch, `dataset_length=8192`, `batch_size=128`, `devices=4`, `strategy=ddp`, and GPU telemetry enabled. Treat the 4-GPU definition as efficient only if all four GPUs are visible in `gpu_utilization.csv`, all four show sustained non-trivial utilization during the training window, and wall-clock throughput is materially better than a 1-GPU run with the same dataset length. If DDP fails, only one GPU is active, or utilization is dominated by download/preprocessing stalls, use or create a 1-GPU AVA training definition for the PK249 pilot.
