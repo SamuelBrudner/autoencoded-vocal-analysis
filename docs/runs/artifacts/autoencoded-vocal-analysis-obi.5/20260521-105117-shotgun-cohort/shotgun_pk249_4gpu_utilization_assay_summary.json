@@ -1,0 +1,52 @@
+{
+  "assay": "shotgun_pk249_4gpu_utilization_assay",
+  "conclusion": "4-GPU DDP is technically runnable after enabling unused-parameter detection, but the PK249 pilot is not an efficient 4-GPU workload because queue/setup/upload dominate one-epoch wall time and no nvidia-smi utilization trace was captured by the deployed legacy entrypoint.",
+  "attempts": [
+    {
+      "name": "prepared_payload",
+      "terminal_status": "FAILED",
+      "reason": "deployed image used a baked legacy entrypoint, so the command override was interpreted as unexpected arguments"
+    },
+    {
+      "name": "legacy_entrypoint_v1",
+      "terminal_status": "FAILED",
+      "reason": "runner rejected test_dataset_length=0"
+    },
+    {
+      "name": "legacy_entrypoint_v2",
+      "terminal_status": "FAILED",
+      "reason": "default DDP failed after the first batch because unused parameters required ddp_find_unused_parameters_true"
+    },
+    {
+      "name": "legacy_entrypoint_v3",
+      "terminal_status": "SUCCEEDED",
+      "reason": "used ddp_find_unused_parameters_true"
+    }
+  ],
+  "final_run": {
+    "devices": 4,
+    "strategy": "ddp_find_unused_parameters_true",
+    "precision": "16-mixed",
+    "status": "SUCCEEDED",
+    "queue_to_start_sec": 646.395,
+    "aws_run_sec": 497.576,
+    "aws_total_sec": 1143.971,
+    "training_epoch_sec": 24,
+    "training_batches": 16,
+    "training_batches_per_sec": 0.67,
+    "train_dataset_length": 8192,
+    "inferred_global_batch_per_step": 512,
+    "inferred_samples_per_sec": 341.3333333333333,
+    "compute_fraction_of_aws_run": 0.04823383764490249,
+    "compute_fraction_of_total_elapsed": 0.020979552803349035,
+    "latest_step": 16,
+    "train_loss": 18950.4453125,
+    "train_recon_mse": 0.5091280937194824
+  },
+  "operational_notes": [
+    "DDP initialized with four NCCL ranks and all ranks saw CUDA_VISIBLE_DEVICES=[0,1,2,3].",
+    "The deployed legacy Batch entrypoint did not run the new GPU monitor, so gpu_utilization.csv was not produced.",
+    "For the PK249 pipeline-validation pilot, a 1-GPU job definition remains the lower-cost default unless a direct 1-GPU comparison proves otherwise.",
+    "For the future full-cohort model, rerun a longer telemetry-enabled comparison after publishing an image that includes gpu_utilization.csv support."
+  ]
+}

@@ -1,0 +1,130 @@
+[disk-telemetry] stage=after_setup tmp:du=4.0K,free=1.2TiB | ava_cache:du=0,free=1.2TiB | ava_train_workdir:du=0,free=1.2TiB | tmp:du=0,free=1.2TiB | spec_cache:du=0,free=1.2TiB | audio:free=1.2TiB,du_error=missing | roi:free=1.2TiB,du_error=missing | training_run:free=1.2TiB,du_error=missing
+[disk-telemetry] stage=after_downloads tmp:du=4.0K,free=1.1TiB | ava_cache:du=56G,free=1.1TiB | ava_train_workdir:du=56G,free=1.1TiB | tmp:du=0,free=1.1TiB | spec_cache:du=0,free=1.1TiB | audio:du=56G,free=1.1TiB | roi:du=15M,free=1.1TiB | training_run:free=1.1TiB,du_error=missing
+{
+  "created_utc": "2026-05-21T19:15:48Z",
+  "manifest_path": "/mnt/ava_cache/ava_train_workdir/inputs/manifest.json",
+  "split": "all",
+  "num_shards": 1,
+  "shard_index": 0,
+  "directories": 58,
+  "missing_roi_dirs": 0,
+  "missing_roi_files": 0,
+  "empty_roi_files": 269,
+  "roi_parse_errors": 0,
+  "segments_total": 2755398,
+  "segment_duration_total_sec": 313538.1884732824,
+  "elapsed_sec": 0.887958288192749,
+  "dirs_per_sec": 65.3183834998001
+}
+[disk-telemetry] stage=after_coverage tmp:du=4.0K,free=1.1TiB | ava_cache:du=56G,free=1.1TiB | ava_train_workdir:du=56G,free=1.1TiB | tmp:du=0,free=1.1TiB | spec_cache:du=0,free=1.1TiB | audio:du=56G,free=1.1TiB | roi:du=15M,free=1.1TiB | training_run:free=1.1TiB,du_error=missing
+[disk-telemetry] stage=before_training tmp:du=4.0K,free=1.1TiB | ava_cache:du=56G,free=1.1TiB | ava_train_workdir:du=56G,free=1.1TiB | tmp:du=0,free=1.1TiB | spec_cache:du=0,free=1.1TiB | audio:du=56G,free=1.1TiB | roi:du=15M,free=1.1TiB | training_run:free=1.1TiB,du_error=missing
+ROI duration preflight (parquet sample): {"compatible_fraction": 0.8744, "max_duration_sec": 0.49922895431518555, "median_duration_sec": 0.08417224884033203, "min_duration_sec": 0.011610031127929688, "p05_duration_sec": 0.023220062255859375, "p95_duration_sec": 0.29024942219257355, "parquet_files_empty_in_sample": 0, "parquet_files_missing_in_sample": 0, "parquet_files_sampled": 20, "parquet_files_total": 58, "roi_segments_compatible": 8744, "roi_segments_sampled": 10000, "roi_segments_total_in_sampled_files": 901785, "window_length_sec": 0.03}
+Using 16bit Automatic Mixed Precision (AMP)
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+/opt/conda/lib/python3.11/site-packages/pytorch_lightning/trainer/configuration_validator.py:70: You defined a `validation_step` but have no `val_dataloader`. Skipping val loop.
+You are using a CUDA device ('NVIDIA L4') that has Tensor Cores. To properly utilize them, you should set `torch.set_float32_matmul_precision('medium' | 'high')` which will trade-off precision for performance. For more details, read https://pytorch.org/docs/stable/generated/torch.set_float32_matmul_precision.html#torch.set_float32_matmul_precision
+Initializing distributed: GLOBAL_RANK: 0, MEMBER: 1/4
+ROI duration preflight (parquet sample): {"compatible_fraction": 0.8744, "max_duration_sec": 0.49922895431518555, "median_duration_sec": 0.08417224884033203, "min_duration_sec": 0.011610031127929688, "p05_duration_sec": 0.023220062255859375, "p95_duration_sec": 0.29024942219257355, "parquet_files_empty_in_sample": 0, "parquet_files_missing_in_sample": 0, "parquet_files_sampled": 20, "parquet_files_total": 58, "roi_segments_compatible": 8744, "roi_segments_sampled": 10000, "roi_segments_total_in_sampled_files": 901785, "window_length_sec": 0.03}
+ROI duration preflight (parquet sample): {"compatible_fraction": 0.8744, "max_duration_sec": 0.49922895431518555, "median_duration_sec": 0.08417224884033203, "min_duration_sec": 0.011610031127929688, "p05_duration_sec": 0.023220062255859375, "p95_duration_sec": 0.29024942219257355, "parquet_files_empty_in_sample": 0, "parquet_files_missing_in_sample": 0, "parquet_files_sampled": 20, "parquet_files_total": 58, "roi_segments_compatible": 8744, "roi_segments_sampled": 10000, "roi_segments_total_in_sampled_files": 901785, "window_length_sec": 0.03}
+ROI duration preflight (parquet sample): {"compatible_fraction": 0.8744, "max_duration_sec": 0.49922895431518555, "median_duration_sec": 0.08417224884033203, "min_duration_sec": 0.011610031127929688, "p05_duration_sec": 0.023220062255859375, "p95_duration_sec": 0.29024942219257355, "parquet_files_empty_in_sample": 0, "parquet_files_missing_in_sample": 0, "parquet_files_sampled": 20, "parquet_files_total": 58, "roi_segments_compatible": 8744, "roi_segments_sampled": 10000, "roi_segments_total_in_sampled_files": 901785, "window_length_sec": 0.03}
+Initializing distributed: GLOBAL_RANK: 3, MEMBER: 4/4
+Initializing distributed: GLOBAL_RANK: 2, MEMBER: 3/4
+Initializing distributed: GLOBAL_RANK: 1, MEMBER: 2/4
+----------------------------------------------------------------------------------------------------
+distributed_backend=nccl
+All distributed processes registered. Starting with 4 processes
+----------------------------------------------------------------------------------------------------
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0,1,2,3]
+LOCAL_RANK: 3 - CUDA_VISIBLE_DEVICES: [0,1,2,3]
+LOCAL_RANK: 1 - CUDA_VISIBLE_DEVICES: [0,1,2,3]
+LOCAL_RANK: 2 - CUDA_VISIBLE_DEVICES: [0,1,2,3]
+[disk-telemetry] stage=fit_start epoch=0 tmp:du=4.0K,free=1.1TiB | ava_cache:du=57G,free=1.1TiB | ava_train_workdir:du=56G,free=1.1TiB | tmp:du=20K,free=1.1TiB | spec_cache:free=1.1TiB,du_error=du: cannot access '/mnt/ava_cache/spec_cache/tmpmc9aopz0.npz': No such file or directory | audio:du=56G,free=1.1TiB | roi:du=15M,free=1.1TiB | training_run:du=24K,free=1.1TiB
+/opt/conda/lib/python3.11/site-packages/pytorch_lightning/utilities/model_summary/model_summary.py:242: Precision 16-mixed is not supported by the model summary.  Estimated model size in MB will not be accurate. Using 32 bits instead.
+  | Name | Type | Params | Mode  | FLOPs
+----------------------------------------------
+0 | vae  | VAE  | 9.0 M  | train | 0    
+----------------------------------------------
+9.0 M     Trainable params
+0         Non-trainable params
+9.0 M     Total params
+36.142    Total estimated model params size (MB)
+63        Modules in train mode
+0         Modules in eval mode
+0         Total Flops
+Training: |          | 0/? [00:00<?, ?it/s]
+Training: |          | 0/? [00:00<?, ?it/s]
+Epoch 0:   0%|          | 0/16 [00:00<?, ?it/s]
+Epoch 0:   6%|▋         | 1/16 [00:13<03:28,  0.07it/s]
+Epoch 0:   6%|▋         | 1/16 [00:13<03:28,  0.07it/s, v_num=0]
+Epoch 0:  12%|█▎        | 2/16 [00:13<01:37,  0.14it/s, v_num=0]
+Epoch 0:  12%|█▎        | 2/16 [00:13<01:37,  0.14it/s, v_num=0]
+Epoch 0:  19%|█▉        | 3/16 [00:15<01:05,  0.20it/s, v_num=0]
+Epoch 0:  19%|█▉        | 3/16 [00:15<01:05,  0.20it/s, v_num=0]
+Epoch 0:  25%|██▌       | 4/16 [00:15<00:45,  0.26it/s, v_num=0]
+Epoch 0:  25%|██▌       | 4/16 [00:15<00:45,  0.26it/s, v_num=0]
+Epoch 0:  31%|███▏      | 5/16 [00:15<00:33,  0.33it/s, v_num=0]
+Epoch 0:  31%|███▏      | 5/16 [00:15<00:33,  0.33it/s, v_num=0]
+Epoch 0:  38%|███▊      | 6/16 [00:15<00:25,  0.39it/s, v_num=0]
+Epoch 0:  38%|███▊      | 6/16 [00:15<00:25,  0.39it/s, v_num=0]
+Epoch 0:  44%|████▍     | 7/16 [00:15<00:19,  0.46it/s, v_num=0]
+Epoch 0:  44%|████▍     | 7/16 [00:15<00:19,  0.46it/s, v_num=0]
+Epoch 0:  50%|█████     | 8/16 [00:15<00:15,  0.52it/s, v_num=0]
+Epoch 0:  50%|█████     | 8/16 [00:15<00:15,  0.52it/s, v_num=0]
+Epoch 0:  56%|█████▋    | 9/16 [00:22<00:17,  0.40it/s, v_num=0]
+Epoch 0:  56%|█████▋    | 9/16 [00:22<00:17,  0.40it/s, v_num=0]
+Epoch 0:  62%|██████▎   | 10/16 [00:22<00:13,  0.45it/s, v_num=0]
+Epoch 0:  62%|██████▎   | 10/16 [00:22<00:13,  0.45it/s, v_num=0]
+Epoch 0:  69%|██████▉   | 11/16 [00:23<00:10,  0.47it/s, v_num=0]
+Epoch 0:  69%|██████▉   | 11/16 [00:23<00:10,  0.47it/s, v_num=0]
+Epoch 0:  75%|███████▌  | 12/16 [00:23<00:07,  0.51it/s, v_num=0]
+Epoch 0:  75%|███████▌  | 12/16 [00:23<00:07,  0.51it/s, v_num=0]
+Epoch 0:  81%|████████▏ | 13/16 [00:23<00:05,  0.56it/s, v_num=0]
+Epoch 0:  81%|████████▏ | 13/16 [00:23<00:05,  0.56it/s, v_num=0]
+Epoch 0:  88%|████████▊ | 14/16 [00:23<00:03,  0.60it/s, v_num=0]
+Epoch 0:  88%|████████▊ | 14/16 [00:23<00:03,  0.60it/s, v_num=0]
+Epoch 0:  94%|█████████▍| 15/16 [00:23<00:01,  0.64it/s, v_num=0]
+Epoch 0:  94%|█████████▍| 15/16 [00:23<00:01,  0.64it/s, v_num=0]
+Epoch 0: 100%|██████████| 16/16 [00:23<00:00,  0.68it/s, v_num=0]
+Epoch 0: 100%|██████████| 16/16 [00:23<00:00,  0.68it/s, v_num=0]Training complete. Train dirs: 58 Test dirs: 0
+Artifacts saved to: /mnt/ava_cache/ava_train_workdir/training_run
+Dashboard HTML: /mnt/ava_cache/ava_train_workdir/training_run/training_dashboard.html
+Dashboard JSON: /mnt/ava_cache/ava_train_workdir/training_run/training_dashboard.json
+Training complete. Train dirs: 58 Test dirs: 0
+Artifacts saved to: /mnt/ava_cache/ava_train_workdir/training_run
+Dashboard HTML: /mnt/ava_cache/ava_train_workdir/training_run/training_dashboard.html
+Dashboard JSON: /mnt/ava_cache/ava_train_workdir/training_run/training_dashboard.json
+Training complete. Train dirs: 58 Test dirs: 0
+Artifacts saved to: /mnt/ava_cache/ava_train_workdir/training_run
+Dashboard HTML: /mnt/ava_cache/ava_train_workdir/training_run/training_dashboard.html
+Dashboard JSON: /mnt/ava_cache/ava_train_workdir/training_run/training_dashboard.json
+/opt/conda/lib/python3.11/site-packages/pytorch_lightning/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('train_loss', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+/opt/conda/lib/python3.11/site-packages/pytorch_lightning/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('train_recon_mse', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+/opt/conda/lib/python3.11/site-packages/pytorch_lightning/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('train_recon_nll', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+/opt/conda/lib/python3.11/site-packages/pytorch_lightning/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('train_recon_nll_per_dim', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+/opt/conda/lib/python3.11/site-packages/pytorch_lightning/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('train_kl', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+/opt/conda/lib/python3.11/site-packages/pytorch_lightning/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('train_kl_per_dim', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+/opt/conda/lib/python3.11/site-packages/pytorch_lightning/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('train_kl_weight', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+/opt/conda/lib/python3.11/site-packages/pytorch_lightning/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('train_weighted_kl', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+/opt/conda/lib/python3.11/site-packages/pytorch_lightning/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('train_kl_to_recon_ratio', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+/opt/conda/lib/python3.11/site-packages/pytorch_lightning/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('train_weighted_kl_to_recon_ratio', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+/opt/conda/lib/python3.11/site-packages/pytorch_lightning/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('train_kl_regularizer', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+/opt/conda/lib/python3.11/site-packages/pytorch_lightning/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('train_kl_regularizer_to_recon_ratio', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+/opt/conda/lib/python3.11/site-packages/pytorch_lightning/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('train_latent_mean_abs', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+/opt/conda/lib/python3.11/site-packages/pytorch_lightning/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('train_latent_var_mean', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+/opt/conda/lib/python3.11/site-packages/pytorch_lightning/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('train_latent_max_abs_mu', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+/opt/conda/lib/python3.11/site-packages/pytorch_lightning/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('train_latent_max_abs_logvar', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+/opt/conda/lib/python3.11/site-packages/pytorch_lightning/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('train_latent_raw_max_abs_logvar', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+/opt/conda/lib/python3.11/site-packages/pytorch_lightning/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('train_latent_logvar_lower_clamp_fraction', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+/opt/conda/lib/python3.11/site-packages/pytorch_lightning/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('train_latent_logvar_upper_clamp_fraction', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+/opt/conda/lib/python3.11/site-packages/pytorch_lightning/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('train_latent_logvar_clamp_fraction', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+/opt/conda/lib/python3.11/site-packages/pytorch_lightning/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('train_log_precision', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+/opt/conda/lib/python3.11/site-packages/pytorch_lightning/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('train_model_precision', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+Epoch 0: 100%|██████████| 16/16 [00:24<00:00,  0.67it/s, v_num=0, train_loss=1.9e+4]`Trainer.fit` stopped: `max_epochs=1` reached.
+Epoch 0: 100%|██████████| 16/16 [00:24<00:00,  0.67it/s, v_num=0, train_loss=1.9e+4]
+[disk-telemetry] stage=fit_end epoch=2 tmp:du=4.0K,free=1.1TiB | ava_cache:du=57G,free=1.1TiB | ava_train_workdir:du=56G,free=1.1TiB | tmp:du=20K,free=1.1TiB | spec_cache:du=452M,free=1.1TiB | audio:du=56G,free=1.1TiB | roi:du=15M,free=1.1TiB | training_run:du=136K,free=1.1TiB
+Training complete. Train dirs: 58 Test dirs: 0
+Artifacts saved to: /mnt/ava_cache/ava_train_workdir/training_run
+Dashboard HTML: /mnt/ava_cache/ava_train_workdir/training_run/training_dashboard.html
+Dashboard JSON: /mnt/ava_cache/ava_train_workdir/training_run/training_dashboard.json
+[disk-telemetry] stage=final_completed tmp:du=4.0K,free=1.1TiB | ava_cache:du=57G,free=1.1TiB | ava_train_workdir:du=56G,free=1.1TiB | tmp:du=4.0K,free=1.1TiB | spec_cache:du=452M,free=1.1TiB | audio:du=56G,free=1.1TiB | roi:du=15M,free=1.1TiB | training_run:du=140K,free=1.1TiB

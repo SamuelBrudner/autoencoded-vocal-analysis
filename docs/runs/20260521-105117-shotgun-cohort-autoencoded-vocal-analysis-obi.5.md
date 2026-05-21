@@ -29,6 +29,7 @@
 - `4gpu_utilization_assay_runner_dry_run`: `artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/shotgun_pk249_4gpu_utilization_assay_runner_dry_run.json`
 - `1gpu_job_definition_candidate`: `artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/ava_train_gpu_1x_job_definition_candidate.json`
 - `1gpu_pilot_training_payload`: `artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/shotgun_pk249_pilot_1gpu_training_payload.json`
+- `4gpu_utilization_assay_summary`: `artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/shotgun_pk249_4gpu_utilization_assay_summary.json`
 
 ## Utilization Assay
 
@@ -37,3 +38,13 @@ Do not submit the original PK249 pilot payload to the 4-GPU job definition; it w
 The utilization assay payload is the appropriate next paid run if we want to evaluate the existing 4-GPU definition. It is intentionally short: PK249 only, one epoch, `dataset_length=8192`, `batch_size=128`, `devices=4`, `strategy=ddp`, and GPU telemetry enabled. Treat the 4-GPU definition as efficient only if all four GPUs are visible in `gpu_utilization.csv`, all four show sustained non-trivial utilization during the training window, and wall-clock throughput is materially better than a 1-GPU run with the same dataset length. If DDP fails, only one GPU is active, or utilization is dominated by download/preprocessing stalls, use or create a 1-GPU AVA training definition for the PK249 pilot.
 
 The lower-risk default is to register/select a 1-GPU AVA training job definition and use the 1-GPU PK249 pilot payload. That matches the current shotgun config (`devices: 1`) and avoids paying for idle GPUs during the pipeline-validation pilot. The committed 1-GPU job-definition artifact is intentionally redacted and should not be passed directly to `aws batch register-job-definition`; copy role fields from the active AVA training definition at execution time.
+
+## 4-GPU DDP Assay Result
+
+The assay was run on 2026-05-21. The original prepared payload failed immediately because the deployed training image uses a baked legacy entrypoint, so the command override was interpreted as unexpected arguments. A legacy-entrypoint payload then failed because `test_dataset_length=0` is rejected by the runner. A corrected legacy payload reached 4-rank NCCL DDP and started training, but default `strategy=ddp` failed after the first batch because the Lightning module has unused parameters.
+
+The final corrected payload used `strategy=ddp_find_unused_parameters_true` and succeeded. It initialized all four DDP ranks, all ranks saw the four visible CUDA devices, and the one-epoch training loop completed 16 batches in 24 seconds (`0.67 it/s`) with `train_dataset_length=8192`, `batch_size=128`, and inferred global step size 512.
+
+Operationally, this is not efficient enough for the PK249 pipeline-validation pilot. The successful run spent 646 seconds queued before start, 498 seconds in the Batch container, and 1,144 seconds from submission to terminal status; the 24-second training epoch was only 4.8% of container runtime and 2.1% of total elapsed time. The deployed legacy entrypoint also did not include the new `nvidia-smi` monitor, so no `gpu_utilization.csv` was produced.
+
+Decision: use the 1-GPU path for the immediate PK249 pilot unless a direct 1-GPU comparison proves worse. Keep 4-GPU DDP available for the full-cohort model only after publishing an image that includes GPU telemetry and rerunning a longer comparison with `ddp_find_unused_parameters_true`.
