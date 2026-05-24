@@ -1,0 +1,232 @@
+{
+  "1gpu_v3": {
+    "container_sec": null,
+    "epoch_progress": [
+      {
+        "complete": true,
+        "elapsed_sec": 1743,
+        "epoch": 0,
+        "it_per_sec": 0.22,
+        "pct": 100,
+        "sec_after_container_start": 2283.391,
+        "step": 391,
+        "total": 391
+      },
+      {
+        "complete": true,
+        "elapsed_sec": 1884,
+        "epoch": 1,
+        "it_per_sec": 0.21,
+        "pct": 100,
+        "sec_after_container_start": 4168.176,
+        "step": 391,
+        "total": 391
+      },
+      {
+        "complete": true,
+        "elapsed_sec": 1905,
+        "epoch": 2,
+        "it_per_sec": 0.21,
+        "pct": 100,
+        "sec_after_container_start": 6073.745,
+        "step": 391,
+        "total": 391
+      },
+      {
+        "complete": false,
+        "elapsed_sec": 1113,
+        "epoch": 3,
+        "it_per_sec": 0.2,
+        "pct": 58,
+        "sec_after_container_start": 7187.582,
+        "step": 228,
+        "total": 391
+      }
+    ],
+    "job_name": "shotgun-pk249-scaling-1gpu-10epoch-v3-600g-20260522-101500",
+    "queue_sec": 230.719,
+    "stage_markers": [
+      {
+        "epoch": null,
+        "sec_after_container_start": 3.49,
+        "stage": "after_setup"
+      },
+      {
+        "epoch": null,
+        "sec_after_container_start": 461.618,
+        "stage": "after_downloads"
+      },
+      {
+        "epoch": null,
+        "sec_after_container_start": 469.295,
+        "stage": "after_coverage"
+      },
+      {
+        "epoch": null,
+        "sec_after_container_start": 470.201,
+        "stage": "before_training"
+      },
+      {
+        "epoch": 0,
+        "sec_after_container_start": 516.722,
+        "stage": "fit_start"
+      }
+    ],
+    "status": "RUNNING"
+  },
+  "4gpu": {
+    "container_sec": 1594.329,
+    "epoch_progress": [
+      {
+        "complete": true,
+        "elapsed_sec": 125,
+        "epoch": 0,
+        "it_per_sec": 0.78,
+        "pct": 100,
+        "sec_after_container_start": 421.569,
+        "step": 98,
+        "total": 98
+      },
+      {
+        "complete": true,
+        "elapsed_sec": 124,
+        "epoch": 1,
+        "it_per_sec": 0.79,
+        "pct": 100,
+        "sec_after_container_start": 545.814,
+        "step": 98,
+        "total": 98
+      },
+      {
+        "complete": true,
+        "elapsed_sec": 122,
+        "epoch": 2,
+        "it_per_sec": 0.8,
+        "pct": 100,
+        "sec_after_container_start": 668.327,
+        "step": 98,
+        "total": 98
+      },
+      {
+        "complete": true,
+        "elapsed_sec": 122,
+        "epoch": 3,
+        "it_per_sec": 0.8,
+        "pct": 100,
+        "sec_after_container_start": 790.783,
+        "step": 98,
+        "total": 98
+      },
+      {
+        "complete": true,
+        "elapsed_sec": 126,
+        "epoch": 4,
+        "it_per_sec": 0.77,
+        "pct": 100,
+        "sec_after_container_start": 917.592,
+        "step": 98,
+        "total": 98
+      },
+      {
+        "complete": true,
+        "elapsed_sec": 121,
+        "epoch": 5,
+        "it_per_sec": 0.81,
+        "pct": 100,
+        "sec_after_container_start": 1039.137,
+        "step": 98,
+        "total": 98
+      },
+      {
+        "complete": true,
+        "elapsed_sec": 124,
+        "epoch": 6,
+        "it_per_sec": 0.79,
+        "pct": 100,
+        "sec_after_container_start": 1163.78,
+        "step": 98,
+        "total": 98
+      },
+      {
+        "complete": true,
+        "elapsed_sec": 123,
+        "epoch": 7,
+        "it_per_sec": 0.79,
+        "pct": 100,
+        "sec_after_container_start": 1287.461,
+        "step": 98,
+        "total": 98
+      },
+      {
+        "complete": true,
+        "elapsed_sec": 125,
+        "epoch": 8,
+        "it_per_sec": 0.78,
+        "pct": 100,
+        "sec_after_container_start": 1413.332,
+        "step": 98,
+        "total": 98
+      },
+      {
+        "complete": true,
+        "elapsed_sec": 127,
+        "epoch": 9,
+        "it_per_sec": 0.77,
+        "pct": 100,
+        "sec_after_container_start": 1541.292,
+        "step": 98,
+        "total": 98
+      }
+    ],
+    "job_name": "shotgun-pk249-scaling-4gpu-10epoch-20260522-101500",
+    "queue_sec": 277.506,
+    "stage_markers": [
+      {
+        "epoch": null,
+        "sec_after_container_start": 2.615,
+        "stage": "after_setup"
+      },
+      {
+        "epoch": null,
+        "sec_after_container_start": 241.945,
+        "stage": "after_downloads"
+      },
+      {
+        "epoch": null,
+        "sec_after_container_start": 244.271,
+        "stage": "after_coverage"
+      },
+      {
+        "epoch": null,
+        "sec_after_container_start": 244.953,
+        "stage": "before_training"
+      },
+      {
+        "epoch": 0,
+        "sec_after_container_start": 295.725,
+        "stage": "fit_start"
+      },
+      {
+        "epoch": 5,
+        "sec_after_container_start": 917.587,
+        "stage": "train_epoch_end"
+      },
+      {
+        "epoch": 10,
+        "sec_after_container_start": 1541.288,
+        "stage": "train_epoch_end"
+      },
+      {
+        "epoch": 11,
+        "sec_after_container_start": 1544.623,
+        "stage": "fit_end"
+      },
+      {
+        "epoch": null,
+        "sec_after_container_start": 1589.24,
+        "stage": "final_completed"
+      }
+    ],
+    "status": "SUCCEEDED"
+  }
+}

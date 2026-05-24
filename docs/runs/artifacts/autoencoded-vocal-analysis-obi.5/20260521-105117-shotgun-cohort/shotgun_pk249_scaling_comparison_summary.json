@@ -1,0 +1,267 @@
+{
+  "assay": "PK249 shotgun VAE 1-GPU vs 4-GPU DDP training-loop scaling",
+  "batch_size_per_device": 128,
+  "bead": "autoencoded-vocal-analysis-obi.5.2",
+  "comparison": {
+    "decision": "Use 4-GPU DDP for the full shotgun cohort model as the practical AWS path; the measured Batch-shape throughput is much higher than the constrained 1-GPU path, but do not interpret the 15.3x value as pure GPU scaling efficiency.",
+    "four_gpu_median_steady_epoch_sec": 124,
+    "four_gpu_samples_per_sec": 403.2258064516129,
+    "global_batch_size": {
+      "four_gpu_ddp": 512,
+      "one_gpu": 128
+    },
+    "one_gpu_median_steady_epoch_sec": 1894.5,
+    "one_gpu_samples_per_sec": 26.392187912377935,
+    "projected_100_epoch_training_hours_excluding_queue": {
+      "four_gpu": 3.526590277777778,
+      "one_gpu": 52.76853388888889
+    },
+    "speedup_interpretation": "AWS Batch instance-shape throughput speedup, not pure GPU scaling efficiency",
+    "steady_epoch_speedup_four_gpu_over_one_gpu": 15.278225806451614,
+    "step_count_ratio_one_gpu_over_four_gpu": 3.989795918367347
+  },
+  "created_utc": "2026-05-24T18:10:00Z",
+  "dataset_length_per_epoch": 50000,
+  "interpretation_caveats": [
+    "The measured 15.3x value is an end-to-end AWS Batch shape throughput speedup, not pure four-GPU scaling efficiency.",
+    "The 4-GPU DDP run uses batch_size=128 per rank, so it performs about 98 global optimizer steps per 50k-sample epoch; the 1-GPU run performs about 391 steps. This accounts for roughly a 4x step-count reduction.",
+    "The remaining speedup likely reflects host/input-pipeline differences: the 4-GPU Batch shape has substantially more CPU, memory, I/O headroom, and aggregate dataloader workers than the constrained 1-GPU shape.",
+    "A strict GPU-efficiency assay still requires telemetry or a same-host comparison; this result is sufficient for choosing the practical full-cohort AWS training path."
+  ],
+  "notes": [
+    "One-time setup/download/ROI coverage/preflight stages run once per Batch training job, not once per epoch.",
+    "The 1-GPU comparison was intentionally terminated after three complete epochs plus part of epoch 3 to limit cost once the steady-state decision was clear.",
+    "The deployed legacy image still lacks nvidia-smi CSV telemetry, so this comparison is based on Lightning epoch timing and CloudWatch stage timestamps."
+  ],
+  "roi_format": "parquet",
+  "runs": {
+    "four_gpu": {
+      "completed_epochs": 10,
+      "container_sec": 1594.329,
+      "epoch_timings": [
+        {
+          "complete": true,
+          "elapsed_sec": 125,
+          "epoch": 0,
+          "it_per_sec": 0.78,
+          "pct": 100,
+          "step": 98,
+          "total": 98
+        },
+        {
+          "complete": true,
+          "elapsed_sec": 124,
+          "epoch": 1,
+          "it_per_sec": 0.79,
+          "pct": 100,
+          "step": 98,
+          "total": 98
+        },
+        {
+          "complete": true,
+          "elapsed_sec": 122,
+          "epoch": 2,
+          "it_per_sec": 0.8,
+          "pct": 100,
+          "step": 98,
+          "total": 98
+        },
+        {
+          "complete": true,
+          "elapsed_sec": 122,
+          "epoch": 3,
+          "it_per_sec": 0.8,
+          "pct": 100,
+          "step": 98,
+          "total": 98
+        },
+        {
+          "complete": true,
+          "elapsed_sec": 126,
+          "epoch": 4,
+          "it_per_sec": 0.77,
+          "pct": 100,
+          "step": 98,
+          "total": 98
+        },
+        {
+          "complete": true,
+          "elapsed_sec": 121,
+          "epoch": 5,
+          "it_per_sec": 0.81,
+          "pct": 100,
+          "step": 98,
+          "total": 98
+        },
+        {
+          "complete": true,
+          "elapsed_sec": 124,
+          "epoch": 6,
+          "it_per_sec": 0.79,
+          "pct": 100,
+          "step": 98,
+          "total": 98
+        },
+        {
+          "complete": true,
+          "elapsed_sec": 123,
+          "epoch": 7,
+          "it_per_sec": 0.79,
+          "pct": 100,
+          "step": 98,
+          "total": 98
+        },
+        {
+          "complete": true,
+          "elapsed_sec": 125,
+          "epoch": 8,
+          "it_per_sec": 0.78,
+          "pct": 100,
+          "step": 98,
+          "total": 98
+        },
+        {
+          "complete": true,
+          "elapsed_sec": 127,
+          "epoch": 9,
+          "it_per_sec": 0.77,
+          "pct": 100,
+          "step": 98,
+          "total": 98
+        }
+      ],
+      "exit_code": 0,
+      "job_name": "shotgun-pk249-scaling-4gpu-10epoch-20260522-101500",
+      "median_complete_epoch_sec": 124.0,
+      "median_steady_epoch_sec": 124,
+      "queue_sec": 277.506,
+      "stage_markers": [
+        {
+          "epoch": null,
+          "sec_after_container_start": 2.615,
+          "stage": "after_setup"
+        },
+        {
+          "epoch": null,
+          "sec_after_container_start": 241.945,
+          "stage": "after_downloads"
+        },
+        {
+          "epoch": null,
+          "sec_after_container_start": 244.271,
+          "stage": "after_coverage"
+        },
+        {
+          "epoch": null,
+          "sec_after_container_start": 244.953,
+          "stage": "before_training"
+        },
+        {
+          "epoch": 0,
+          "sec_after_container_start": 295.725,
+          "stage": "fit_start"
+        },
+        {
+          "epoch": 5,
+          "sec_after_container_start": 917.587,
+          "stage": "train_epoch_end"
+        },
+        {
+          "epoch": 10,
+          "sec_after_container_start": 1541.288,
+          "stage": "train_epoch_end"
+        },
+        {
+          "epoch": 11,
+          "sec_after_container_start": 1544.623,
+          "stage": "fit_end"
+        },
+        {
+          "epoch": null,
+          "sec_after_container_start": 1589.24,
+          "stage": "final_completed"
+        }
+      ],
+      "status": "SUCCEEDED",
+      "status_reason": "Essential container in task exited",
+      "steady_samples_per_sec": 403.2258064516129
+    },
+    "one_gpu": {
+      "completed_epochs": 3,
+      "container_sec": 7231.724,
+      "epoch_timings": [
+        {
+          "complete": true,
+          "elapsed_sec": 1743,
+          "epoch": 0,
+          "it_per_sec": 0.22,
+          "pct": 100,
+          "step": 391,
+          "total": 391
+        },
+        {
+          "complete": true,
+          "elapsed_sec": 1884,
+          "epoch": 1,
+          "it_per_sec": 0.21,
+          "pct": 100,
+          "step": 391,
+          "total": 391
+        },
+        {
+          "complete": true,
+          "elapsed_sec": 1905,
+          "epoch": 2,
+          "it_per_sec": 0.21,
+          "pct": 100,
+          "step": 391,
+          "total": 391
+        },
+        {
+          "complete": false,
+          "elapsed_sec": 1153,
+          "epoch": 3,
+          "it_per_sec": 0.2,
+          "pct": 60,
+          "step": 236,
+          "total": 391
+        }
+      ],
+      "exit_code": 143,
+      "job_name": "shotgun-pk249-scaling-1gpu-10epoch-v3-600g-20260522-101500",
+      "median_complete_epoch_sec": 1884,
+      "median_steady_epoch_sec": 1894.5,
+      "queue_sec": 230.719,
+      "stage_markers": [
+        {
+          "epoch": null,
+          "sec_after_container_start": 3.49,
+          "stage": "after_setup"
+        },
+        {
+          "epoch": null,
+          "sec_after_container_start": 461.618,
+          "stage": "after_downloads"
+        },
+        {
+          "epoch": null,
+          "sec_after_container_start": 469.295,
+          "stage": "after_coverage"
+        },
+        {
+          "epoch": null,
+          "sec_after_container_start": 470.201,
+          "stage": "before_training"
+        },
+        {
+          "epoch": 0,
+          "sec_after_container_start": 516.722,
+          "stage": "fit_start"
+        }
+      ],
+      "status": "FAILED",
+      "status_reason": "Scaling assay complete after three measured 1-GPU epochs; terminating remaining epochs to limit cost",
+      "steady_samples_per_sec": 26.392187912377935
+    }
+  }
+}

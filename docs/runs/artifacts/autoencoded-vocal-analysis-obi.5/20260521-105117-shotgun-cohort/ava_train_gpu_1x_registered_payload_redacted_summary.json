@@ -1,0 +1,46 @@
+{
+  "jobDefinitionName": "ava-train-gpu-1x",
+  "type": "container",
+  "platformCapabilities": [
+    "EC2"
+  ],
+  "containerProperties": {
+    "image": "<ava-train-image>",
+    "command": [],
+    "resourceRequirements": [
+      {
+        "type": "VCPU",
+        "value": "8"
+      },
+      {
+        "type": "MEMORY",
+        "value": "32768"
+      },
+      {
+        "type": "GPU",
+        "value": "1"
+      }
+    ],
+    "mountPoints": [
+      {
+        "containerPath": "/mnt/ava_cache",
+        "readOnly": false,
+        "sourceVolume": "ava-cache"
+      }
+    ],
+    "volumes": [
+      {
+        "host": {
+          "sourcePath": "/mnt/ava_cache"
+        },
+        "name": "ava-cache"
+      }
+    ],
+    "linuxParameters": {
+      "devices": [],
+      "initProcessEnabled": true,
+      "sharedMemorySize": 16384,
+      "tmpfs": []
+    }
+  }
+}

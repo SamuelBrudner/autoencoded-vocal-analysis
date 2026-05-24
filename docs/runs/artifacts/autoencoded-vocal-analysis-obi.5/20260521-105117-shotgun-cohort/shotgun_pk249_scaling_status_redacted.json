@@ -1,0 +1,24 @@
+[
+  {
+    "createdAt": 1779479243401,
+    "exitCode": null,
+    "jobId": "d6341b30-2340-4407-8185-dd7c35256885",
+    "jobName": "shotgun-pk249-scaling-1gpu-10epoch-20260522-101500",
+    "logStreamLabel": null,
+    "startedAt": null,
+    "status": "FAILED",
+    "statusReason": "Superseded by smaller 1-GPU AVA job definition for throughput assay",
+    "stoppedAt": null
+  },
+  {
+    "createdAt": 1779479243978,
+    "exitCode": 0,
+    "jobId": "0008d12c-790d-403b-9d40-22eb4c2275d6",
+    "jobName": "shotgun-pk249-scaling-4gpu-10epoch-20260522-101500",
+    "logStreamLabel": "present",
+    "startedAt": 1779479521484,
+    "status": "SUCCEEDED",
+    "statusReason": "Essential container in task exited",
+    "stoppedAt": 1779481115813
+  }
+]

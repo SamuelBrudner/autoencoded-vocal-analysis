@@ -1,0 +1,11 @@
+{
+  "createdAt": 1779638295384,
+  "exitCode": 143,
+  "jobId": "c62f286c-0f38-4c26-8aeb-e4b0ce344f89",
+  "jobName": "shotgun-pk249-scaling-1gpu-10epoch-v3-600g-20260522-101500",
+  "logStreamLabel": "present",
+  "startedAt": 1779638526103,
+  "status": "FAILED",
+  "statusReason": "Scaling assay complete after three measured 1-GPU epochs; terminating remaining epochs to limit cost",
+  "stoppedAt": 1779645757827
+}

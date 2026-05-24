@@ -1,0 +1,6 @@
+[disk-telemetry] stage=after_setup tmp:du=4.0K,free=11.6GiB | ava_cache:du=0,free=11.6GiB | ava_train_workdir:du=0,free=11.6GiB | tmp:du=0,free=11.6GiB | spec_cache:du=0,free=11.6GiB | audio:free=11.6GiB,du_error=missing | roi:free=11.6GiB,du_error=missing | training_run:free=11.6GiB,du_error=missing
+[disk-telemetry] stage=exception tmp:du=4.0K,free=20.0KiB | ava_cache:du=12G,free=20.0KiB | ava_train_workdir:du=12G,free=20.0KiB | tmp:du=0,free=20.0KiB | spec_cache:du=0,free=20.0KiB | audio:du=12G,free=20.0KiB | roi:du=4.9M,free=20.0KiB | training_run:free=20.0KiB,du_error=missing
+Warning: failed to persist disk telemetry snapshot for stage=exception: [Errno 28] No space left on device
+[disk-telemetry] stage=final_failed tmp:du=4.0K,free=20.0KiB | ava_cache:du=12G,free=20.0KiB | ava_train_workdir:du=12G,free=20.0KiB | tmp:du=0,free=20.0KiB | spec_cache:du=0,free=20.0KiB | audio:du=12G,free=20.0KiB | roi:du=4.9M,free=20.0KiB | training_run:free=20.0KiB,du_error=missing
+Warning: failed to persist disk telemetry snapshot for stage=final_failed: [Errno 28] No space left on device
+Error: [Errno 28] No space left on device

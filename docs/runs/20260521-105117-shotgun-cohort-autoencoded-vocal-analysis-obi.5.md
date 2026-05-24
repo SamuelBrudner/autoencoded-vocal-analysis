@@ -13,6 +13,8 @@
 - Added an explicit 4-GPU utilization assay payload that overrides Lightning to `devices=4, strategy=ddp` and records `nvidia-smi` utilization every 5 seconds during a one-epoch PK249 run.
 - Read-only Batch inspection found enabled 1-GPU AVA queues backed by 1-GPU instance types, but no 1-GPU AVA training job definition using the AVA training image.
 - Added a redacted 1-GPU AVA job-definition candidate and a no-submit PK249 1-GPU pilot payload that can be used after registering/selecting a real 1-GPU AVA training definition.
+- Registered a constrained 1-GPU AVA job definition and ran a paid PK249 scaling comparison against the 4-GPU DDP path.
+- The 10-epoch comparison changes the training recommendation: for the full shotgun cohort model, use the 4-GPU DDP Batch shape. The observed speedup is an end-to-end Batch-shape throughput result, not pure GPU scaling efficiency.
 
 ## Launch Package
 
@@ -48,3 +50,22 @@ The final corrected payload used `strategy=ddp_find_unused_parameters_true` and 
 Operationally, this is not efficient enough for the PK249 pipeline-validation pilot. The successful run spent 646 seconds queued before start, 498 seconds in the Batch container, and 1,144 seconds from submission to terminal status; the 24-second training epoch was only 4.8% of container runtime and 2.1% of total elapsed time. The deployed legacy entrypoint also did not include the new `nvidia-smi` monitor, so no `gpu_utilization.csv` was produced.
 
 Decision: use the 1-GPU path for the immediate PK249 pilot unless a direct 1-GPU comparison proves worse. Keep 4-GPU DDP available for the full-cohort model only after publishing an image that includes GPU telemetry and rerunning a longer comparison with `ddp_find_unused_parameters_true`.
+
+## 10-Epoch Scaling Comparison
+
+A longer PK249 comparison was run on 2026-05-24 with `train_dataset_length=50000`, `batch_size=128`, `precision=16-mixed`, and parquet ROIs. The 4-GPU job used DDP with `ddp_find_unused_parameters_true`; the 1-GPU comparison used the constrained 1-GPU Batch definition and was terminated after three complete epochs plus part of epoch 3 once the result was clear.
+
+One-time costs should not be counted per epoch. The setup/download/coverage/preflight stages ran once per Batch job. The 4-GPU container reached `fit_start` at about 296 seconds after container start; the 1-GPU container reached `fit_start` at about 517 seconds after container start. Those costs matter for short smoke runs, but they do not rerun during a real 100-epoch training job.
+
+The training-loop timing is decisive. The 4-GPU run completed 10 epochs with a median steady epoch of 124 seconds, about 403 samples/sec for the 50k-sample epoch. The 1-GPU run completed epochs in 1743, 1884, and 1905 seconds, with a median steady epoch of 1894.5 seconds, about 26 samples/sec. Excluding queue time and using the measured fit-start overhead, a 100-epoch run projects to about 3.5 hours on the 4-GPU path versus about 52.8 hours on the constrained 1-GPU path.
+
+This is not a claim that four GPUs alone give a 15x physical speedup. The 4-GPU DDP run uses batch size 128 per rank, so its global batch is about 512 and it needs 98 optimizer steps per epoch instead of 391. That accounts for roughly a 4x step-count reduction. The remaining difference likely comes from the larger Batch host: more CPU, memory, I/O headroom, and aggregate dataloader workers. Treat the result as an AWS Batch instance-shape throughput comparison. A strict GPU-efficiency assay would still require telemetry or a same-host comparison.
+
+Decision: use 4-GPU DDP for the full shotgun cohort model as the practical AWS training path. The constrained 1-GPU queue is too slow for the 100-epoch cohort run, even after excluding one-time setup costs. Keep the 1-GPU path for small command validation and recovery tests, not for the scientific cohort model.
+
+Artifacts:
+
+- `scaling_comparison_summary`: `artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/shotgun_pk249_scaling_comparison_summary.json`
+- `scaling_event_timestamps`: `artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/shotgun_pk249_scaling_event_timestamps_redacted.json`
+- `4gpu_scaling_logs`: `artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/shotgun_pk249_scaling_4gpu_10epoch_logs_latest.txt`
+- `1gpu_scaling_logs`: `artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/shotgun_pk249_scaling_1gpu_10epoch_v3_logs.txt`

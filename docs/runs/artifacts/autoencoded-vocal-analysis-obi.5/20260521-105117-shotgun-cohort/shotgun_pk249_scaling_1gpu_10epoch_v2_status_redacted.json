@@ -1,0 +1,11 @@
+{
+  "createdAt": 1779636733060,
+  "exitCode": 1,
+  "jobId": "661b6227-1fe0-471c-9186-8fc50cdb21b7",
+  "jobName": "shotgun-pk249-scaling-1gpu-10epoch-v2-4vcpu-20260522-101500",
+  "logStreamLabel": "present",
+  "startedAt": 1779637002489,
+  "status": "FAILED",
+  "statusReason": "Essential container in task exited",
+  "stoppedAt": 1779637255691
+}
