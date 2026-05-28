@@ -8,7 +8,8 @@
 - Wrote shotgun configs from `examples/configs/fixed_window_finch_30ms_44k.yaml` with `min_freq=300`, `spec_min_val=1.0`, `kl_beta=1.0`, and `kl_warmup_epochs=20`.
 - Staged the four small shotgun input files to the existing baseline S3 run prefix.
 - Wrote no-submit AWS Batch payloads for the PK249 pilot and fixed-cohort model.
-- Did not submit a GPU job. Current AVA training Batch definition reserves 4 GPUs, so the next action should be an explicit PK249 pilot launch decision.
+- Submitted the fixed 11-bird 100-epoch 4-GPU DDP shotgun cohort model on 2026-05-28 after read-only AWS/S3 preflight and a cost estimate.
+- The full cohort job reached `RUNNING`; first CloudWatch output showed container setup telemetry, and the runner was in quiet audio/ROI staging at handoff.
 - Static utilization audit: the original PK249 pilot payload is wasteful as written because the Batch job reserves 4 GPUs while the shotgun config requests `devices: 1`.
 - Added an explicit 4-GPU utilization assay payload that overrides Lightning to `devices=4, strategy=ddp` and records `nvidia-smi` utilization every 5 seconds during a one-epoch PK249 run.
 - Read-only Batch inspection found enabled 1-GPU AVA queues backed by 1-GPU instance types, but no 1-GPU AVA training job definition using the AVA training image.
@@ -32,6 +33,9 @@
 - `1gpu_job_definition_candidate`: `artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/ava_train_gpu_1x_job_definition_candidate.json`
 - `1gpu_pilot_training_payload`: `artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/shotgun_pk249_pilot_1gpu_training_payload.json`
 - `4gpu_utilization_assay_summary`: `artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/shotgun_pk249_4gpu_utilization_assay_summary.json`
+- `full_cohort_100epoch_payload_redacted`: `artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/shotgun_fixed11_4gpu_100epoch_20260528_payload_redacted_summary.json`
+- `full_cohort_100epoch_submit_redacted`: `artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/shotgun_fixed11_4gpu_100epoch_20260528_submit_redacted.json`
+- `full_cohort_100epoch_status_redacted`: `artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/shotgun_fixed11_4gpu_100epoch_20260528_status_redacted.json`
 
 ## Utilization Assay
 
@@ -69,3 +73,11 @@ Artifacts:
 - `scaling_event_timestamps`: `artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/shotgun_pk249_scaling_event_timestamps_redacted.json`
 - `4gpu_scaling_logs`: `artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/shotgun_pk249_scaling_4gpu_10epoch_logs_latest.txt`
 - `1gpu_scaling_logs`: `artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/shotgun_pk249_scaling_1gpu_10epoch_v3_logs.txt`
+
+## Full Cohort Training Launch
+
+The fixed 11-bird shotgun VAE cohort model was submitted on 2026-05-28 using the practical 4-GPU DDP Batch shape selected by the scaling comparison. The run uses the fixed cohort manifest, parquet ROI inputs, 100 epochs, `train_dataset_length=200000`, `batch_size=128`, `num_workers=8`, mixed precision, and `strategy=ddp_find_unused_parameters_true`.
+
+The expected compute cost was estimated at about `$67` from the measured 4-GPU throughput and the `g6.12xlarge` on-demand rate, with a practical budget envelope of `$80-$100` to absorb staging and startup variance. The submitted job reached `RUNNING` at 2026-05-28 15:14:06 UTC. The first CloudWatch event was the runner's `after_setup` disk telemetry; subsequent silence is expected while the runner quietly syncs all manifest audio and ROI directories with `--only-show-errors`.
+
+The next operational bead is `autoencoded-vocal-analysis-obi.5.4`: monitor the job to terminal status, inventory the checkpoint/output artifacts, run or queue shotgun latent export from the completed checkpoint, and then rerun the developmental replication analysis with shotgun latents.

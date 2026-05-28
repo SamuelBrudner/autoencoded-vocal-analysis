@@ -1,0 +1,49 @@
+{
+  "created_utc": "2026-05-28T15:07:54Z",
+  "git_sha": "6a5317c3d232976146a4a1c20f2e8fd7ba8fea91",
+  "estimated_cost_usd": {
+    "expected": 67,
+    "practical_budget": "80-100"
+  },
+  "jobName": "shotgun-fixed11-4gpu-100epoch-20260528-150754",
+  "jobQueue": "ava-gpu-queue-4x",
+  "jobDefinition": "ava-train-gpu-4x",
+  "containerOverrides": {
+    "command": [
+      "--manifest-s3-uri",
+      "<s3-uri>",
+      "--config-s3-uri",
+      "<s3-uri>",
+      "--s3-audio-root",
+      "<s3-uri>",
+      "--s3-roi-root",
+      "<s3-uri>",
+      "--s3-run-root",
+      "<s3-uri>",
+      "--run-name",
+      "20260528-150754-shotgun-fixed11-4gpu-100epoch",
+      "--roi-format",
+      "parquet",
+      "--roi-parquet-name",
+      "roi.parquet",
+      "--download-jobs",
+      "16",
+      "--batch-size",
+      "128",
+      "--num-workers",
+      "8",
+      "--epochs",
+      "100",
+      "--train-dataset-length",
+      "200000",
+      "--trainer-kwargs-json",
+      "{\"accelerator\":\"gpu\",\"devices\":4,\"strategy\":\"ddp_find_unused_parameters_true\",\"precision\":\"16-mixed\",\"log_every_n_steps\":10}",
+      "--preflight-sample-dirs",
+      "100",
+      "--preflight-sample-segments",
+      "50000",
+      "--preflight-seed",
+      "0"
+    ]
+  }
+}

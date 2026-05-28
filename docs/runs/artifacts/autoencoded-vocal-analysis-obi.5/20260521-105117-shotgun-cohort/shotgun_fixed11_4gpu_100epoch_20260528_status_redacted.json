@@ -1,0 +1,29 @@
+{
+  "checked_utc": "2026-05-28T15:18:55Z",
+  "cloudwatch": {
+    "first_event": {
+      "message_redacted": "[disk-telemetry] stage=after_setup ... free=1.2TiB",
+      "stage": "after_setup",
+      "timestamp_utc": "2026-05-28T15:14:08Z"
+    },
+    "log_stream": "present_redacted"
+  },
+  "compute": {
+    "desired_vcpus": 48,
+    "instance_type": "g6.12xlarge",
+    "queue": "ava-gpu-queue-4x"
+  },
+  "cost_estimate_usd": {
+    "expected": 67,
+    "practical_budget": "80-100"
+  },
+  "created_utc": "2026-05-28T15:08:24Z",
+  "exit_code": null,
+  "job_definition": "ava-train-gpu-4x",
+  "job_id": "74f65fab-8631-4d8c-bd3c-829a1e010dab",
+  "job_name": "shotgun-fixed11-4gpu-100epoch-20260528-150754",
+  "started_utc": "2026-05-28T15:14:06Z",
+  "status": "RUNNING",
+  "status_reason": null,
+  "stopped_utc": null
+}
