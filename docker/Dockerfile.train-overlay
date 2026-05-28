@@ -1,0 +1,9 @@
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
+
+WORKDIR /opt/ava
+
+COPY docker/overlays/ava-train-allow-missing-roi/run_birdsong_training_batch_job.py \
+  scripts/cloud/aws/run_birdsong_training_batch_job.py
+
+ENTRYPOINT ["python", "scripts/cloud/aws/run_birdsong_training_batch_job.py"]

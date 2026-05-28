@@ -36,6 +36,10 @@
 - `full_cohort_100epoch_payload_redacted`: `artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/shotgun_fixed11_4gpu_100epoch_20260528_payload_redacted_summary.json`
 - `full_cohort_100epoch_submit_redacted`: `artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/shotgun_fixed11_4gpu_100epoch_20260528_submit_redacted.json`
 - `full_cohort_100epoch_status_redacted`: `artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/shotgun_fixed11_4gpu_100epoch_20260528_status_redacted.json`
+- `full_cohort_allow_missing_roi_patch_redacted`: `artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/shotgun_fixed11_4gpu_100epoch_20260528_allow_missing_roi_patch_redacted.json`
+- `full_cohort_allow_missing_roi_payload_redacted`: `artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/shotgun_fixed11_4gpu_100epoch_20260528_allow_missing_roi_payload_redacted_summary.json`
+- `full_cohort_allow_missing_roi_submit_redacted`: `artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/shotgun_fixed11_4gpu_100epoch_20260528_allow_missing_roi_submit_redacted.json`
+- `full_cohort_allow_missing_roi_status_redacted`: `artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/shotgun_fixed11_4gpu_100epoch_20260528_allow_missing_roi_status_redacted.json`
 
 ## Utilization Assay
 
@@ -81,3 +85,11 @@ The fixed 11-bird shotgun VAE cohort model was submitted on 2026-05-28 using the
 The expected compute cost was estimated at about `$67` from the measured 4-GPU throughput and the `g6.12xlarge` on-demand rate, with a practical budget envelope of `$80-$100` to absorb staging and startup variance. The submitted job reached `RUNNING` at 2026-05-28 15:14:06 UTC. The first CloudWatch event was the runner's `after_setup` disk telemetry; subsequent silence is expected while the runner quietly syncs all manifest audio and ROI directories with `--only-show-errors`.
 
 The next operational bead is `autoencoded-vocal-analysis-obi.5.4`: monitor the job to terminal status, inventory the checkpoint/output artifacts, run or queue shotgun latent export from the completed checkpoint, and then rerun the developmental replication analysis with shotgun latents.
+
+## Full Cohort Retry
+
+The first full cohort job failed before training, after data staging and during the ROI coverage gate. The staged inputs were readable: 602 directories, about 485 GB of audio, all ROI parquet directories present, and 14,167,039 ROI segments. The fatal count was 717 missing per-clip ROI records; these should be treated as skipped clips for this training path, not as an input-staging failure. Empty ROI clips were also counted but were already nonfatal unless the empty-fraction threshold is exceeded.
+
+I built and pushed a versioned training-image overlay, `ava-train:20260528-allow-missing-roi`, that changes only the Batch entrypoint. The patched runner captures the coverage report even when the report command exits nonzero, records the return code and coverage summary, and allows missing per-clip ROI records when `--allow-missing-roi` is set. Missing ROI directories and ROI parse errors remain fatal. A separate 4-GPU job definition, `ava-train-gpu-4x-allow-missing-roi`, was registered so the original 4-GPU training definition is unchanged.
+
+The retry job was submitted on 2026-05-28 with the same 100-epoch cohort settings plus `--allow-missing-roi`. Initial status was `RUNNABLE` with the 4-GPU compute environment requesting 48 vCPUs.

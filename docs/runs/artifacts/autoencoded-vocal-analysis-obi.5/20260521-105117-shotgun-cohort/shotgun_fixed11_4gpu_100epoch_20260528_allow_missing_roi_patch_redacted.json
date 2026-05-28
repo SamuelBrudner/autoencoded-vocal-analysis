@@ -1,0 +1,31 @@
+{
+  "created_utc": "2026-05-28T19:04:31Z",
+  "purpose": "retry full shotgun cohort training after ROI coverage gate treated missing per-clip ROI entries as skipped clips",
+  "original_failure": {
+    "job_name": "shotgun-fixed11-4gpu-100epoch-20260528-150754",
+    "job_id": "74f65fab-8631-4d8c-bd3c-829a1e010dab",
+    "status": "FAILED",
+    "exit_code": 1,
+    "failed_stage": "roi_coverage_gate",
+    "missing_roi_files": 717,
+    "empty_roi_files": 203964,
+    "directories": 602,
+    "segments_total": 14167039,
+    "staged_audio_gb": 485
+  },
+  "patched_image": {
+    "repository": "ava-train",
+    "tag": "20260528-allow-missing-roi",
+    "digest": "sha256:907c0eebbf016e31101b353ac962c5377613fe18e5f7f2fe21e1b962f7f79215"
+  },
+  "job_definition": {
+    "name": "ava-train-gpu-4x-allow-missing-roi",
+    "revision": 1,
+    "resources": {
+      "vcpu": 44,
+      "memory_mib": 180000,
+      "gpu": 4,
+      "shared_memory_mib": 16384
+    }
+  }
+}

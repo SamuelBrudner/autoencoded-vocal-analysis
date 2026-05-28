@@ -1,0 +1,14 @@
+{
+  "checked_utc": "2026-05-28T19:08:52Z",
+  "job_name": "shotgun-fixed11-4gpu-100epoch-allow-missing-roi-20260528-190237",
+  "job_id": "1ba93375-bc7e-4555-b2f3-fe5667296b87",
+  "status": "RUNNING",
+  "status_reason": null,
+  "created_at": 1779994958182,
+  "started_at": 1779995246737,
+  "stopped_at": null,
+  "container_reason": null,
+  "exit_code": null,
+  "log_stream": "present_redacted",
+  "latest_observed_stage": "after_setup"
+}

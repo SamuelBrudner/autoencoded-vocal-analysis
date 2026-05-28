@@ -22,6 +22,10 @@ def _runner_module():
 	return module
 
 
+def _repo_root() -> Path:
+	return Path(__file__).resolve().parents[2]
+
+
 def _env_map(payload: dict) -> dict[str, str]:
 	return {
 		item["name"]: item["value"]
@@ -123,3 +127,15 @@ def test_training_runner_command_construction(tmp_path: Path):
 	assert cmd[cmd.index("--epochs") + 1] == "10"
 	assert cmd[cmd.index("--dataset-length") + 1] == "1024"
 	assert cmd[cmd.index("--trainer-kwargs-json") + 1] == '{"accelerator":"gpu","devices":1}'
+
+
+def test_train_overlay_preserves_allow_missing_roi_gate():
+	root = _repo_root()
+	dockerfile = root / "docker" / "Dockerfile.train-overlay"
+	runner = root / "docker" / "overlays" / "ava-train-allow-missing-roi" / "run_birdsong_training_batch_job.py"
+
+	assert "ava-train-allow-missing-roi/run_birdsong_training_batch_job.py" in dockerfile.read_text()
+	runner_text = runner.read_text()
+	assert "--allow-missing-roi" in runner_text
+	assert "coverage_returncode" in runner_text
+	assert "coverage_proc = _stream_to_log(coverage_cmd, local_coverage_log_path, check=False)" in runner_text
