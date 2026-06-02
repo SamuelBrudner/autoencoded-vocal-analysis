@@ -40,6 +40,9 @@
 - `full_cohort_allow_missing_roi_payload_redacted`: `artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/shotgun_fixed11_4gpu_100epoch_20260528_allow_missing_roi_payload_redacted_summary.json`
 - `full_cohort_allow_missing_roi_submit_redacted`: `artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/shotgun_fixed11_4gpu_100epoch_20260528_allow_missing_roi_submit_redacted.json`
 - `full_cohort_allow_missing_roi_status_redacted`: `artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/shotgun_fixed11_4gpu_100epoch_20260528_allow_missing_roi_status_redacted.json`
+- `full_cohort_empty025_payload_redacted`: `artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/shotgun_fixed11_4gpu_100epoch_20260602_empty025_payload_redacted_summary.json`
+- `full_cohort_empty025_submit_redacted`: `artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/shotgun_fixed11_4gpu_100epoch_20260602_empty025_submit_redacted.json`
+- `full_cohort_empty025_status_redacted`: `artifacts/autoencoded-vocal-analysis-obi.5/20260521-105117-shotgun-cohort/shotgun_fixed11_4gpu_100epoch_20260602_empty025_status_redacted.json`
 
 ## Utilization Assay
 
@@ -93,3 +96,11 @@ The first full cohort job failed before training, after data staging and during 
 I built and pushed a versioned training-image overlay, `ava-train:20260528-allow-missing-roi`, that changes only the Batch entrypoint. The patched runner captures the coverage report even when the report command exits nonzero, records the return code and coverage summary, and allows missing per-clip ROI records when `--allow-missing-roi` is set. Missing ROI directories and ROI parse errors remain fatal. A separate 4-GPU job definition, `ava-train-gpu-4x-allow-missing-roi`, was registered so the original 4-GPU training definition is unchanged.
 
 The retry job was submitted on 2026-05-28 with the same 100-epoch cohort settings plus `--allow-missing-roi`. Initial status was `RUNNABLE` with the 4-GPU compute environment requesting 48 vCPUs.
+
+## Full Cohort Empty-ROI Retry
+
+The `--allow-missing-roi` retry passed the missing-file gate but still failed before training at the empty-ROI guard. The uploaded coverage summary reported 602 directories, 0 missing ROI dirs, 717 missing per-clip ROI records, 203,964 empty ROI clip rows, 0 ROI parse errors, and 14,167,039 ROI segments. The empty-ROI fraction was 0.1792, above the runner default `--max-empty-fraction 0.01`.
+
+The empty clips are explicit zero-onset rows in the parquet bundles, not a path-resolution failure. The rate is concentrated in a few birds/regimes: R404 and R467 are about 41% empty, R425 about 24%, R426 about 21%, and R493 about 19%, while PK249 and several others are near zero. A sampled high-empty R404 directory had many overnight clips with no detected ROI, but still had thousands of positive ROI segments. In streaming parquet mode, the training dataset filters out zero-ROI rows and samples only compatible positive ROI segments, so the strict 1% empty-clip gate is too conservative for the full-day fixed cohort.
+
+On 2026-06-02, I submitted a threshold-bumped retry with the same patched 4-GPU job definition and the same 100-epoch cohort settings, adding `--max-empty-fraction 0.25` while keeping `--allow-missing-roi`. Missing ROI dirs and ROI parse errors remain fatal; this change only allows the observed full-day empty-clip rate to pass. The job moved to `RUNNING` and emitted the initial `after_setup` disk telemetry; the next checkpoint is `after_coverage`, followed by `fit_start`.

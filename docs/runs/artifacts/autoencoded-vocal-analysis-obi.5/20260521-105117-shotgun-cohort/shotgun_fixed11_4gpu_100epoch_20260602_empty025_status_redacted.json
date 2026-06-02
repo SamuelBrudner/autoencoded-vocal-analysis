@@ -1,0 +1,14 @@
+{
+  "created_utc": "2026-06-02T22:07:43Z",
+  "updated_utc": "2026-06-02T22:12:15Z",
+  "job_name": "shotgun-fixed11-4gpu-100epoch-empty025-20260602-220743",
+  "job_id": "36f2f7d9-be99-436f-bbf4-0901121cd9fb",
+  "status": "RUNNING",
+  "status_reason": null,
+  "created_at": 1780438063817,
+  "started_at": 1780438312588,
+  "stopped_at": null,
+  "job_queue": "ava-gpu-queue-4x",
+  "job_definition": "ava-train-gpu-4x-allow-missing-roi:1",
+  "log_stream_redacted": "<cloudwatch-log-stream>"
+}
