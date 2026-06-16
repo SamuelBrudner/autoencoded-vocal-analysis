@@ -239,6 +239,8 @@ def main() -> None:
     )
     parser.add_argument("--spec-cache-dir", type=Path, default=Path(_env("AVA_SPEC_CACHE_DIR", "/mnt/ava_cache/spec_cache")))
     parser.add_argument("--trainer-kwargs-json", type=str, default=_env("AVA_TRAINER_KWARGS_JSON"))
+    parser.add_argument("--runtime-telemetry-interval-sec", type=float, default=_env_float("AVA_RUNTIME_TELEMETRY_INTERVAL_SEC"))
+    parser.add_argument("--batch-telemetry-log-every-n-batches", type=int, default=_env_int("AVA_BATCH_TELEMETRY_LOG_EVERY_N_BATCHES", 50))
     parser.add_argument("--preflight-sample-dirs", type=int, default=_env_int("AVA_PREFLIGHT_SAMPLE_DIRS", 25))
     parser.add_argument("--preflight-sample-segments", type=int, default=_env_int("AVA_PREFLIGHT_SAMPLE_SEGMENTS", 5000))
     parser.add_argument("--preflight-seed", type=int, default=_env_int("AVA_PREFLIGHT_SEED", 0))
@@ -285,6 +287,10 @@ def main() -> None:
         raise ValueError("--max-empty-fraction must be in [0, 1].")
     if args.disk_telemetry_every_n_epochs is not None and args.disk_telemetry_every_n_epochs <= 0:
         raise ValueError("--disk-telemetry-every-n-epochs must be positive.")
+    if args.runtime_telemetry_interval_sec is not None and args.runtime_telemetry_interval_sec <= 0:
+        raise ValueError("--runtime-telemetry-interval-sec must be positive.")
+    if args.batch_telemetry_log_every_n_batches <= 0:
+        raise ValueError("--batch-telemetry-log-every-n-batches must be positive.")
 
     run_name = str(
         args.run_name
@@ -342,6 +348,8 @@ def main() -> None:
                     "train_dataset_length": args.train_dataset_length,
                     "test_dataset_length": args.test_dataset_length,
                     "disable_spec_cache": bool(args.disable_spec_cache),
+                    "runtime_telemetry_interval_sec": args.runtime_telemetry_interval_sec,
+                    "batch_telemetry_log_every_n_batches": args.batch_telemetry_log_every_n_batches,
                 },
                 indent=2,
             )
@@ -531,6 +539,13 @@ def main() -> None:
             train_cmd.extend(["--test-dataset-length", str(args.test_dataset_length)])
         if args.trainer_kwargs_json:
             train_cmd.extend(["--trainer-kwargs-json", str(args.trainer_kwargs_json)])
+        if args.runtime_telemetry_interval_sec is not None:
+            train_cmd.extend([
+                "--runtime-telemetry-interval-sec",
+                str(args.runtime_telemetry_interval_sec),
+                "--batch-telemetry-log-every-n-batches",
+                str(args.batch_telemetry_log_every_n_batches),
+            ])
         train_cmd.extend([
             "--disk-telemetry-every-n-epochs",
             str(args.disk_telemetry_every_n_epochs),

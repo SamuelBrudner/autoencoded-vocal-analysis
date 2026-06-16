@@ -56,6 +56,8 @@ def build_payload(args: argparse.Namespace) -> dict:
         _payload_env("AVA_DISABLE_SPEC_CACHE", 1 if args.disable_spec_cache else None),
         _payload_env("AVA_SPEC_CACHE_DIR", args.spec_cache_dir),
         _payload_env("AVA_TRAINER_KWARGS_JSON", args.trainer_kwargs_json),
+        _payload_env("AVA_RUNTIME_TELEMETRY_INTERVAL_SEC", args.runtime_telemetry_interval_sec),
+        _payload_env("AVA_BATCH_TELEMETRY_LOG_EVERY_N_BATCHES", args.batch_telemetry_log_every_n_batches),
         _payload_env("AVA_PREFLIGHT_SAMPLE_DIRS", int(args.preflight_sample_dirs)),
         _payload_env("AVA_PREFLIGHT_SAMPLE_SEGMENTS", int(args.preflight_sample_segments)),
         _payload_env("AVA_PREFLIGHT_SEED", int(args.preflight_seed)),
@@ -112,6 +114,8 @@ def main() -> None:
     parser.add_argument("--disable-spec-cache", action="store_true")
     parser.add_argument("--spec-cache-dir", type=str, default="/mnt/ava_cache/spec_cache")
     parser.add_argument("--trainer-kwargs-json", type=str, default=None)
+    parser.add_argument("--runtime-telemetry-interval-sec", type=float, default=None)
+    parser.add_argument("--batch-telemetry-log-every-n-batches", type=int, default=50)
     parser.add_argument("--preflight-sample-dirs", type=int, default=25)
     parser.add_argument("--preflight-sample-segments", type=int, default=5000)
     parser.add_argument("--preflight-seed", type=int, default=0)
@@ -159,6 +163,10 @@ def main() -> None:
         raise ValueError("--max-empty-fraction must be in [0, 1].")
     if args.disk_telemetry_every_n_epochs is not None and args.disk_telemetry_every_n_epochs <= 0:
         raise ValueError("--disk-telemetry-every-n-epochs must be positive.")
+    if args.runtime_telemetry_interval_sec is not None and args.runtime_telemetry_interval_sec <= 0:
+        raise ValueError("--runtime-telemetry-interval-sec must be positive.")
+    if args.batch_telemetry_log_every_n_batches <= 0:
+        raise ValueError("--batch-telemetry-log-every-n-batches must be positive.")
     if args.timeout_seconds is not None and args.timeout_seconds <= 0:
         raise ValueError("--timeout-seconds must be positive.")
 

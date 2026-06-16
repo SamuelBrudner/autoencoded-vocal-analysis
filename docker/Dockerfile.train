@@ -20,6 +20,7 @@ RUN pip install --upgrade pip && \
       matplotlib \
       moviepy \
       numba \
+      nvidia-ml-py \
       numpy==1.26.4 \
       pandas \
       pyarrow==21.0.0 \

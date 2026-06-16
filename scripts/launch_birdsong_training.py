@@ -26,6 +26,7 @@ if str(SRC_ROOT) not in sys.path:
 from ava.models.fixed_window_config import FixedWindowExperimentConfig
 from ava.models.disk_telemetry import DiskTelemetryCallback
 from ava.models.lightning_vae import train_vae
+from ava.models.runtime_telemetry import RuntimeTelemetryCallback
 from ava.models.roi_preflight import (
     assert_window_length_compatible,
     assert_window_length_compatible_parquet_sample,
@@ -126,27 +127,32 @@ def _resolve_entries(
 
 
 def _build_extra_callbacks(args: argparse.Namespace):
+    callbacks = []
     disk_roots = [Path(path) for path in (args.disk_telemetry_root or [])]
     if args.disk_telemetry_every_n_epochs is not None and not disk_roots:
         raise ValueError(
             "--disk-telemetry-every-n-epochs requires at least one --disk-telemetry-root."
         )
-    if not disk_roots:
-        return None
-    every_n_epochs = (
-        5
-        if args.disk_telemetry_every_n_epochs is None
-        else int(args.disk_telemetry_every_n_epochs)
-    )
-    if every_n_epochs <= 0:
-        raise ValueError("--disk-telemetry-every-n-epochs must be positive.")
-    return [
-        DiskTelemetryCallback(
+    if disk_roots:
+        every_n_epochs = (
+            5
+            if args.disk_telemetry_every_n_epochs is None
+            else int(args.disk_telemetry_every_n_epochs)
+        )
+        if every_n_epochs <= 0:
+            raise ValueError("--disk-telemetry-every-n-epochs must be positive.")
+        callbacks.append(DiskTelemetryCallback(
             save_dir=args.save_dir.as_posix(),
             roots=disk_roots,
             every_n_epochs=every_n_epochs,
-        )
-    ]
+        ))
+    if args.runtime_telemetry_interval_sec is not None:
+        callbacks.append(RuntimeTelemetryCallback(
+            save_dir=args.save_dir.as_posix(),
+            resource_interval_sec=float(args.runtime_telemetry_interval_sec),
+            batch_log_every_n_batches=int(args.batch_telemetry_log_every_n_batches),
+        ))
+    return callbacks or None
 
 
 def main() -> None:
@@ -243,6 +249,18 @@ def main() -> None:
         type=str,
         default=None,
         help="JSON object merged into Lightning Trainer kwargs (overrides config).",
+    )
+    parser.add_argument(
+        "--runtime-telemetry-interval-sec",
+        type=float,
+        default=None,
+        help="Enable runtime CPU/GPU/IO telemetry at this sampling interval.",
+    )
+    parser.add_argument(
+        "--batch-telemetry-log-every-n-batches",
+        type=int,
+        default=50,
+        help="When runtime telemetry is enabled, print batch timing every N batches.",
     )
     parser.add_argument("--cpu", action="store_true")
     parser.add_argument("--dry-run", action="store_true")

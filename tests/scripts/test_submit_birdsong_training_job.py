@@ -45,6 +45,8 @@ def test_build_payload_includes_dependency_timeout_and_env():
         disable_spec_cache=True,
         spec_cache_dir="/mnt/ava_cache/spec_cache",
         trainer_kwargs_json='{"accelerator":"gpu","devices":4,"strategy":"ddp"}',
+        runtime_telemetry_interval_sec=30.0,
+        batch_telemetry_log_every_n_batches=25,
         preflight_sample_dirs=25,
         preflight_sample_segments=5000,
         preflight_seed=0,
@@ -82,3 +84,5 @@ def test_build_payload_includes_dependency_timeout_and_env():
     assert env["AVA_TEST_DATASET_LENGTH"] == "16384"
     assert env["AVA_DISABLE_SPEC_CACHE"] == "1"
     assert env["AVA_DISK_TELEMETRY_EVERY_N_EPOCHS"] == "5"
+    assert env["AVA_RUNTIME_TELEMETRY_INTERVAL_SEC"] == "30.0"
+    assert env["AVA_BATCH_TELEMETRY_LOG_EVERY_N_BATCHES"] == "25"
