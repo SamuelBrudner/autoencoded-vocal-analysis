@@ -900,6 +900,7 @@ def get_manifest_fixed_window_data_loaders(
     roi_format: str = "parquet",
     roi_parquet_name: str = "roi.parquet",
     dataset_length: int = 2048,
+    test_dataset_length: Optional[int] = None,
     roi_cache_size: int = 16,
     batch_size: int = 64,
     shuffle: Tuple[bool, bool] = (True, False),
@@ -966,13 +967,15 @@ def get_manifest_fixed_window_data_loaders(
     if not test_entries:
         return {"train": train_loader, "test": None}
 
+    if test_dataset_length is None:
+        test_dataset_length = dataset_length
     test_augmentations = augmentations if augmentations_eval else None
     test_dataset = ManifestFixedWindowDataset(
         test_entries,
         p,
         roi_format=roi_format,
         roi_parquet_name=roi_parquet_name,
-        dataset_length=dataset_length,
+        dataset_length=int(test_dataset_length),
         min_spec_val=min_spec_val,
         min_audio_energy=min_audio_energy,
         spec_cache_dir=spec_cache_dir,
@@ -987,4 +990,3 @@ def get_manifest_fixed_window_data_loaders(
     )
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=bool(shuffle[1]), **loader_kwargs)
     return {"train": train_loader, "test": test_loader}
-

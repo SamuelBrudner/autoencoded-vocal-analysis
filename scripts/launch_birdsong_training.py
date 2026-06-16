@@ -147,7 +147,19 @@ def main() -> None:
         "--dataset-length",
         type=int,
         default=2048,
-        help="Arbitrary dataset length controlling batches/epoch for window sampling.",
+        help="Default sampled windows per epoch for training and validation.",
+    )
+    parser.add_argument(
+        "--train-dataset-length",
+        type=int,
+        default=None,
+        help="Sampled training windows per epoch; overrides --dataset-length.",
+    )
+    parser.add_argument(
+        "--test-dataset-length",
+        type=int,
+        default=None,
+        help="Sampled validation windows per validation epoch; defaults to train length.",
     )
     parser.add_argument(
         "--roi-cache-size",
@@ -187,6 +199,20 @@ def main() -> None:
     parser.add_argument("--dry-run", action="store_true")
 
     args = parser.parse_args()
+    train_dataset_length = (
+        int(args.train_dataset_length)
+        if args.train_dataset_length is not None
+        else int(args.dataset_length)
+    )
+    test_dataset_length = (
+        int(args.test_dataset_length)
+        if args.test_dataset_length is not None
+        else train_dataset_length
+    )
+    if train_dataset_length <= 0:
+        raise ValueError("--train-dataset-length/--dataset-length must be positive.")
+    if test_dataset_length <= 0:
+        raise ValueError("--test-dataset-length must be positive.")
 
     manifest = _load_manifest(args.manifest)
     train_entries = manifest.get("train", [])
@@ -243,7 +269,8 @@ def main() -> None:
             params,
             roi_format=str(args.roi_format),
             roi_parquet_name=str(args.roi_parquet_name),
-            dataset_length=int(args.dataset_length),
+            dataset_length=train_dataset_length,
+            test_dataset_length=test_dataset_length,
             roi_cache_size=int(args.roi_cache_size),
             augmentations=config.augmentations,
             return_pair=use_pairs,

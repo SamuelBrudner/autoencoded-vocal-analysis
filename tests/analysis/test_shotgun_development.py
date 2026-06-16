@@ -9,6 +9,7 @@ import pytest
 from ava.analysis.shotgun_development import (
 	compare_replication_metrics,
 	filter_manifest_by_birds_and_dph,
+	split_manifest_for_validation,
 	write_shotgun_config,
 	write_shotgun_manifests,
 )
@@ -68,6 +69,80 @@ def test_write_shotgun_manifests_and_config(tmp_path: Path):
 	assert config["overrides"]["preprocess.min_freq"] == 300.0
 	assert config["overrides"]["training.epochs"] == 10
 	assert (tmp_path / "out" / "shotgun_config.yaml").exists()
+
+
+def test_split_manifest_for_validation_is_deterministic_per_bird():
+	manifest = {
+		"train": [
+			{
+				"bird_id_norm": bird,
+				"regime": "bells",
+				"dph": 33 + idx,
+				"num_files": 2,
+				"audio_dir_rel": f"bells/{bird}/{33 + idx}",
+			}
+			for bird in ("PK249", "R426")
+			for idx in range(10)
+		],
+		"test": [],
+	}
+
+	first = split_manifest_for_validation(manifest, validation_fraction=0.2, seed=0)
+	second = split_manifest_for_validation(manifest, validation_fraction=0.2, seed=0)
+	other_seed = split_manifest_for_validation(manifest, validation_fraction=0.2, seed=1)
+
+	assert first == second
+	assert len(first["test"]) == 4
+	assert {row["bird_id_norm"] for row in first["test"]} == {"PK249", "R426"}
+	assert [row["audio_dir_rel"] for row in first["test"]] != [
+		row["audio_dir_rel"] for row in other_seed["test"]
+	]
+	assert all(row["split"] == "test" for row in first["test"])
+	assert all(row["split"] == "train" for row in first["train"])
+
+
+def test_write_shotgun_validation_manifest_and_early_stopping_config(tmp_path: Path):
+	manifest_path = tmp_path / "manifest.json"
+	manifest = {"train": [], "test": []}
+	for bird in ("PK249", "R426"):
+		for idx in range(10):
+			manifest["train"].append(
+				{
+					"bird_id_norm": bird,
+					"regime": "bells",
+					"dph": 33 + idx,
+					"num_files": 2,
+					"audio_dir_rel": f"bells/{bird}/{33 + idx}",
+				}
+			)
+	manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+	repo_root = Path(__file__).resolve().parents[2]
+
+	summary = write_shotgun_manifests(
+		manifest_path=manifest_path,
+		out_dir=tmp_path / "out",
+		cohort_birds=["PK249", "R426"],
+		cohort_validation_fraction=0.1,
+		validation_seed=0,
+	)
+	config = write_shotgun_config(
+		base_config=repo_root / "examples" / "configs" / "fixed_window_finch_30ms_44k.yaml",
+		out_path=tmp_path / "out" / "shotgun_config.yaml",
+		epochs=100,
+		test_freq=1,
+		stopping_kwargs={"val_patience": 8, "val_min_delta": 0.0, "min_epochs": 40},
+	)
+
+	cohort = json.loads(Path(summary["artifacts"]["cohort_manifest"]).read_text(encoding="utf-8"))
+	written_config = (tmp_path / "out" / "shotgun_config.yaml").read_text(encoding="utf-8")
+
+	assert summary["artifacts"]["cohort_manifest"].endswith("_val10.json")
+	assert len(cohort["test"]) == 2
+	assert summary["cohort_validation"]["enabled"] is True
+	assert config["overrides"]["training.test_freq"] == 1
+	assert config["overrides"]["training.stopping_kwargs"]["val_patience"] == 8
+	assert "test_freq: 1" in written_config
+	assert "val_patience: 8" in written_config
 
 
 def _per_bird(conf: float, entropy: float, distance: float, margin: float, radius: float) -> dict:

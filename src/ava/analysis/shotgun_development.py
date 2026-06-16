@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 import os
@@ -71,6 +72,64 @@ def filter_manifest_by_birds_and_dph(
 	return out
 
 
+def split_manifest_for_validation(
+	manifest: dict,
+	validation_fraction: float = 0.1,
+	seed: int = 0,
+	min_test_per_bird: int = 1,
+) -> dict:
+	"""Create a deterministic per-bird validation split from manifest rows."""
+	validation_fraction = float(validation_fraction)
+	if validation_fraction <= 0:
+		return {
+			"train": [dict(row, split="train") for row in manifest.get("train", [])],
+			"test": [dict(row, split="test") for row in manifest.get("test", [])],
+		}
+	if validation_fraction >= 1:
+		raise ValueError("validation_fraction must be in [0, 1).")
+	if min_test_per_bird < 0:
+		raise ValueError("min_test_per_bird must be non-negative.")
+
+	all_rows = [
+		dict(row)
+		for split in ("train", "test")
+		for row in manifest.get(split, [])
+	]
+	by_bird: dict[str, list[dict]] = {}
+	bird_order: list[str] = []
+	for row in all_rows:
+		bird = str(row.get("bird_id_norm") or row.get("bird_id_raw") or "").strip().upper()
+		if not bird:
+			continue
+		if bird not in by_bird:
+			by_bird[bird] = []
+			bird_order.append(bird)
+		by_bird[bird].append(row)
+
+	train: list[dict] = []
+	test: list[dict] = []
+	for bird in bird_order:
+		rows = sorted(by_bird[bird], key=_manifest_row_order_key)
+		n_rows = len(rows)
+		n_test = int(round(n_rows * validation_fraction))
+		if n_rows > 1:
+			n_test = max(int(min_test_per_bird), n_test)
+			n_test = min(n_test, n_rows - 1)
+		else:
+			n_test = 0
+		test_indices = _evenly_spaced_seeded_indices(n_rows, n_test, bird, int(seed))
+		for idx, row in enumerate(rows):
+			payload = dict(row)
+			if idx in test_indices:
+				payload["split"] = "test"
+				test.append(payload)
+			else:
+				payload["split"] = "train"
+				train.append(payload)
+
+	return {"train": train, "test": test}
+
+
 def summarize_manifest(manifest: dict) -> dict:
 	"""Summarize manifest rows by bird and split."""
 	birds: dict[str, dict] = {}
@@ -88,6 +147,7 @@ def summarize_manifest(manifest: dict) -> dict:
 					"dph_values": [],
 					"regimes": set(),
 					"splits": set(),
+					"split_counts": {},
 				},
 			)
 			payload["manifest_rows"] += 1
@@ -98,6 +158,7 @@ def summarize_manifest(manifest: dict) -> dict:
 			if row.get("regime"):
 				payload["regimes"].add(str(row["regime"]))
 			payload["splits"].add(split)
+			payload["split_counts"][split] = int(payload["split_counts"].get(split, 0)) + 1
 	out = {}
 	for bird, payload in sorted(birds.items()):
 		dph_values = payload["dph_values"]
@@ -110,6 +171,10 @@ def summarize_manifest(manifest: dict) -> dict:
 			"dph_max": float(max(dph_values)) if dph_values else None,
 			"regimes": sorted(payload["regimes"]),
 			"splits": sorted(payload["splits"]),
+			"split_counts": {
+				key: int(value)
+				for key, value in sorted(payload["split_counts"].items())
+			},
 		}
 	return {
 		"birds": out,
@@ -125,6 +190,9 @@ def write_shotgun_manifests(
 	cohort_birds: Sequence[str] = DEFAULT_BIRD_IDS,
 	dph_min: float = 33,
 	dph_max: float = 90,
+	cohort_validation_fraction: float = 0.0,
+	validation_seed: int = 0,
+	validation_min_per_bird: int = 1,
 ) -> dict:
 	"""Write PK249 pilot and fixed-cohort manifests for shotgun VAE work."""
 	manifest = load_manifest(manifest_path)
@@ -143,9 +211,17 @@ def write_shotgun_manifests(
 		dph_min=dph_min,
 		dph_max=dph_max,
 	)
+	if cohort_validation_fraction > 0:
+		cohort = split_manifest_for_validation(
+			cohort,
+			validation_fraction=cohort_validation_fraction,
+			seed=validation_seed,
+			min_test_per_bird=validation_min_per_bird,
+		)
+	val_suffix = _validation_suffix(cohort_validation_fraction)
 	paths = {
 		"pilot_manifest": (out_dir / f"{pilot_bird.lower()}_{_format_dph(dph_min)}_{_format_dph(dph_max)}_manifest.json").as_posix(),
-		"cohort_manifest": (out_dir / f"fixed_11bird_{_format_dph(dph_min)}_{_format_dph(dph_max)}_manifest.json").as_posix(),
+		"cohort_manifest": (out_dir / f"fixed_11bird_{_format_dph(dph_min)}_{_format_dph(dph_max)}_manifest{val_suffix}.json").as_posix(),
 		"summary": (out_dir / "shotgun_cohort_manifest_summary.json").as_posix(),
 	}
 	_write_json(Path(paths["pilot_manifest"]), pilot)
@@ -157,6 +233,12 @@ def write_shotgun_manifests(
 		"dph_max": float(dph_max),
 		"pilot_bird": pilot_bird,
 		"cohort_birds": cohort_birds,
+		"cohort_validation": {
+			"fraction": float(cohort_validation_fraction),
+			"seed": int(validation_seed),
+			"min_test_per_bird": int(validation_min_per_bird),
+			"enabled": bool(cohort_validation_fraction > 0),
+		},
 		"pilot": summarize_manifest(pilot),
 		"cohort": summarize_manifest(cohort),
 		"artifacts": paths,
@@ -173,6 +255,8 @@ def write_shotgun_config(
 	spec_min_val: float = 1.0,
 	kl_beta: float = 1.0,
 	kl_warmup_epochs: int = 20,
+	test_freq: Optional[int] = None,
+	stopping_kwargs: Optional[dict[str, Any]] = None,
 ) -> dict:
 	"""Write a fixed-window shotgun VAE config with the selected overrides."""
 	cfg = FixedWindowExperimentConfig.from_yaml(base_config.as_posix())
@@ -181,19 +265,28 @@ def write_shotgun_config(
 	cfg.training.kl_beta = float(kl_beta)
 	cfg.training.kl_warmup_epochs = int(kl_warmup_epochs)
 	cfg.training.epochs = int(epochs)
+	if test_freq is not None:
+		cfg.training.test_freq = int(test_freq)
+	if stopping_kwargs is not None:
+		cfg.training.stopping_kwargs = dict(stopping_kwargs)
 	out_path.parent.mkdir(parents=True, exist_ok=True)
 	cfg.to_yaml(out_path.as_posix())
+	overrides = {
+		"preprocess.min_freq": float(min_freq),
+		"preprocess.spec_min_val": float(spec_min_val),
+		"training.kl_beta": float(kl_beta),
+		"training.kl_warmup_epochs": int(kl_warmup_epochs),
+		"training.epochs": int(epochs),
+	}
+	if test_freq is not None:
+		overrides["training.test_freq"] = int(test_freq)
+	if stopping_kwargs is not None:
+		overrides["training.stopping_kwargs"] = dict(stopping_kwargs)
 	return {
 		"base_config": base_config.as_posix(),
 		"config": out_path.as_posix(),
 		"epochs": int(epochs),
-		"overrides": {
-			"preprocess.min_freq": float(min_freq),
-			"preprocess.spec_min_val": float(spec_min_val),
-			"training.kl_beta": float(kl_beta),
-			"training.kl_warmup_epochs": int(kl_warmup_epochs),
-			"training.epochs": int(epochs),
-		},
+		"overrides": overrides,
 	}
 
 
@@ -470,6 +563,43 @@ def _optional_float(value: Any) -> Optional[float]:
 	return out if math.isfinite(out) else None
 
 
+def _manifest_row_order_key(row: dict) -> tuple:
+	dph = _optional_float(row.get("dph"))
+	return (
+		float("inf") if dph is None else float(dph),
+		str(row.get("audio_dir_rel") or row.get("audio_dir") or ""),
+		str(row.get("roi_dir") or ""),
+	)
+
+
+def _evenly_spaced_seeded_indices(
+	n_rows: int,
+	n_select: int,
+	bird: str,
+	seed: int,
+) -> set[int]:
+	if n_select <= 0 or n_rows <= 0:
+		return set()
+	if n_select >= n_rows:
+		return set(range(n_rows))
+	digest = hashlib.sha256(f"{int(seed)}:{bird}".encode("utf-8")).digest()
+	rng = np.random.default_rng(int.from_bytes(digest[:8], "little", signed=False))
+	indices: set[int] = set()
+	for bucket in np.array_split(np.arange(n_rows), int(n_select)):
+		if bucket.size:
+			indices.add(int(rng.choice(bucket)))
+	return indices
+
+
+def _validation_suffix(validation_fraction: float) -> str:
+	if validation_fraction <= 0:
+		return ""
+	percent = float(validation_fraction) * 100.0
+	if abs(percent - round(percent)) < 1e-9:
+		return f"_val{int(round(percent)):02d}"
+	return f"_val{validation_fraction:g}".replace(".", "p")
+
+
 def _format_dph(value: float) -> str:
 	return str(int(value)) if float(value).is_integer() else f"{float(value):g}"
 
@@ -495,4 +625,3 @@ def _save_figure(fig, prefix: Path) -> None:
 	import matplotlib.pyplot as plt
 
 	plt.close(fig)
-

@@ -45,6 +45,13 @@ def main() -> None:
 	parser.add_argument("--dph-max", type=float, default=90)
 	parser.add_argument("--pilot-epochs", type=int, default=10)
 	parser.add_argument("--cohort-epochs", type=int, default=100)
+	parser.add_argument("--cohort-validation-fraction", type=float, default=0.0)
+	parser.add_argument("--validation-seed", type=int, default=0)
+	parser.add_argument("--validation-min-per-bird", type=int, default=1)
+	parser.add_argument("--cohort-test-freq", type=int, default=None)
+	parser.add_argument("--early-stopping-val-patience", type=int, default=None)
+	parser.add_argument("--early-stopping-val-min-delta", type=float, default=0.0)
+	parser.add_argument("--early-stopping-min-epochs", type=int, default=0)
 	parser.add_argument("--min-freq", type=float, default=300.0)
 	parser.add_argument("--spec-min-val", type=float, default=1.0)
 	parser.add_argument("--kl-beta", type=float, default=1.0)
@@ -56,6 +63,19 @@ def main() -> None:
 	args = parser.parse_args()
 	if args.pilot_epochs <= 0 or args.cohort_epochs <= 0:
 		raise ValueError("epoch counts must be positive.")
+	if args.cohort_validation_fraction < 0 or args.cohort_validation_fraction >= 1:
+		raise ValueError("--cohort-validation-fraction must be in [0, 1).")
+	if args.cohort_test_freq is not None and args.cohort_test_freq <= 0:
+		raise ValueError("--cohort-test-freq must be positive.")
+	if args.early_stopping_val_patience is not None and args.early_stopping_val_patience <= 0:
+		raise ValueError("--early-stopping-val-patience must be positive.")
+	if args.early_stopping_min_epochs < 0:
+		raise ValueError("--early-stopping-min-epochs must be non-negative.")
+	if args.early_stopping_val_patience is not None:
+		if args.cohort_validation_fraction <= 0:
+			raise ValueError("early stopping requires --cohort-validation-fraction > 0.")
+		if args.cohort_test_freq is None:
+			raise ValueError("early stopping requires --cohort-test-freq.")
 
 	run_name = args.run_name or _default_run_name()
 	out_dir = (
@@ -71,6 +91,9 @@ def main() -> None:
 		cohort_birds=birds,
 		dph_min=args.dph_min,
 		dph_max=args.dph_max,
+		cohort_validation_fraction=args.cohort_validation_fraction,
+		validation_seed=args.validation_seed,
+		validation_min_per_bird=args.validation_min_per_bird,
 	)
 	pilot_config = write_shotgun_config(
 		base_config=args.base_config,
@@ -81,6 +104,13 @@ def main() -> None:
 		kl_beta=args.kl_beta,
 		kl_warmup_epochs=args.kl_warmup_epochs,
 	)
+	cohort_stopping_kwargs = None
+	if args.early_stopping_val_patience is not None:
+		cohort_stopping_kwargs = {
+			"val_patience": int(args.early_stopping_val_patience),
+			"val_min_delta": float(args.early_stopping_val_min_delta),
+			"min_epochs": int(args.early_stopping_min_epochs),
+		}
 	cohort_config = write_shotgun_config(
 		base_config=args.base_config,
 		out_path=out_dir / "shotgun_fixed_11bird_config.yaml",
@@ -89,6 +119,8 @@ def main() -> None:
 		spec_min_val=args.spec_min_val,
 		kl_beta=args.kl_beta,
 		kl_warmup_epochs=args.kl_warmup_epochs,
+		test_freq=args.cohort_test_freq,
+		stopping_kwargs=cohort_stopping_kwargs,
 	)
 	print(f"Wrote manifests: {out_dir.as_posix()}")
 	print(f"Pilot manifest: {summary['artifacts']['pilot_manifest']}")

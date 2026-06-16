@@ -59,8 +59,11 @@ def test_submit_training_payload_omits_command_override_by_default():
 		"10",
 		"--dataset-length",
 		"1234",
+		"--test-dataset-length",
+		"123",
 		"--gpu-monitor-interval-sec",
 		"5",
+		"--disable-spec-cache",
 	]
 	out = subprocess.check_output(cmd, text=True)
 	payload = json.loads(out)
@@ -70,6 +73,9 @@ def test_submit_training_payload_omits_command_override_by_default():
 	assert env["AVA_TRAIN_RUN_NAME"] == "run1"
 	assert env["AVA_TRAIN_EPOCHS"] == "10"
 	assert env["AVA_TRAIN_DATASET_LENGTH"] == "1234"
+	assert env["AVA_TRAIN_TEST_DATASET_LENGTH"] == "123"
+	assert env["AVA_TRAIN_DISABLE_SPEC_CACHE"] == "1"
+	assert env["AVA_DISABLE_SPEC_CACHE"] == "1"
 	assert env["AVA_TRAIN_GPU_MONITOR_INTERVAL_SEC"] == "5.0"
 	assert env["AVA_TRAIN_ROI_FORMAT"] == "parquet"
 
@@ -117,6 +123,8 @@ def test_training_runner_command_construction(tmp_path: Path):
 		batch_size=16,
 		num_workers=2,
 		dataset_length=1024,
+		test_dataset_length=128,
+		disable_spec_cache=True,
 		roi_cache_size=8,
 		trainer_kwargs_json='{"accelerator":"gpu","devices":1}',
 	)
@@ -125,7 +133,9 @@ def test_training_runner_command_construction(tmp_path: Path):
 	assert "--streaming" in cmd
 	assert cmd[cmd.index("--roi-format") + 1] == "parquet"
 	assert cmd[cmd.index("--epochs") + 1] == "10"
-	assert cmd[cmd.index("--dataset-length") + 1] == "1024"
+	assert cmd[cmd.index("--train-dataset-length") + 1] == "1024"
+	assert cmd[cmd.index("--test-dataset-length") + 1] == "128"
+	assert "--disable-spec-cache" in cmd
 	assert cmd[cmd.index("--trainer-kwargs-json") + 1] == '{"accelerator":"gpu","devices":1}'
 
 

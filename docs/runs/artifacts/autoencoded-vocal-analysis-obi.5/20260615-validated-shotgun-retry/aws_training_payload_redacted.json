@@ -1,0 +1,101 @@
+{
+  "jobName": "shotgun-fixed11-4gpu-100epoch-val10-nocache",
+  "jobQueue": "REDACTED_QUEUE",
+  "jobDefinition": "REDACTED_JOBDEF",
+  "containerOverrides": {
+    "environment": [
+      {
+        "name": "AVA_TRAIN_MANIFEST_S3_URI",
+        "value": "s3://REDACTED/inputs/fixed_11bird_33_90_manifest_val10.json"
+      },
+      {
+        "name": "AVA_TRAIN_CONFIG_S3_URI",
+        "value": "s3://REDACTED/inputs/shotgun_fixed_11bird_config_valearlystop.yaml"
+      },
+      {
+        "name": "AVA_TRAIN_S3_AUDIO_ROOT",
+        "value": "s3://REDACTED/audio"
+      },
+      {
+        "name": "AVA_TRAIN_S3_ROI_ROOT",
+        "value": "s3://REDACTED/roi"
+      },
+      {
+        "name": "AVA_TRAIN_S3_OUTPUT_ROOT",
+        "value": "s3://REDACTED/training/shotgun_vae"
+      },
+      {
+        "name": "AVA_TRAIN_RUN_NAME",
+        "value": "20260615-shotgun-fixed11-4gpu-100epoch-val10-nocache"
+      },
+      {
+        "name": "AVA_TRAIN_EPOCHS",
+        "value": "100"
+      },
+      {
+        "name": "AVA_TRAIN_BATCH_SIZE",
+        "value": "128"
+      },
+      {
+        "name": "AVA_TRAIN_NUM_WORKERS",
+        "value": "8"
+      },
+      {
+        "name": "AVA_TRAIN_DATASET_LENGTH",
+        "value": "200000"
+      },
+      {
+        "name": "AVA_TRAIN_TEST_DATASET_LENGTH",
+        "value": "20000"
+      },
+      {
+        "name": "AVA_TRAIN_DISABLE_SPEC_CACHE",
+        "value": "1"
+      },
+      {
+        "name": "AVA_DISABLE_SPEC_CACHE",
+        "value": "1"
+      },
+      {
+        "name": "AVA_TRAIN_ROI_CACHE_SIZE",
+        "value": "32"
+      },
+      {
+        "name": "AVA_TRAIN_PREFLIGHT_SAMPLE_DIRS",
+        "value": "100"
+      },
+      {
+        "name": "AVA_TRAIN_PREFLIGHT_SAMPLE_SEGMENTS",
+        "value": "50000"
+      },
+      {
+        "name": "AVA_TRAIN_PREFLIGHT_SEED",
+        "value": "0"
+      },
+      {
+        "name": "AVA_TRAIN_DOWNLOAD_JOBS",
+        "value": "16"
+      },
+      {
+        "name": "AVA_TRAIN_GPU_MONITOR_INTERVAL_SEC",
+        "value": "30.0"
+      },
+      {
+        "name": "AVA_TRAIN_ROI_FORMAT",
+        "value": "parquet"
+      },
+      {
+        "name": "AVA_TRAIN_ROI_PARQUET_NAME",
+        "value": "roi.parquet"
+      },
+      {
+        "name": "AVA_TRAIN_TRAINER_KWARGS_JSON",
+        "value": "{\"accelerator\":\"gpu\",\"devices\":4,\"strategy\":\"ddp_find_unused_parameters_true\",\"precision\":\"16-mixed\",\"log_every_n_steps\":10}"
+      }
+    ],
+    "command": [
+      "python",
+      "scripts/cloud/aws/run_birdsong_training_job.py"
+    ]
+  }
+}

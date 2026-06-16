@@ -1,0 +1,469 @@
+{
+  "test": [],
+  "train": [
+    {
+      "audio_dir_rel": "day43 Bells/pk249/33",
+      "bird_id_norm": "PK249",
+      "dph": 33.0,
+      "num_files": 140,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/34",
+      "bird_id_norm": "PK249",
+      "dph": 34.0,
+      "num_files": 328,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/35",
+      "bird_id_norm": "PK249",
+      "dph": 35.0,
+      "num_files": 471,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/36",
+      "bird_id_norm": "PK249",
+      "dph": 36.0,
+      "num_files": 764,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/37",
+      "bird_id_norm": "PK249",
+      "dph": 37.0,
+      "num_files": 592,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/38",
+      "bird_id_norm": "PK249",
+      "dph": 38.0,
+      "num_files": 1538,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/39",
+      "bird_id_norm": "PK249",
+      "dph": 39.0,
+      "num_files": 2121,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/40",
+      "bird_id_norm": "PK249",
+      "dph": 40.0,
+      "num_files": 2467,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/41",
+      "bird_id_norm": "PK249",
+      "dph": 41.0,
+      "num_files": 2248,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/42",
+      "bird_id_norm": "PK249",
+      "dph": 42.0,
+      "num_files": 2005,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/43",
+      "bird_id_norm": "PK249",
+      "dph": 43.0,
+      "num_files": 1658,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/44",
+      "bird_id_norm": "PK249",
+      "dph": 44.0,
+      "num_files": 1838,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/45",
+      "bird_id_norm": "PK249",
+      "dph": 45.0,
+      "num_files": 2267,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/46",
+      "bird_id_norm": "PK249",
+      "dph": 46.0,
+      "num_files": 1475,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/47",
+      "bird_id_norm": "PK249",
+      "dph": 47.0,
+      "num_files": 1731,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/48",
+      "bird_id_norm": "PK249",
+      "dph": 48.0,
+      "num_files": 1468,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/49",
+      "bird_id_norm": "PK249",
+      "dph": 49.0,
+      "num_files": 1324,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/50",
+      "bird_id_norm": "PK249",
+      "dph": 50.0,
+      "num_files": 1439,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/51",
+      "bird_id_norm": "PK249",
+      "dph": 51.0,
+      "num_files": 1709,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/52",
+      "bird_id_norm": "PK249",
+      "dph": 52.0,
+      "num_files": 1727,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/53",
+      "bird_id_norm": "PK249",
+      "dph": 53.0,
+      "num_files": 1619,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/54",
+      "bird_id_norm": "PK249",
+      "dph": 54.0,
+      "num_files": 1898,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/55",
+      "bird_id_norm": "PK249",
+      "dph": 55.0,
+      "num_files": 1811,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/56",
+      "bird_id_norm": "PK249",
+      "dph": 56.0,
+      "num_files": 1969,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/57",
+      "bird_id_norm": "PK249",
+      "dph": 57.0,
+      "num_files": 1961,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/58",
+      "bird_id_norm": "PK249",
+      "dph": 58.0,
+      "num_files": 1996,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/59",
+      "bird_id_norm": "PK249",
+      "dph": 59.0,
+      "num_files": 1711,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/60",
+      "bird_id_norm": "PK249",
+      "dph": 60.0,
+      "num_files": 2037,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/61",
+      "bird_id_norm": "PK249",
+      "dph": 61.0,
+      "num_files": 1941,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/62",
+      "bird_id_norm": "PK249",
+      "dph": 62.0,
+      "num_files": 1995,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/63",
+      "bird_id_norm": "PK249",
+      "dph": 63.0,
+      "num_files": 1713,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/64",
+      "bird_id_norm": "PK249",
+      "dph": 64.0,
+      "num_files": 1991,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/65",
+      "bird_id_norm": "PK249",
+      "dph": 65.0,
+      "num_files": 1807,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/66",
+      "bird_id_norm": "PK249",
+      "dph": 66.0,
+      "num_files": 1803,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/67",
+      "bird_id_norm": "PK249",
+      "dph": 67.0,
+      "num_files": 2141,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/68",
+      "bird_id_norm": "PK249",
+      "dph": 68.0,
+      "num_files": 2107,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/69",
+      "bird_id_norm": "PK249",
+      "dph": 69.0,
+      "num_files": 2032,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/70",
+      "bird_id_norm": "PK249",
+      "dph": 70.0,
+      "num_files": 1657,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/71",
+      "bird_id_norm": "PK249",
+      "dph": 71.0,
+      "num_files": 1945,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/72",
+      "bird_id_norm": "PK249",
+      "dph": 72.0,
+      "num_files": 1921,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/73",
+      "bird_id_norm": "PK249",
+      "dph": 73.0,
+      "num_files": 1497,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/74",
+      "bird_id_norm": "PK249",
+      "dph": 74.0,
+      "num_files": 1774,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/75",
+      "bird_id_norm": "PK249",
+      "dph": 75.0,
+      "num_files": 1568,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/76",
+      "bird_id_norm": "PK249",
+      "dph": 76.0,
+      "num_files": 1760,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/77",
+      "bird_id_norm": "PK249",
+      "dph": 77.0,
+      "num_files": 1769,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/78",
+      "bird_id_norm": "PK249",
+      "dph": 78.0,
+      "num_files": 1573,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/79",
+      "bird_id_norm": "PK249",
+      "dph": 79.0,
+      "num_files": 1071,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/80",
+      "bird_id_norm": "PK249",
+      "dph": 80.0,
+      "num_files": 1295,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/81",
+      "bird_id_norm": "PK249",
+      "dph": 81.0,
+      "num_files": 1442,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/82",
+      "bird_id_norm": "PK249",
+      "dph": 82.0,
+      "num_files": 1437,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/83",
+      "bird_id_norm": "PK249",
+      "dph": 83.0,
+      "num_files": 1680,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/84",
+      "bird_id_norm": "PK249",
+      "dph": 84.0,
+      "num_files": 1585,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/85",
+      "bird_id_norm": "PK249",
+      "dph": 85.0,
+      "num_files": 1789,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/86",
+      "bird_id_norm": "PK249",
+      "dph": 86.0,
+      "num_files": 1572,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/87",
+      "bird_id_norm": "PK249",
+      "dph": 87.0,
+      "num_files": 1749,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/88",
+      "bird_id_norm": "PK249",
+      "dph": 88.0,
+      "num_files": 1428,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/89",
+      "bird_id_norm": "PK249",
+      "dph": 89.0,
+      "num_files": 1667,
+      "regime": "bells",
+      "split": "train"
+    },
+    {
+      "audio_dir_rel": "day43 Bells/pk249/90",
+      "bird_id_norm": "PK249",
+      "dph": 90.0,
+      "num_files": 1381,
+      "regime": "bells",
+      "split": "train"
+    }
+  ]
+}

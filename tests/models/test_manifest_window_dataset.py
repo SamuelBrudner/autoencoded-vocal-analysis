@@ -7,7 +7,10 @@ from scipy.io import wavfile
 pytest.importorskip("torch")
 pytest.importorskip("pyarrow")
 
-from ava.models.manifest_window_dataset import ManifestFixedWindowDataset
+from ava.models.manifest_window_dataset import (
+    ManifestFixedWindowDataset,
+    get_manifest_fixed_window_data_loaders,
+)
 from ava.preprocessing.utils import get_spec
 
 
@@ -83,3 +86,55 @@ def test_manifest_dataset_parquet_is_lazy_about_roi(tmp_path: Path) -> None:
     sample = dataset[0]
     assert hasattr(sample, "shape")
     assert tuple(sample.shape) == (p["num_freq_bins"], p["num_time_bins"])
+
+
+def test_manifest_loaders_allow_smaller_validation_length(tmp_path: Path) -> None:
+    audio_dir = tmp_path / "audio"
+    roi_dir = tmp_path / "roi"
+    audio_dir.mkdir()
+    roi_dir.mkdir()
+    fs = 44100
+    audio = np.zeros(fs, dtype=np.int16)
+    wavfile.write((audio_dir / "sample.wav").as_posix(), fs, audio)
+    _write_roi_parquet(roi_dir / "roi.parquet")
+    entries = [
+        {
+            "audio_dir": audio_dir.as_posix(),
+            "roi_dir": roi_dir.as_posix(),
+            "audio_dir_rel": ".",
+            "num_files": 1,
+        }
+    ]
+    p = {
+        "fs": fs,
+        "get_spec": get_spec,
+        "num_freq_bins": 64,
+        "num_time_bins": 64,
+        "nperseg": 256,
+        "noverlap": 128,
+        "max_dur": 1e9,
+        "window_length": 0.12,
+        "min_freq": 300.0,
+        "max_freq": 10000.0,
+        "spec_min_val": 0.0,
+        "spec_max_val": 10.0,
+        "mel": False,
+        "time_stretch": False,
+        "within_syll_normalize": False,
+        "normalization_mode": "none",
+        "roi_weight_mode": "uniform",
+    }
+
+    loaders = get_manifest_fixed_window_data_loaders(
+        entries,
+        entries,
+        p,
+        roi_format="parquet",
+        dataset_length=8,
+        test_dataset_length=3,
+        batch_size=2,
+        num_workers=0,
+    )
+
+    assert len(loaders["train"].dataset) == 8
+    assert len(loaders["test"].dataset) == 3

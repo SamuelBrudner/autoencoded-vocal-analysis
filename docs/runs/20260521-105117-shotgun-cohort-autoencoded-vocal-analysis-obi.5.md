@@ -104,3 +104,18 @@ The `--allow-missing-roi` retry passed the missing-file gate but still failed be
 The empty clips are explicit zero-onset rows in the parquet bundles, not a path-resolution failure. The rate is concentrated in a few birds/regimes: R404 and R467 are about 41% empty, R425 about 24%, R426 about 21%, and R493 about 19%, while PK249 and several others are near zero. A sampled high-empty R404 directory had many overnight clips with no detected ROI, but still had thousands of positive ROI segments. In streaming parquet mode, the training dataset filters out zero-ROI rows and samples only compatible positive ROI segments, so the strict 1% empty-clip gate is too conservative for the full-day fixed cohort.
 
 On 2026-06-02, I submitted a threshold-bumped retry with the same patched 4-GPU job definition and the same 100-epoch cohort settings, adding `--max-empty-fraction 0.25` while keeping `--allow-missing-roi`. Missing ROI dirs and ROI parse errors remain fatal; this change only allows the observed full-day empty-clip rate to pass. The job moved to `RUNNING` and emitted the initial `after_setup` disk telemetry; the next checkpoint is `after_coverage`, followed by `fit_start`.
+
+## Validated No-Cache Retry Package
+
+The threshold-bumped retry reached training but failed after at least epoch 68 with `OSError: [Errno 28] No space left on device`. CloudWatch disk telemetry showed the job filled the local volume with about 1.2 TB of AVA cache: about 688 GB of spectrogram cache plus about 485 GB of staged audio. Because the streaming sampler creates many exact window keys and cache size grew nearly linearly with epoch, the next retry should disable spectrogram caching rather than increase disk.
+
+I added a deterministic validation split and early-stopping launch package for the next full-cohort retry. The new cohort manifest holds out 60 of 602 directories for validation, with every bird represented; the training split keeps 542 directories. The cohort config validates every epoch and uses `VAEMotivatedStoppingCallback` with `val_patience=8`, `val_min_delta=0.0`, and `min_epochs=40`. The launcher and AWS wrappers now support separate train and validation sampled-window counts, so the planned run keeps `train_dataset_length=200000` but validates on `test_dataset_length=20000` instead of running a full 200k-window validation epoch.
+
+The redacted dry-run payload keeps the validated 4-GPU strategy, `ddp_find_unused_parameters_true`, and explicitly disables spectrogram cache. This package is a dry-run artifact only; no AWS training job was launched from it.
+
+Artifacts:
+
+- `validated_retry_manifest_summary`: `artifacts/autoencoded-vocal-analysis-obi.5/20260615-validated-shotgun-retry/shotgun_cohort_manifest_summary.json`
+- `validated_retry_cohort_manifest`: `artifacts/autoencoded-vocal-analysis-obi.5/20260615-validated-shotgun-retry/fixed_11bird_33_90_manifest_val10.json`
+- `validated_retry_cohort_config`: `artifacts/autoencoded-vocal-analysis-obi.5/20260615-validated-shotgun-retry/shotgun_fixed_11bird_config.yaml`
+- `validated_retry_payload_redacted`: `artifacts/autoencoded-vocal-analysis-obi.5/20260615-validated-shotgun-retry/aws_training_payload_redacted.json`

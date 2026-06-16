@@ -40,6 +40,18 @@ def _env_float(name: str, default: float | None = None) -> float | None:
 	return float(val)
 
 
+def _env_flag(name: str, default: bool = False) -> bool:
+	val = _env(name)
+	if val is None:
+		return default
+	normalized = str(val).strip().lower()
+	if normalized in {"1", "true", "yes", "on"}:
+		return True
+	if normalized in {"0", "false", "no", "off"}:
+		return False
+	raise ValueError(f"Environment variable {name} must be boolean-like, got: {val!r}")
+
+
 def _require_aws_cli() -> str:
 	aws = shutil.which("aws")
 	if not aws:
@@ -178,6 +190,8 @@ def build_training_command(
 	roi_cache_size: int,
 	roi_format: str = "parquet",
 	roi_parquet_name: str = "roi.parquet",
+	test_dataset_length: int | None = None,
+	disable_spec_cache: bool = False,
 	preflight_sample_dirs: int = 100,
 	preflight_sample_segments: int = 50_000,
 	preflight_seed: int = 0,
@@ -208,7 +222,7 @@ def build_training_command(
 		str(int(batch_size)),
 		"--num-workers",
 		str(int(num_workers)),
-		"--dataset-length",
+		"--train-dataset-length",
 		str(int(dataset_length)),
 		"--roi-cache-size",
 		str(int(roi_cache_size)),
@@ -219,6 +233,10 @@ def build_training_command(
 		"--preflight-seed",
 		str(int(preflight_seed)),
 	]
+	if test_dataset_length is not None:
+		cmd.extend(["--test-dataset-length", str(int(test_dataset_length))])
+	if disable_spec_cache:
+		cmd.append("--disable-spec-cache")
 	if trainer_kwargs_json:
 		cmd.extend(["--trainer-kwargs-json", str(trainer_kwargs_json)])
 	return cmd
@@ -306,6 +324,7 @@ def main() -> None:
 	parser.add_argument("--batch-size", type=int, default=_env_int("AVA_TRAIN_BATCH_SIZE", 128))
 	parser.add_argument("--num-workers", type=int, default=_env_int("AVA_TRAIN_NUM_WORKERS", 4))
 	parser.add_argument("--dataset-length", type=int, default=_env_int("AVA_TRAIN_DATASET_LENGTH", 200_000))
+	parser.add_argument("--test-dataset-length", type=int, default=_env_int("AVA_TRAIN_TEST_DATASET_LENGTH"))
 	parser.add_argument("--roi-cache-size", type=int, default=_env_int("AVA_TRAIN_ROI_CACHE_SIZE", 32))
 	parser.add_argument("--preflight-sample-dirs", type=int, default=_env_int("AVA_TRAIN_PREFLIGHT_SAMPLE_DIRS", 100))
 	parser.add_argument("--preflight-sample-segments", type=int, default=_env_int("AVA_TRAIN_PREFLIGHT_SAMPLE_SEGMENTS", 50_000))
@@ -315,6 +334,11 @@ def main() -> None:
 	parser.add_argument("--roi-format", choices=["txt", "parquet"], default=_env("AVA_TRAIN_ROI_FORMAT", "parquet"))
 	parser.add_argument("--roi-parquet-name", type=str, default=_env("AVA_TRAIN_ROI_PARQUET_NAME", "roi.parquet"))
 	parser.add_argument("--trainer-kwargs-json", type=str, default=_env("AVA_TRAIN_TRAINER_KWARGS_JSON"))
+	parser.add_argument(
+		"--disable-spec-cache",
+		action="store_true",
+		default=_env_flag("AVA_TRAIN_DISABLE_SPEC_CACHE", _env_flag("AVA_DISABLE_SPEC_CACHE", False)),
+	)
 	parser.add_argument("--dry-run", action="store_true")
 	parser.add_argument(
 		"--verbose-sync",
@@ -333,6 +357,10 @@ def main() -> None:
 	missing = [name for name, value in required.items() if not value]
 	if missing:
 		raise ValueError("Missing required arguments: " + ", ".join(missing))
+	if args.dataset_length <= 0:
+		raise ValueError("--dataset-length must be positive.")
+	if args.test_dataset_length is not None and args.test_dataset_length <= 0:
+		raise ValueError("--test-dataset-length must be positive.")
 	if args.run_name is None:
 		args.run_name = time.strftime("%Y%m%d-%H%M%S-shotgun-training", time.gmtime())
 
@@ -357,6 +385,8 @@ def main() -> None:
 		roi_cache_size=args.roi_cache_size,
 		roi_format=args.roi_format,
 		roi_parquet_name=args.roi_parquet_name,
+		test_dataset_length=args.test_dataset_length,
+		disable_spec_cache=bool(args.disable_spec_cache),
 		preflight_sample_dirs=args.preflight_sample_dirs,
 		preflight_sample_segments=args.preflight_sample_segments,
 		preflight_seed=args.preflight_seed,

@@ -236,7 +236,11 @@ def main() -> None:
     parser.add_argument("--num-workers", type=int, default=_env_int("AVA_NUM_WORKERS"))
     parser.add_argument("--epochs", type=int, default=_env_int("AVA_EPOCHS"))
     parser.add_argument("--train-dataset-length", type=int, default=_env_int("AVA_TRAIN_DATASET_LENGTH"))
-    parser.add_argument("--test-dataset-length", type=int, default=_env_int("AVA_TEST_DATASET_LENGTH"))
+    parser.add_argument(
+        "--test-dataset-length",
+        type=int,
+        default=_env_int("AVA_TEST_DATASET_LENGTH", _env_int("AVA_TRAIN_TEST_DATASET_LENGTH")),
+    )
     parser.add_argument(
         "--disable-spec-cache",
         action="store_true",

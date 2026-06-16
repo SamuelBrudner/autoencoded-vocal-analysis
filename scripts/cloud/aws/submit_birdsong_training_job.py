@@ -52,6 +52,7 @@ def main() -> None:
 	parser.add_argument("--batch-size", type=int, default=128)
 	parser.add_argument("--num-workers", type=int, default=4)
 	parser.add_argument("--dataset-length", type=int, default=200_000)
+	parser.add_argument("--test-dataset-length", type=int, default=None)
 	parser.add_argument("--roi-cache-size", type=int, default=32)
 	parser.add_argument("--preflight-sample-dirs", type=int, default=100)
 	parser.add_argument("--preflight-sample-segments", type=int, default=50_000)
@@ -61,6 +62,7 @@ def main() -> None:
 	parser.add_argument("--roi-format", choices=["txt", "parquet"], default="parquet")
 	parser.add_argument("--roi-parquet-name", type=str, default="roi.parquet")
 	parser.add_argument("--trainer-kwargs-json", type=str, default=None)
+	parser.add_argument("--disable-spec-cache", action="store_true")
 
 	parser.add_argument(
 		"--override-command",
@@ -88,6 +90,8 @@ def main() -> None:
 		raise ValueError("--num-workers must be non-negative.")
 	if args.dataset_length <= 0:
 		raise ValueError("--dataset-length must be positive.")
+	if args.test_dataset_length is not None and args.test_dataset_length <= 0:
+		raise ValueError("--test-dataset-length must be positive.")
 	if args.roi_cache_size <= 0:
 		raise ValueError("--roi-cache-size must be positive.")
 	if args.download_jobs <= 0:
@@ -104,6 +108,9 @@ def main() -> None:
 		_payload_env("AVA_TRAIN_BATCH_SIZE", int(args.batch_size)),
 		_payload_env("AVA_TRAIN_NUM_WORKERS", int(args.num_workers)),
 		_payload_env("AVA_TRAIN_DATASET_LENGTH", int(args.dataset_length)),
+		_payload_env("AVA_TRAIN_TEST_DATASET_LENGTH", args.test_dataset_length),
+		_payload_env("AVA_TRAIN_DISABLE_SPEC_CACHE", "1" if args.disable_spec_cache else None),
+		_payload_env("AVA_DISABLE_SPEC_CACHE", "1" if args.disable_spec_cache else None),
 		_payload_env("AVA_TRAIN_ROI_CACHE_SIZE", int(args.roi_cache_size)),
 		_payload_env("AVA_TRAIN_PREFLIGHT_SAMPLE_DIRS", int(args.preflight_sample_dirs)),
 		_payload_env("AVA_TRAIN_PREFLIGHT_SAMPLE_SEGMENTS", int(args.preflight_sample_segments)),
