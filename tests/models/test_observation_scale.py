@@ -116,6 +116,27 @@ def test_posterior_logvar_clamping_keeps_encoder_outputs_finite():
 	assert torch.isfinite(latent_dist.entropy()).all()
 
 
+def test_posterior_distribution_floors_underflowed_scale():
+	vae = VAE(
+		save_dir="",
+		device_name="cpu",
+		input_shape=(16, 16),
+		z_dim=4,
+		model_precision=1.0,
+		build_optimizer=False,
+	)
+	mu = torch.zeros(2, 4, dtype=torch.float16)
+	logvar = torch.full((2, 4), -1000.0, dtype=torch.float16)
+
+	latent_dist = vae._posterior_distribution(mu, logvar, None)
+	scale = latent_dist.base_dist.scale
+
+	assert scale.dtype == torch.float32
+	assert torch.isfinite(scale).all()
+	assert torch.all(scale > 0)
+	assert torch.isfinite(latent_dist.entropy()).all()
+
+
 def test_logvar_clamp_hit_fractions_reflect_raw_encoder_overflow():
 	torch.manual_seed(0)
 	vae = VAE(

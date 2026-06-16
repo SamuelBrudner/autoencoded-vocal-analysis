@@ -477,13 +477,13 @@ class VAE(nn.Module):
 	def _posterior_distribution(self, mu, logvar, u):
 		logvar = self._clamp_logvar_tensor(logvar)
 		if self.posterior_type == "diag":
-			scale = torch.exp(0.5 * logvar)
+			scale = self._positive_exp_from_logvar(logvar, multiplier=0.5)
 			base_dist = torch.distributions.Normal(mu, scale)
 			return torch.distributions.Independent(base_dist, 1)
 		if self.posterior_type == "lowrank":
 			if u is None:
 				raise ValueError("Low-rank posterior requires u.")
-			d = torch.exp(logvar)
+			d = self._positive_exp_from_logvar(logvar)
 			return LowRankMultivariateNormal(mu, u, d)
 		raise ValueError(f"Unknown posterior_type '{self.posterior_type}'.")
 
@@ -491,8 +491,18 @@ class VAE(nn.Module):
 	def _latent_variance_mean(self, u, logvar):
 		logvar = self._clamp_logvar_tensor(logvar)
 		if self.posterior_type == "diag":
-			return torch.exp(logvar).mean()
-		return (u.squeeze(-1) ** 2 + torch.exp(logvar)).mean()
+			return self._positive_exp_from_logvar(logvar).mean()
+		diag_variance = self._positive_exp_from_logvar(logvar)
+		return (u.squeeze(-1) ** 2 + diag_variance).mean()
+
+
+	@staticmethod
+	def _positive_exp_from_logvar(logvar, multiplier=1.0):
+		"""Exponentiate log-variance without returning distribution-invalid zeros."""
+		if logvar.dtype in {torch.float16, torch.bfloat16}:
+			logvar = logvar.float()
+		value = torch.exp(float(multiplier) * logvar)
+		return torch.clamp(value, min=torch.finfo(value.dtype).tiny)
 
 
 	def _ensure_optimizer(self):
