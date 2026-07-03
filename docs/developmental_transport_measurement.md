@@ -62,6 +62,25 @@ This checks bird-level split integrity, longitudinal coverage, tutor-start-day
 variation, DPH availability, and the isolate/tutored cohort balance needed to
 separate growth from copying-related learning.
 
+Train the first shared encoder with the transport-specific config:
+
+```bash
+python scripts/launch_birdsong_training.py \
+  --manifest data/manifests/birdsong_manifest.json \
+  --config examples/configs/fixed_window_transport_shared_30ms.yaml \
+  --save-dir artifacts/transport_encoder/shared_30ms \
+  --streaming \
+  --roi-format parquet \
+  --train-dataset-length 131072 \
+  --test-dataset-length 16384 \
+  --dry-run
+```
+
+Remove `--dry-run` only after the planned directory counts and ROI preflight
+look sane. The config uses `entry_weight_mode: regime_bird_uniform` so the
+streaming sampler gives each regime equal mass, then each bird within a regime
+equal mass, instead of letting raw file counts dominate the shared encoder.
+
 After frozen latent sequence export, build a latent-measure index:
 
 ```bash

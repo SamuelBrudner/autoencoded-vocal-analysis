@@ -146,6 +146,70 @@ def test_manifest_dataset_set_epoch_changes_deterministic_windows(tmp_path: Path
     assert np.allclose(epoch0, epoch0_repeat)
 
 
+def test_manifest_dataset_entry_weight_modes_are_explicit(tmp_path: Path) -> None:
+    entries = [
+        {
+            "audio_dir": (tmp_path / "a").as_posix(),
+            "roi_dir": (tmp_path / "ra").as_posix(),
+            "audio_dir_rel": "bells/A/1",
+            "bird_id_norm": "A",
+            "regime": "bells",
+            "num_files": 100,
+        },
+        {
+            "audio_dir": (tmp_path / "b").as_posix(),
+            "roi_dir": (tmp_path / "rb").as_posix(),
+            "audio_dir_rel": "bells/A/2",
+            "bird_id_norm": "A",
+            "regime": "bells",
+            "num_files": 10,
+        },
+        {
+            "audio_dir": (tmp_path / "c").as_posix(),
+            "roi_dir": (tmp_path / "rc").as_posix(),
+            "audio_dir_rel": "bells/B/1",
+            "bird_id_norm": "B",
+            "regime": "bells",
+            "num_files": 5,
+        },
+        {
+            "audio_dir": (tmp_path / "d").as_posix(),
+            "roi_dir": (tmp_path / "rd").as_posix(),
+            "audio_dir_rel": "isolates/C/1",
+            "bird_id_norm": "C",
+            "regime": "isolates",
+            "num_files": 1000,
+        },
+    ]
+
+    default_dataset = ManifestFixedWindowDataset(
+        entries,
+        _make_params(44100),
+        roi_format="parquet",
+        dataset_length=4,
+    )
+    assert default_dataset.entry_weight_mode == "num_files"
+    assert np.allclose(
+        default_dataset.entry_weights,
+        np.asarray([100, 10, 5, 1000], dtype=float) / 1115.0,
+    )
+
+    params = _make_params(44100)
+    params["entry_weight_mode"] = "regime_bird_uniform"
+    balanced_dataset = ManifestFixedWindowDataset(
+        entries,
+        params,
+        roi_format="parquet",
+        dataset_length=4,
+    )
+
+    assert balanced_dataset.entry_weight_mode == "regime_bird_uniform"
+    assert np.allclose(
+        balanced_dataset.entry_weights,
+        np.asarray([0.125, 0.125, 0.25, 0.5], dtype=float),
+    )
+
+
 def test_manifest_data_loaders_accept_split_dataset_lengths(tmp_path: Path) -> None:
     train_audio_dir = tmp_path / "train_audio"
     train_roi_dir = tmp_path / "train_roi"

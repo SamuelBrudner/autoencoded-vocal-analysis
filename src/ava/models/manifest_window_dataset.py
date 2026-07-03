@@ -45,6 +45,24 @@ _FILE_WEIGHT_MODE_ALIASES = {
     "count": "roi_count",
 }
 
+_ENTRY_WEIGHT_MODE_ALIASES = {
+    "num_files": "num_files",
+    "files": "num_files",
+    "file_count": "num_files",
+    "directory_file_count": "num_files",
+    "uniform": "uniform",
+    "equal": "uniform",
+    "dir_uniform": "uniform",
+    "directory_uniform": "uniform",
+    "bird_uniform": "bird_uniform",
+    "birds": "bird_uniform",
+    "regime_uniform": "regime_uniform",
+    "regimes": "regime_uniform",
+    "regime_bird_uniform": "regime_bird_uniform",
+    "regime-bird-uniform": "regime_bird_uniform",
+    "balanced": "regime_bird_uniform",
+}
+
 _ROI_WEIGHT_MODE_ALIASES = {
     "duration": "duration",
     "durations": "duration",
@@ -140,6 +158,62 @@ def _normalize_weights(weights: Sequence[float], label: str) -> np.ndarray:
     if total <= 0:
         raise ValueError(f"{label} weights must sum to a positive value.")
     return weights / total
+
+
+def _compute_entry_weights(entries: Sequence[dict], mode: str) -> np.ndarray:
+    if mode == "uniform":
+        return _normalize_weights(np.ones(len(entries), dtype=float), "Entry")
+
+    if mode == "num_files":
+        weights = []
+        for entry in entries:
+            w = entry.get("num_files", 1)
+            try:
+                w = float(w)
+            except (TypeError, ValueError):
+                w = 1.0
+            if not np.isfinite(w) or w <= 0:
+                w = 1.0
+            weights.append(w)
+        return _normalize_weights(weights, "Entry")
+
+    birds = [str(entry.get("bird_id_norm") or "unknown") for entry in entries]
+    regimes = [str(entry.get("regime") or "unknown") for entry in entries]
+
+    if mode == "bird_uniform":
+        by_bird: dict[str, list[int]] = {}
+        for idx, bird in enumerate(birds):
+            by_bird.setdefault(bird, []).append(idx)
+        weights = np.zeros(len(entries), dtype=float)
+        for indices in by_bird.values():
+            for idx in indices:
+                weights[idx] = 1.0 / float(len(by_bird) * len(indices))
+        return _normalize_weights(weights, "Entry")
+
+    if mode == "regime_uniform":
+        by_regime: dict[str, list[int]] = {}
+        for idx, regime in enumerate(regimes):
+            by_regime.setdefault(regime, []).append(idx)
+        weights = np.zeros(len(entries), dtype=float)
+        for indices in by_regime.values():
+            for idx in indices:
+                weights[idx] = 1.0 / float(len(by_regime) * len(indices))
+        return _normalize_weights(weights, "Entry")
+
+    if mode == "regime_bird_uniform":
+        by_regime_bird: dict[str, dict[str, list[int]]] = {}
+        for idx, (regime, bird) in enumerate(zip(regimes, birds)):
+            by_regime_bird.setdefault(regime, {}).setdefault(bird, []).append(idx)
+        weights = np.zeros(len(entries), dtype=float)
+        for bird_groups in by_regime_bird.values():
+            for indices in bird_groups.values():
+                for idx in indices:
+                    weights[idx] = 1.0 / float(
+                        len(by_regime_bird) * len(bird_groups) * len(indices)
+                    )
+        return _normalize_weights(weights, "Entry")
+
+    raise ValueError(f"Unsupported entry_weight_mode: {mode}")
 
 
 def _seed_streaming_worker(worker_id: int) -> None:
@@ -308,26 +382,26 @@ class ManifestFixedWindowDataset(Dataset):
         if not self.entries:
             raise ValueError("entries must be non-empty.")
 
-        weights = []
         kept_entries = []
         for entry in self.entries:
             audio_dir = entry.get("audio_dir")
             roi_dir = entry.get("roi_dir")
             if not audio_dir or not roi_dir:
                 continue
-            w = entry.get("num_files", 1)
-            try:
-                w = float(w)
-            except (TypeError, ValueError):
-                w = 1.0
-            if not np.isfinite(w) or w <= 0:
-                w = 1.0
             kept_entries.append(entry)
-            weights.append(w)
         if not kept_entries:
             raise ValueError("entries must include audio_dir and roi_dir.")
         self.entries = kept_entries
-        self.entry_weights = _normalize_weights(weights, "Entry")
+        self.entry_weight_mode = _normalize_mode(
+            self.p.get("entry_weight_mode"),
+            default="num_files",
+            aliases=_ENTRY_WEIGHT_MODE_ALIASES,
+            name="entry_weight_mode",
+        )
+        self.entry_weights = _compute_entry_weights(
+            self.entries,
+            mode=self.entry_weight_mode,
+        )
 
         self.dataset_length = int(dataset_length)
         self.min_spec_val = min_spec_val
