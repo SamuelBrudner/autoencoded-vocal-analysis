@@ -10,7 +10,7 @@ dependencies:
   - pytorch-lightning
   - tensorboard
   - pyyaml
-  - numpy
+  - numpy<2
   - pyarrow
   - scipy
   - scikit-learn
