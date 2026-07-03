@@ -76,6 +76,52 @@ The measure index groups per-clip latent sequence files into
 `bird_id_norm x regime x dph` measures while retaining per-clip `logvar`
 availability and window counts. It is an index, not a destructive aggregation.
 
+## Hop Sensitivity Gate
+
+Before using path signatures or fast latent dynamics as biological readouts,
+export the same frozen encoder at multiple latent-sequence hops. Start by
+holding the acoustic window fixed and sweeping only `--hop-length-sec`:
+
+```bash
+python scripts/export_latent_sequences.py \
+  --manifest data/manifests/birdsong_manifest.json \
+  --split all \
+  --config path/to/fixed_window.yaml \
+  --checkpoint path/to/checkpoint.tar \
+  --out-dir artifacts/latent_hop_sweep/hop030 \
+  --hop-length-sec 0.030 \
+  --export-energy
+```
+
+Repeat with candidate hops such as `0.015`, `0.010`, and `0.0058`, then
+summarize the exports:
+
+```bash
+python scripts/analyze_latent_hop_sensitivity.py \
+  --latent-dir hop030=artifacts/latent_hop_sweep/hop030 \
+  --latent-dir hop015=artifacts/latent_hop_sweep/hop015 \
+  --latent-dir hop010=artifacts/latent_hop_sweep/hop010 \
+  --latent-dir hop0058=artifacts/latent_hop_sweep/hop0058 \
+  --out-json artifacts/developmental_transport/hop_sensitivity.json \
+  --summary-csv artifacts/developmental_transport/hop_sensitivity_summary.csv \
+  --clips-csv artifacts/developmental_transport/hop_sensitivity_clips.csv
+```
+
+The key warning sign is a hop that creates large apparent path length or
+near-tautological one-step prediction while the AR(1)-style effective sample
+fraction collapses. Transport summaries that are stable across hop are more
+credible than signature or fast-dynamics summaries that depend strongly on
+overlap.
+
+## Hyperbolic Geometry Gate
+
+Hyperbolic geometry remains a post-encoder readout, not the measurement
+substrate. Use it only after the frozen-measure transport signal is credible:
+build a developmental graph from measures, local components, or transport
+links; compare hyperbolic distortion against Euclidean baselines; and require
+branch/radius structure to survive bird-level and age-shuffled nulls. A
+hyperbolic VAE should remain gated behind that post-hoc evidence.
+
 ## Non-Goals For The First Paper
 
 - No developmental loss terms in the encoder.
