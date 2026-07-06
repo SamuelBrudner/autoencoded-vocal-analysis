@@ -78,6 +78,14 @@ training:
     precision: 16-mixed
     log_every_n_steps: 25
   stopping_kwargs:
+    min_epochs: 25
+    val_patience: 6
+    val_min_delta: 0.001
+    recon_patience: 6
+    recon_min_delta: 0.0001
+    collapse_patience: 2
+    collapse_mean_threshold: 0.01
+    collapse_var_tolerance: 0.1
   invariance_weight: 0.0
 
 augmentations:
