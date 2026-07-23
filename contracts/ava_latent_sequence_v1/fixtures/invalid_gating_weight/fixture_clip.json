@@ -1,0 +1,8 @@
+{
+  "audio_path": "fixtures/fixture_clip.wav",
+  "audio_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "clip_id": "fixture_clip",
+  "created_utc": "2026-01-01T00:00:00Z",
+  "sample_rate_hz": 32000,
+  "schema_version": "ava_latent_sequence_v1"
+}

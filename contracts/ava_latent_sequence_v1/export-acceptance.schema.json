@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/SamuelBrudner/autoencoded-vocal-analysis/contracts/ava_latent_sequence_v1/export-acceptance.schema.json",
+  "title": "AVA latent export collection acceptance record v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "created_utc",
+    "dataset_sha256",
+    "configuration_sha256",
+    "checkpoint_sha256",
+    "code_sha256",
+    "member_manifest_sha256"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "ava_latent_sequence_export_acceptance_v1"
+    },
+    "created_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "dataset_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "configuration_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "checkpoint_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "code_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "member_manifest_sha256": {
+      "$ref": "#/$defs/sha256"
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/SamuelBrudner/autoencoded-vocal-analysis/contracts/ava_latent_sequence_v1/metadata.schema.json",
+  "title": "AVA latent sequence v1 metadata",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "created_utc",
+    "clip_id",
+    "audio_path",
+    "audio_sha256",
+    "sample_rate_hz"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "ava_latent_sequence_v1"
+    },
+    "created_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "clip_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "audio_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "audio_sha256": {
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "sample_rate_hz": {
+      "oneOf": [
+        {
+          "type": "integer",
+          "minimum": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "additionalProperties": true
+}
