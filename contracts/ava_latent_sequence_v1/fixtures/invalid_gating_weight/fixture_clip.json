@@ -1,0 +1,13 @@
+{
+  "audio_path": "fixtures/fixture_clip.wav",
+  "audio_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "bird_id": "FIXTURE-BIRD",
+  "clip_id": "fixture_clip",
+  "created_utc": "2026-01-01T00:00:00Z",
+  "dph": 42,
+  "recording_id": "fixture-recording-001",
+  "regime": "tutored",
+  "sample_rate_hz": 32000,
+  "schema_version": "ava_latent_sequence_v1",
+  "tutor_start_dph": null
+}

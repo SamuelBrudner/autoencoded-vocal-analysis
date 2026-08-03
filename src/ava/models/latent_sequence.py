@@ -319,6 +319,12 @@ class LatentSequenceEncoder:
 			end_time_sec: Optional[float] = None,
 			return_energy: bool = False,
 			compute_audio_sha256: bool = False,
+			audio_identity: Optional[str] = None,
+			recording_id: Optional[str] = None,
+			bird_id: Optional[str] = None,
+			dph: Optional[float] = None,
+			regime: Optional[str] = None,
+			tutor_start_dph: Optional[float] = None,
 	) -> LatentSequence:
 		"""
 		Encode a single audio clip into a time-indexed latent sequence.
@@ -469,7 +475,12 @@ class LatentSequenceEncoder:
 			"schema_version": SCHEMA_VERSION,
 			"created_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
 			"clip_id": audio_path.stem,
-			"audio_path": audio_path.as_posix(),
+			"recording_id": recording_id,
+			"bird_id": bird_id,
+			"dph": dph,
+			"regime": regime,
+			"tutor_start_dph": tutor_start_dph,
+			"audio_path": audio_identity or audio_path.name,
 			"audio_sha256": _sha256_file(audio_path) if compute_audio_sha256 else None,
 			"sample_rate_hz": fs_target,
 			"roi_path": Path(roi_path).as_posix() if roi_path is not None else None,
@@ -505,6 +516,12 @@ def encode_clip_to_latent_sequence(
 		end_time_sec: Optional[float] = None,
 		return_energy: bool = False,
 		compute_audio_sha256: bool = False,
+		audio_identity: Optional[str] = None,
+		recording_id: Optional[str] = None,
+		bird_id: Optional[str] = None,
+		dph: Optional[float] = None,
+		regime: Optional[str] = None,
+		tutor_start_dph: Optional[float] = None,
 ) -> LatentSequence:
 	"""
 	Encode a single audio clip into a time-indexed latent sequence.
@@ -535,6 +552,11 @@ def encode_clip_to_latent_sequence(
 		If ``True``, also compute per-window RMS energy from the resampled audio.
 	compute_audio_sha256:
 		If ``True``, compute SHA-256 of the audio file for provenance.
+	audio_identity:
+		Portable relative identity stored in metadata. Defaults to the filename.
+	recording_id / bird_id / dph / regime / tutor_start_dph:
+		Explicit recording facts. Unknown values remain ``None`` and are never
+		inferred from ``audio_path``.
 	"""
 	encoder = LatentSequenceEncoder(
 		checkpoint_path=checkpoint_path,
@@ -551,4 +573,10 @@ def encode_clip_to_latent_sequence(
 		end_time_sec=end_time_sec,
 		return_energy=return_energy,
 		compute_audio_sha256=compute_audio_sha256,
+		audio_identity=audio_identity,
+		recording_id=recording_id,
+		bird_id=bird_id,
+		dph=dph,
+		regime=regime,
+		tutor_start_dph=tutor_start_dph,
 	)

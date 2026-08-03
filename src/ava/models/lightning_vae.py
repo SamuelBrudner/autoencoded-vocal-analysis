@@ -177,14 +177,34 @@ class VAELightningModule(pl.LightningModule):
 			vae = VAE(**vae_kwargs)
 		elif save_dir:
 			vae.save_dir = save_dir
-		vae.set_log_precision_bounds(
-			log_precision_min=log_precision_min,
-			log_precision_max=log_precision_max,
-		)
-		vae.set_logvar_bounds(
-			posterior_logvar_min=posterior_logvar_min,
-			posterior_logvar_max=posterior_logvar_max,
-		)
+		if (log_precision_min is not None
+				or log_precision_max is not None):
+			vae.set_log_precision_bounds(
+				log_precision_min=(
+					log_precision_min
+					if log_precision_min is not None
+					else vae.log_precision_min
+				),
+				log_precision_max=(
+					log_precision_max
+					if log_precision_max is not None
+					else vae.log_precision_max
+				),
+			)
+		if (posterior_logvar_min is not None
+				or posterior_logvar_max is not None):
+			vae.set_logvar_bounds(
+				posterior_logvar_min=(
+					posterior_logvar_min
+					if posterior_logvar_min is not None
+					else vae.posterior_logvar_min
+				),
+				posterior_logvar_max=(
+					posterior_logvar_max
+					if posterior_logvar_max is not None
+					else vae.posterior_logvar_max
+				),
+			)
 		self.vae = vae
 		self.save_dir = self.vae.save_dir
 		self.save_hyperparameters(ignore=["vae"])
@@ -663,6 +683,14 @@ class VAECheckpointCallback(pl.Callback):
 		completed_epoch = int(trainer.current_epoch) + 1
 		if completed_epoch % self.save_freq != 0:
 			return
+		# Lightning invokes callback epoch-end hooks before the module hook that
+		# persists the legacy loss history. Snapshot the same accumulator before
+		# writing so checkpoint_001.tar already contains epoch 0 metrics.
+		epoch = int(trainer.current_epoch)
+		if pl_module._train_loss_count:
+			pl_module.vae.loss['train'][epoch] = (
+				pl_module._train_loss_sum / pl_module._train_loss_count
+			)
 		pl_module.vae.epoch = completed_epoch
 		filename = f"checkpoint_{completed_epoch:03d}.tar"
 		pl_module.vae.save_state(filename)

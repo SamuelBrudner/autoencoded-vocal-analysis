@@ -14,7 +14,7 @@ import os
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 import numpy as np
 
@@ -23,7 +23,7 @@ SRC_ROOT = ROOT / "src"
 if str(SRC_ROOT) not in sys.path:
 	sys.path.insert(0, str(SRC_ROOT))
 
-from ava.data.manifest_paths import resolve_manifest_entry_paths
+from ava.data.manifest_paths import resolve_manifest_entry_paths  # noqa: E402
 
 
 def _load_manifest(path: Path) -> dict:
@@ -242,6 +242,11 @@ def main() -> None:
 			wavs = wavs[: args.max_files_per_dir]
 		for wav_path in wavs:
 			clip_id = _clip_id_for_wav(audio_dir_rel, wav_path)
+			audio_identity = (
+				Path(audio_dir_rel) / Path(wav_path).name
+			).as_posix()
+			if audio_dir_rel in (None, "", "."):
+				audio_identity = Path(wav_path).name
 			roi_path = None
 			roi_parquet_path = None
 			if not args.no_rois:
@@ -253,6 +258,7 @@ def main() -> None:
 				{
 					"clip_id": clip_id,
 					"audio_path": wav_path,
+					"audio_identity": audio_identity,
 					"roi_dir": roi_dir,
 					"roi_path": roi_path,
 					"roi_parquet_path": roi_parquet_path,
@@ -333,6 +339,12 @@ def main() -> None:
 
 			seq = encoder.encode(
 				audio_path=audio_path,
+				audio_identity=str(task["audio_identity"]),
+				recording_id=entry.get("recording_id"),
+				bird_id=entry.get("bird_id_norm") or entry.get("bird_id"),
+				dph=entry.get("dph"),
+				regime=entry.get("regime"),
+				tutor_start_dph=entry.get("tutor_start_dph"),
 				roi_path=roi_path,
 				rois=rois,
 				batch_size=args.batch_size,

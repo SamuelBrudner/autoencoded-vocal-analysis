@@ -96,5 +96,10 @@ def test_sequence_data_loader_pads_variable_lengths(tmp_path: Path) -> None:
 
     assert batch["x"].shape == (2, 4, 3, 4)
     assert batch["mask"].shape == (2, 4)
-    assert batch["mask"].sum(dim=1).tolist() == [4, 2]
-    assert torch.allclose(batch["x"][1, 2:], torch.zeros_like(batch["x"][1, 2:]))
+    sequence_lengths = batch["mask"].sum(dim=1)
+    assert sorted(sequence_lengths.tolist()) == [2, 4]
+    short_index = int(torch.argmin(sequence_lengths))
+    assert torch.allclose(
+        batch["x"][short_index, 2:],
+        torch.zeros_like(batch["x"][short_index, 2:]),
+    )

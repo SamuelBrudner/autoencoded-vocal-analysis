@@ -8,10 +8,10 @@ import pytest
 torch = pytest.importorskip("torch")
 
 
-def _ensure_pytorch_lightning_importable() -> None:
+def _ensure_pytorch_lightning_importable() -> bool:
     try:
         import pytorch_lightning  # noqa: F401
-        return
+        return False
     except ImportError:
         pass
 
@@ -45,10 +45,11 @@ def _ensure_pytorch_lightning_importable() -> None:
     loggers_module.TensorBoardLogger = _TensorBoardLogger
     sys.modules["pytorch_lightning"] = pl_module
     sys.modules["pytorch_lightning.loggers"] = loggers_module
+    return True
 
 
 def _load_launch_module():
-    _ensure_pytorch_lightning_importable()
+    installed_stub = _ensure_pytorch_lightning_importable()
     sys.modules.pop("ava.models.lightning_vae", None)
     script_path = (
         Path(__file__).resolve().parents[2]
@@ -62,7 +63,13 @@ def _load_launch_module():
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+    try:
+        spec.loader.exec_module(module)
+    finally:
+        if installed_stub:
+            sys.modules.pop("pytorch_lightning.loggers", None)
+            sys.modules.pop("pytorch_lightning", None)
+            sys.modules.pop("ava.models.lightning_vae", None)
     return module
 
 

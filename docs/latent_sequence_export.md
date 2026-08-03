@@ -72,9 +72,17 @@ The JSON file must include:
 - `schema_version`: string (must be `ava_latent_sequence_v1`)
 - `created_utc`: string (ISO-8601 UTC timestamp)
 - `clip_id`: string
-- `audio_path`: string (as provided to the exporter; can be relative)
+- `recording_id`: stable recording identifier or null
+- `bird_id`: stable bird identifier or null
+- `dph`: nonnegative number or null
+- `regime`: nonempty string or null
+- `tutor_start_dph`: nonnegative number or null
+- `audio_path`: portable relative audio identity (never a workstation path)
 - `audio_sha256`: string or null
 - `sample_rate_hz`: integer or null
+
+The five recording fields are always present. Unknown facts remain explicit
+JSON `null` values and are never inferred from directory or filename text.
 
 ## Recommended Metadata (`.json`)
 
@@ -105,11 +113,40 @@ These fields make exports easier to reproduce and audit:
 ## Invariants / Validation Rules
 
 An export is valid if:
+- the `.npz` and `.json` are a same-directory, same-stem pair
 - `mu.shape == logvar.shape == (T, z_dim)`
 - `start_times_sec.shape == (T,)`
 - `T >= 1`
-- All numeric arrays are finite (`no NaN/Inf`)
+- `mu` and `logvar` are exactly float32
+- `start_times_sec`, `window_length_sec`, and `hop_length_sec` are exactly
+  float64; the window and hop arrays are positive scalars
+- optional `energy` and `gating_weight` are exactly float32 with shape `[T]`
+- all numeric arrays are finite (`no NaN/Inf`)
 - `start_times_sec` is strictly increasing
+- optional `gating_weight` values are in the closed interval `[0, 1]`
+
+The canonical machine-readable metadata schema and shared positive/negative
+fixtures live in `contracts/ava_latent_sequence_v1/`. Validate a pair without
+dtype coercion:
+
+```python
+from ava.models.latent_sequence_contract import validate_latent_sequence_pair
+
+artifact = validate_latent_sequence_pair("clip_0001.npz")
+```
+
+## Collection Acceptance and Provenance
+
+Clip conformance and collection acceptance are separate. A collection member
+manifest lists the immutable NPZ/JSON pairs. An
+`ava_latent_sequence_export_acceptance_v1` record then identifies that manifest
+and the dataset, configuration, checkpoint, and code with full SHA-256 values.
+The acceptance record is not embedded in its own member manifest, because doing
+so would make the member-manifest hash circular.
+
+The private program registry may approve a collection, but the public schema,
+fixtures, and validator remain hosted here so producer and consumer CI do not
+depend on private infrastructure.
 
 ## Example Loader
 
