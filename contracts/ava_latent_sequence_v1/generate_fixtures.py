@@ -33,6 +33,11 @@ def _metadata(version: str = "ava_latent_sequence_v1") -> dict:
 		"schema_version": version,
 		"created_utc": "2026-01-01T00:00:00Z",
 		"clip_id": "fixture_clip",
+		"recording_id": "fixture-recording-001",
+		"bird_id": "FIXTURE-BIRD",
+		"dph": 42,
+		"regime": "tutored",
+		"tutor_start_dph": None,
 		"audio_path": "fixtures/fixture_clip.wav",
 		"audio_sha256": "a" * 64,
 		"sample_rate_hz": 32000,
@@ -72,6 +77,14 @@ def main() -> None:
 	_write_case("valid", valid, _metadata())
 	_write_case("missing_sidecar", valid, None)
 	_write_case("wrong_version", valid, _metadata("ava_latent_sequence_v0"))
+
+	missing_recording_metadata = _metadata()
+	missing_recording_metadata.pop("tutor_start_dph")
+	_write_case("missing_recording_metadata", valid, missing_recording_metadata)
+
+	absolute_audio_path = _metadata()
+	absolute_audio_path["audio_path"] = "/Users/example/fixture_clip.wav"
+	_write_case("absolute_audio_path", valid, absolute_audio_path)
 
 	nonfinite = dict(valid)
 	nonfinite["mu"] = valid["mu"].copy()

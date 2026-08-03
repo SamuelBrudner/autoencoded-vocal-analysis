@@ -1,5 +1,5 @@
 {
-  "audio_path": "fixtures/fixture_clip.wav",
+  "audio_path": "/Users/example/fixture_clip.wav",
   "audio_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "bird_id": "FIXTURE-BIRD",
   "clip_id": "fixture_clip",

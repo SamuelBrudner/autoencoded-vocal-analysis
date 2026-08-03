@@ -8,6 +8,5 @@
   "recording_id": "fixture-recording-001",
   "regime": "tutored",
   "sample_rate_hz": 32000,
-  "schema_version": "ava_latent_sequence_v1",
-  "tutor_start_dph": null
+  "schema_version": "ava_latent_sequence_v1"
 }

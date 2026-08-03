@@ -26,6 +26,9 @@ def test_public_valid_fixture_preserves_contract_dtypes():
 	assert artifact.window_length_sec.shape == ()
 	assert artifact.hop_length_sec.shape == ()
 	assert artifact.gating_weight is not None
+	assert artifact.metadata["recording_id"] == "fixture-recording-001"
+	assert artifact.metadata["dph"] == 42
+	assert artifact.metadata["tutor_start_dph"] is None
 
 
 @pytest.mark.parametrize(
@@ -33,6 +36,8 @@ def test_public_valid_fixture_preserves_contract_dtypes():
 	[
 		("missing_sidecar", "Missing required JSON sidecar"),
 		("wrong_version", "schema_version must be"),
+		("missing_recording_metadata", "Missing required metadata fields"),
+		("absolute_audio_path", "portable relative identity"),
 		("nonfinite", "mu contains nonfinite"),
 		("nonmonotonic_times", "strictly increasing"),
 		("shape_error", "does not match mu shape"),

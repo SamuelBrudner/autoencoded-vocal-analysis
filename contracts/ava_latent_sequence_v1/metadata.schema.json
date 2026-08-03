@@ -7,6 +7,11 @@
     "schema_version",
     "created_utc",
     "clip_id",
+    "recording_id",
+    "bird_id",
+    "dph",
+    "regime",
+    "tutor_start_dph",
     "audio_path",
     "audio_sha256",
     "sample_rate_hz"
@@ -23,9 +28,67 @@
       "type": "string",
       "minLength": 1
     },
+    "recording_id": {
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "bird_id": {
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "dph": {
+      "oneOf": [
+        {
+          "type": "number",
+          "minimum": 0
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "regime": {
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "tutor_start_dph": {
+      "oneOf": [
+        {
+          "type": "number",
+          "minimum": 0
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
     "audio_path": {
       "type": "string",
-      "minLength": 1
+      "minLength": 1,
+      "not": {
+        "pattern": "^(?:/|file://|[A-Za-z]:[\\\\/])"
+      }
     },
     "audio_sha256": {
       "oneOf": [

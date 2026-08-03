@@ -72,9 +72,17 @@ The JSON file must include:
 - `schema_version`: string (must be `ava_latent_sequence_v1`)
 - `created_utc`: string (ISO-8601 UTC timestamp)
 - `clip_id`: string
-- `audio_path`: string (as provided to the exporter; can be relative)
+- `recording_id`: stable recording identifier or null
+- `bird_id`: stable bird identifier or null
+- `dph`: nonnegative number or null
+- `regime`: nonempty string or null
+- `tutor_start_dph`: nonnegative number or null
+- `audio_path`: portable relative audio identity (never a workstation path)
 - `audio_sha256`: string or null
 - `sample_rate_hz`: integer or null
+
+The five recording fields are always present. Unknown facts remain explicit
+JSON `null` values and are never inferred from directory or filename text.
 
 ## Recommended Metadata (`.json`)
 

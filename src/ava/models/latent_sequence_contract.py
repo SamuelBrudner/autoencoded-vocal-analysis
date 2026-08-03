@@ -66,6 +66,11 @@ def _validate_metadata(metadata: Any) -> Dict[str, Any]:
 		"schema_version",
 		"created_utc",
 		"clip_id",
+		"recording_id",
+		"bird_id",
+		"dph",
+		"regime",
+		"tutor_start_dph",
 		"audio_path",
 		"audio_sha256",
 		"sample_rate_hz",
@@ -84,6 +89,23 @@ def _validate_metadata(metadata: Any) -> Dict[str, Any]:
 		value = metadata[name]
 		if not isinstance(value, str) or not value.strip():
 			_fail(f"{name} must be a nonempty string.")
+	if re.match(r"^(?:/|file://|[A-Za-z]:[\\/])", metadata["audio_path"]):
+		_fail("audio_path must be a portable relative identity, not a local path.")
+
+	for name in ("recording_id", "bird_id", "regime"):
+		value = metadata[name]
+		if value is not None and (not isinstance(value, str) or not value.strip()):
+			_fail(f"{name} must be null or a nonempty string.")
+
+	for name in ("dph", "tutor_start_dph"):
+		value = metadata[name]
+		if value is not None and (
+			isinstance(value, bool)
+			or not isinstance(value, (int, float))
+			or not np.isfinite(value)
+			or value < 0
+		):
+			_fail(f"{name} must be null or a finite nonnegative number.")
 
 	created_utc = metadata["created_utc"]
 	if not isinstance(created_utc, str):
