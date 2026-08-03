@@ -251,6 +251,7 @@ def _load_txt_rois(path: str) -> np.ndarray:
 @dataclass(frozen=True)
 class _ParquetDirectoryIndex:
     clip_stems: Tuple[str, ...]
+    clip_filenames: Tuple[str, ...]
     clip_rois: Tuple[np.ndarray, ...]  # per-clip ROIs (already filtered)
     clip_weights: np.ndarray  # normalized weights over clips
 
@@ -260,6 +261,7 @@ def _load_parquet_index(
     window_length: float,
     file_weight_mode: str,
     file_weight_cap: Optional[float],
+    available_wavs: Optional[dict[str, str]] = None,
 ) -> _ParquetDirectoryIndex:
     try:
         import pyarrow.parquet as pq  # type: ignore
@@ -280,11 +282,14 @@ def _load_parquet_index(
         raise ValueError(f"Malformed ROI parquet: {roi_parquet_path}")
 
     clip_stems: list[str] = []
+    clip_filenames: list[str] = []
     clip_rois: list[np.ndarray] = []
     weights: list[float] = []
 
     for stem, ons, offs in zip(stems, onsets, offsets):
         stem = str(stem)
+        if available_wavs is not None and stem not in available_wavs:
+            continue
         ons = ons or []
         offs = offs or []
         count = min(len(ons), len(offs))
@@ -315,6 +320,9 @@ def _load_parquet_index(
             weight = float(np.sum(durations))
 
         clip_stems.append(stem)
+        clip_filenames.append(
+            available_wavs[stem] if available_wavs is not None else f"{stem}.wav"
+        )
         clip_rois.append(rois)
         weights.append(weight)
 
@@ -334,6 +342,7 @@ def _load_parquet_index(
     weights_arr = _normalize_weights(weights_arr, "File")
     return _ParquetDirectoryIndex(
         clip_stems=tuple(clip_stems),
+        clip_filenames=tuple(clip_filenames),
         clip_rois=tuple(clip_rois),
         clip_weights=weights_arr,
     )
@@ -618,12 +627,15 @@ class ManifestFixedWindowDataset(Dataset):
                     if os.path.exists(tmp_path):
                         os.remove(tmp_path)
 
-    def _get_roi_index(self, roi_dir: str) -> _ParquetDirectoryIndex:
-        key = os.path.abspath(roi_dir)
+    def _get_roi_index(self, roi_dir: str, audio_dir: str) -> _ParquetDirectoryIndex:
+        key = os.path.abspath(roi_dir) + "\0" + os.path.abspath(audio_dir)
         if key in self._roi_cache:
             self._roi_cache.move_to_end(key)
             return self._roi_cache[key]
         roi_path = Path(roi_dir) / self.roi_parquet_name
+        available_wavs = {
+            Path(filename).stem: filename for filename in _list_wavs(audio_dir)
+        }
         file_weight_mode = _normalize_mode(
             self.p.get("file_weight_mode"),
             default="duration",
@@ -635,6 +647,7 @@ class ManifestFixedWindowDataset(Dataset):
             window_length=self.window_length,
             file_weight_mode=file_weight_mode,
             file_weight_cap=self.p.get("file_weight_cap"),
+            available_wavs=available_wavs,
         )
         if self.roi_cache_size > 0:
             self._roi_cache[key] = index
@@ -668,14 +681,14 @@ class ManifestFixedWindowDataset(Dataset):
                 if not roi_parquet_path.exists():
                     continue
                 try:
-                    index = self._get_roi_index(roi_dir)
+                    index = self._get_roi_index(roi_dir, audio_dir)
                 except Exception:
                     continue
 
                 clip_idx = int(rng.choice(len(index.clip_stems), p=index.clip_weights))
                 clip_stem = index.clip_stems[clip_idx]
                 rois = index.clip_rois[clip_idx]
-                wav_path = os.path.join(audio_dir, f"{clip_stem}.wav")
+                wav_path = index.clip_filenames[clip_idx]
             else:
                 wavs = None
                 if audio_dir in self._wav_cache:

@@ -14,15 +14,16 @@ from ava.models.manifest_window_dataset import (
 from ava.preprocessing.utils import get_spec
 
 
-def _write_roi_parquet(path: Path) -> None:
+def _write_roi_parquet(path: Path, clip_stems: list[str] | None = None) -> None:
     import pyarrow as pa  # type: ignore
     import pyarrow.parquet as pq  # type: ignore
 
+    clip_stems = clip_stems or ["sample"]
     table = pa.table(
         {
-            "clip_stem": ["sample"],
-            "onsets_sec": [[0.2]],
-            "offsets_sec": [[0.5]],
+            "clip_stem": clip_stems,
+            "onsets_sec": [[0.2] for _ in clip_stems],
+            "offsets_sec": [[0.5] for _ in clip_stems],
         }
     )
     pq.write_table(table, path.as_posix())
@@ -105,6 +106,43 @@ def test_manifest_dataset_parquet_is_lazy_about_roi(tmp_path: Path) -> None:
     assert isinstance(sampled_batch, list)
     assert len(sampled_batch) == 2
     assert all(tuple(spec.shape) == (p["num_freq_bins"], p["num_time_bins"]) for spec in sampled_batch)
+
+
+def test_manifest_dataset_filters_parquet_index_to_available_wavs(tmp_path: Path) -> None:
+    audio_dir = tmp_path / "audio"
+    roi_dir = tmp_path / "roi"
+    audio_dir.mkdir()
+    roi_dir.mkdir()
+
+    fs = 44100
+    _write_chirp_wav(audio_dir / "present.WAV", fs)
+    _write_roi_parquet(
+        roi_dir / "roi.parquet",
+        clip_stems=["missing_a", "present", "missing_b"],
+    )
+    entries = [
+        {
+            "audio_dir": audio_dir.as_posix(),
+            "roi_dir": roi_dir.as_posix(),
+            "audio_dir_rel": ".",
+            "num_files": 1,
+        }
+    ]
+
+    dataset = ManifestFixedWindowDataset(
+        entries,
+        _make_params(fs, sampling_seed=5),
+        roi_format="parquet",
+        roi_parquet_name="roi.parquet",
+        dataset_length=4,
+        roi_cache_size=1,
+    )
+
+    sample = dataset[0]
+    assert tuple(sample.shape) == (64, 64)
+    index = dataset._get_roi_index(roi_dir.as_posix(), audio_dir.as_posix())
+    assert index.clip_stems == ("present",)
+    assert index.clip_filenames == ((audio_dir / "present.WAV").as_posix(),)
 
 
 def test_manifest_dataset_set_epoch_changes_deterministic_windows(tmp_path: Path) -> None:
