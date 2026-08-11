@@ -34,6 +34,7 @@ def test_build_payload_includes_dependency_timeout_and_env():
         s3_roi_root="s3://bucket/pk249/roi",
         s3_run_root="s3://bucket/pk249/runs",
         run_name="run-001",
+        source_commit="a" * 40,
         roi_format="parquet",
         roi_parquet_name="roi.parquet",
         download_jobs=8,
@@ -53,6 +54,7 @@ def test_build_payload_includes_dependency_timeout_and_env():
         max_empty_fraction=0.01,
         disk_telemetry_every_n_epochs=5,
         workdir="/tmp/ava_train_workdir",
+        checkpoint_sync_interval_sec=60.0,
         timeout_seconds=172800,
         depends_on_job_id=["roi-job-123"],
         override_command=False,
@@ -77,6 +79,7 @@ def test_build_payload_includes_dependency_timeout_and_env():
     assert env["AVA_S3_ROI_ROOT"] == "s3://bucket/pk249/roi"
     assert env["AVA_S3_RUN_ROOT"] == "s3://bucket/pk249/runs"
     assert env["AVA_RUN_NAME"] == "run-001"
+    assert env["AVA_SOURCE_COMMIT"] == "a" * 40
     assert env["AVA_BATCH_SIZE"] == "32"
     assert env["AVA_NUM_WORKERS"] == "4"
     assert env["AVA_EPOCHS"] == "51"
@@ -86,3 +89,4 @@ def test_build_payload_includes_dependency_timeout_and_env():
     assert env["AVA_DISK_TELEMETRY_EVERY_N_EPOCHS"] == "5"
     assert env["AVA_RUNTIME_TELEMETRY_INTERVAL_SEC"] == "30.0"
     assert env["AVA_BATCH_TELEMETRY_LOG_EVERY_N_BATCHES"] == "25"
+    assert env["AVA_CHECKPOINT_SYNC_INTERVAL_SEC"] == "60.0"

@@ -52,3 +52,24 @@ def test_write_run_metadata_writes_file(tmp_path):
 		config_text.encode("utf-8")
 	).hexdigest()
 	assert loaded["dataset_root"] == "/mnt/birds"
+
+
+def test_build_run_metadata_uses_injected_commit_without_git(monkeypatch, tmp_path):
+	from ava.models import run_metadata
+
+	commit = "a" * 40
+	monkeypatch.setattr(run_metadata, "_find_git_root", lambda: None)
+	monkeypatch.setenv("AVA_SOURCE_COMMIT", commit.upper())
+
+	metadata = build_run_metadata(config_path=(tmp_path / "missing.yaml").as_posix())
+
+	assert metadata["git_commit"] == commit
+
+
+def test_build_run_metadata_rejects_invalid_injected_commit(monkeypatch):
+	from ava.models import run_metadata
+
+	monkeypatch.setattr(run_metadata, "_find_git_root", lambda: None)
+	monkeypatch.setenv("AVA_SOURCE_COMMIT", "not-a-full-sha")
+
+	assert build_run_metadata()["git_commit"] is None

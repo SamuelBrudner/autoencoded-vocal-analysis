@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
+import re
 import subprocess
 from pathlib import Path
 from typing import Optional
@@ -31,19 +33,25 @@ def _find_git_root(start: Optional[Path] = None) -> Optional[Path]:
 
 def _git_commit() -> Optional[str]:
 	git_root = _find_git_root()
-	if git_root is None:
-		return None
-	try:
-		result = subprocess.run(
-			["git", "-C", git_root.as_posix(), "rev-parse", "HEAD"],
-			check=True,
-			capture_output=True,
-			text=True,
-		)
-	except (OSError, subprocess.CalledProcessError):
-		return None
-	commit = result.stdout.strip()
-	return commit or None
+	if git_root is not None:
+		try:
+			result = subprocess.run(
+				["git", "-C", git_root.as_posix(), "rev-parse", "HEAD"],
+				check=True,
+				capture_output=True,
+				text=True,
+			)
+		except (OSError, subprocess.CalledProcessError):
+			pass
+		else:
+			commit = result.stdout.strip()
+			if commit:
+				return commit
+
+	injected_commit = os.environ.get("AVA_SOURCE_COMMIT", "").strip().lower()
+	if re.fullmatch(r"[0-9a-f]{40}", injected_commit):
+		return injected_commit
+	return None
 
 
 def _manifest_root(path: Optional[str]) -> Optional[str]:

@@ -60,3 +60,36 @@ def test_env_flag_parses_truthy_and_falsey_values(monkeypatch):
     monkeypatch.delenv("TEST_SPEC_CACHE_FLAG", raising=False)
     assert module._env_flag("UNSET_FLAG", default=True) is True
     assert module._env_flag("UNSET_FLAG", default=False) is False
+
+
+def test_sync_stable_checkpoints_requires_two_observations(monkeypatch, tmp_path):
+    module = _load_module()
+    checkpoint = tmp_path / "checkpoint_005.tar"
+    checkpoint.write_bytes(b"checkpoint")
+    sync_calls = []
+
+    monkeypatch.setattr(
+        module,
+        "_sync_path_to_s3",
+        lambda aws, local_path, s3_uri: sync_calls.append((local_path, s3_uri)),
+    )
+
+    class TwoPollStop:
+        def __init__(self):
+            self.polls = 0
+
+        def wait(self, _interval):
+            self.polls += 1
+            return self.polls > 2
+
+    module._sync_stable_checkpoints(
+        "aws",
+        tmp_path,
+        "s3://bucket/run/training_run",
+        TwoPollStop(),
+        1.0,
+    )
+
+    assert sync_calls == [
+        (checkpoint, "s3://bucket/run/training_run/checkpoint_005.tar")
+    ]

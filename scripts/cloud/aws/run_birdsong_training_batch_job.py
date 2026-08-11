@@ -10,6 +10,7 @@ import os
 import shutil
 import subprocess
 import sys
+import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
@@ -158,6 +159,47 @@ def _sync_path_to_s3(aws: str, local_path: Path, s3_uri: str) -> None:
         _run([aws, "s3", "cp", local_path.as_posix(), str(s3_uri), "--only-show-errors"])
 
 
+def _sync_stable_checkpoints(
+    aws: str,
+    local_run_dir: Path,
+    s3_training_run_uri: str,
+    stop_event: threading.Event,
+    interval_sec: float,
+) -> None:
+    """Upload completed checkpoints while training is still running."""
+    observed: dict[str, tuple[int, int]] = {}
+    uploaded: set[tuple[str, int, int]] = set()
+    while not stop_event.wait(float(interval_sec)):
+        for checkpoint in sorted(local_run_dir.glob("checkpoint_*.tar")):
+            try:
+                stat = checkpoint.stat()
+            except OSError:
+                continue
+            state = (int(stat.st_size), int(stat.st_mtime_ns))
+            key = checkpoint.as_posix()
+            upload_key = (key, *state)
+            if observed.get(key) != state or upload_key in uploaded:
+                observed[key] = state
+                continue
+            try:
+                _sync_path_to_s3(
+                    aws,
+                    checkpoint,
+                    _join_s3_uri(s3_training_run_uri, checkpoint.name),
+                )
+            except Exception as exc:  # pragma: no cover - best effort during training
+                print(
+                    f"Warning: failed to sync stable checkpoint {checkpoint.name}: {exc}",
+                    file=sys.stderr,
+                )
+            else:
+                uploaded.add(upload_key)
+                print(
+                    f"Synced stable checkpoint to durable storage: {checkpoint.name}",
+                    flush=True,
+                )
+
+
 def _unique_entries(manifest: dict) -> list[dict]:
     ordered: list[dict] = []
     seen: set[str] = set()
@@ -240,6 +282,11 @@ def main() -> None:
     parser.add_argument("--spec-cache-dir", type=Path, default=Path(_env("AVA_SPEC_CACHE_DIR", "/mnt/ava_cache/spec_cache")))
     parser.add_argument("--trainer-kwargs-json", type=str, default=_env("AVA_TRAINER_KWARGS_JSON"))
     parser.add_argument("--runtime-telemetry-interval-sec", type=float, default=_env_float("AVA_RUNTIME_TELEMETRY_INTERVAL_SEC"))
+    parser.add_argument(
+        "--checkpoint-sync-interval-sec",
+        type=float,
+        default=_env_float("AVA_CHECKPOINT_SYNC_INTERVAL_SEC", 60.0),
+    )
     parser.add_argument("--batch-telemetry-log-every-n-batches", type=int, default=_env_int("AVA_BATCH_TELEMETRY_LOG_EVERY_N_BATCHES", 50))
     parser.add_argument("--preflight-sample-dirs", type=int, default=_env_int("AVA_PREFLIGHT_SAMPLE_DIRS", 25))
     parser.add_argument("--preflight-sample-segments", type=int, default=_env_int("AVA_PREFLIGHT_SAMPLE_SEGMENTS", 5000))
@@ -289,6 +336,8 @@ def main() -> None:
         raise ValueError("--disk-telemetry-every-n-epochs must be positive.")
     if args.runtime_telemetry_interval_sec is not None and args.runtime_telemetry_interval_sec <= 0:
         raise ValueError("--runtime-telemetry-interval-sec must be positive.")
+    if args.checkpoint_sync_interval_sec is not None and args.checkpoint_sync_interval_sec <= 0:
+        raise ValueError("--checkpoint-sync-interval-sec must be positive.")
     if args.batch_telemetry_log_every_n_batches <= 0:
         raise ValueError("--batch-telemetry-log-every-n-batches must be positive.")
 
@@ -349,6 +398,7 @@ def main() -> None:
                     "test_dataset_length": args.test_dataset_length,
                     "disable_spec_cache": bool(args.disable_spec_cache),
                     "runtime_telemetry_interval_sec": args.runtime_telemetry_interval_sec,
+                    "checkpoint_sync_interval_sec": args.checkpoint_sync_interval_sec,
                     "batch_telemetry_log_every_n_batches": args.batch_telemetry_log_every_n_batches,
                 },
                 indent=2,
@@ -387,6 +437,8 @@ def main() -> None:
         "disable_spec_cache": bool(args.disable_spec_cache),
         "disk_telemetry_roots": [path.as_posix() for path in disk_telemetry_roots],
         "disk_telemetry_every_n_epochs": int(args.disk_telemetry_every_n_epochs),
+        "source_commit": _env("AVA_SOURCE_COMMIT"),
+        "checkpoint_sync_interval_sec": float(args.checkpoint_sync_interval_sec),
     }
 
     try:
@@ -558,7 +610,24 @@ def main() -> None:
             "before_training",
             disk_telemetry_roots,
         )
-        _stream_to_log(train_cmd, local_training_log_path)
+        checkpoint_sync_stop = threading.Event()
+        checkpoint_sync_thread = threading.Thread(
+            target=_sync_stable_checkpoints,
+            args=(
+                aws,
+                local_run_dir,
+                _join_s3_uri(s3_run_root, "training_run"),
+                checkpoint_sync_stop,
+                float(args.checkpoint_sync_interval_sec),
+            ),
+            daemon=True,
+        )
+        checkpoint_sync_thread.start()
+        try:
+            _stream_to_log(train_cmd, local_training_log_path)
+        finally:
+            checkpoint_sync_stop.set()
+            checkpoint_sync_thread.join(timeout=float(args.checkpoint_sync_interval_sec) + 5.0)
         status = "completed"
         summary["training_run_dir"] = local_run_dir.as_posix()
     except Exception as exc:

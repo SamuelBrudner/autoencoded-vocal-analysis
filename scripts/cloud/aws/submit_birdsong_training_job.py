@@ -45,6 +45,7 @@ def build_payload(args: argparse.Namespace) -> dict:
         _payload_env("AVA_S3_ROI_ROOT", args.s3_roi_root),
         _payload_env("AVA_S3_RUN_ROOT", args.s3_run_root),
         _payload_env("AVA_RUN_NAME", args.run_name),
+        _payload_env("AVA_SOURCE_COMMIT", args.source_commit),
         _payload_env("AVA_ROI_FORMAT", args.roi_format),
         _payload_env("AVA_ROI_PARQUET_NAME", args.roi_parquet_name),
         _payload_env("AVA_DOWNLOAD_JOBS", int(args.download_jobs)),
@@ -69,6 +70,7 @@ def build_payload(args: argparse.Namespace) -> dict:
             else None,
         ),
         _payload_env("AVA_WORKDIR", args.workdir),
+        _payload_env("AVA_CHECKPOINT_SYNC_INTERVAL_SEC", args.checkpoint_sync_interval_sec),
     ]
     env_items = [item for item in env_items if item is not None]
 
@@ -102,6 +104,7 @@ def main() -> None:
     parser.add_argument("--s3-roi-root", type=str, required=True)
     parser.add_argument("--s3-run-root", type=str, required=True)
     parser.add_argument("--run-name", type=str, default=None)
+    parser.add_argument("--source-commit", type=str, default=None)
 
     parser.add_argument("--roi-format", choices=["txt", "parquet"], default="parquet")
     parser.add_argument("--roi-parquet-name", type=str, default="roi.parquet")
@@ -122,6 +125,7 @@ def main() -> None:
     parser.add_argument("--max-empty-fraction", type=float, default=0.01)
     parser.add_argument("--disk-telemetry-every-n-epochs", type=int, default=5)
     parser.add_argument("--workdir", type=str, default="/mnt/ava_cache/ava_train_workdir")
+    parser.add_argument("--checkpoint-sync-interval-sec", type=float, default=60.0)
     parser.add_argument("--timeout-seconds", type=int, default=172800)
     parser.add_argument("--depends-on-job-id", action="append", default=None)
     parser.add_argument(
@@ -169,6 +173,8 @@ def main() -> None:
         raise ValueError("--batch-telemetry-log-every-n-batches must be positive.")
     if args.timeout_seconds is not None and args.timeout_seconds <= 0:
         raise ValueError("--timeout-seconds must be positive.")
+    if args.checkpoint_sync_interval_sec is not None and args.checkpoint_sync_interval_sec <= 0:
+        raise ValueError("--checkpoint-sync-interval-sec must be positive.")
 
     payload = build_payload(args)
     rendered = json.dumps(payload, indent=2)
