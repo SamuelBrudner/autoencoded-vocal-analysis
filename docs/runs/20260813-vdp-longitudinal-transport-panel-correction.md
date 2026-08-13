@@ -26,10 +26,10 @@ export for audit and create a byte-identical subset containing all other
 members.
 
 The corrected exploratory panel therefore contains 46 birds, 2,528 measures,
-and 5,056 clips. Its source-test partition contains seven tutored birds and no
+and 5,056 clips. Its source-test partition contains six tutored birds and one
 isolate bird, making the already descriptive test-only condition contrast
-entirely inestimable. The pooled exploratory association remains observational
-and uses bird-level resampling.
+under-replicated and inferentially inestimable. The pooled exploratory
+association remains observational and uses bird-level resampling.
 
 This correction is based solely on metadata identity and occurred before any
 full-panel transport outcome. The shared encoder, posterior sampling,
