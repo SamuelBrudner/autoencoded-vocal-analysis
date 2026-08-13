@@ -147,6 +147,7 @@ def _minimal_entry_metadata(entry: dict) -> Dict[str, Any]:
 		"dph",
 		"session_label",
 		"split",
+		"panel",
 	]
 	return {key: entry.get(key) for key in keys if key in entry}
 
