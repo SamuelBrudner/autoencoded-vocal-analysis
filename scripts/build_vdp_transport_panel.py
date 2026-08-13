@@ -103,11 +103,39 @@ def _tutor_start_by_dir(
     return result
 
 
+def _load_exportable_roi_stems(roi_parquet_path: Path) -> set[str]:
+    """Return clip stems with at least one finite, positive-duration ROI."""
+    try:
+        import pyarrow.parquet as pq  # type: ignore
+    except ImportError as exc:  # pragma: no cover
+        raise ImportError("ROI availability filtering requires pyarrow.") from exc
+    if not roi_parquet_path.is_file():
+        return set()
+    table = pq.read_table(
+        roi_parquet_path, columns=["clip_stem", "onsets_sec", "offsets_sec"]
+    )
+    exportable: set[str] = set()
+    for row in table.to_pylist():
+        onsets = row.get("onsets_sec") or []
+        offsets = row.get("offsets_sec") or []
+        if len(onsets) != len(offsets):
+            continue
+        if any(
+            math.isfinite(float(onset))
+            and math.isfinite(float(offset))
+            and float(offset) > float(onset)
+            for onset, offset in zip(onsets, offsets)
+        ):
+            exportable.add(str(row["clip_stem"]))
+    return exportable
+
+
 def build_panel(
     *,
     source_manifest_path: Path,
     source_members_path: Path,
     metadata_path: Path,
+    roi_root_path: Path | None = None,
     min_clips_per_measure: int = 2,
     max_clips_per_measure: int = 2,
     min_measures_per_bird: int = 20,
@@ -134,7 +162,10 @@ def build_panel(
                 source_birds.add(str(bird))
 
     grouped: dict[tuple[str, float, str, str], list[dict[str, Any]]] = defaultdict(list)
+    explicit_groups: set[tuple[str, float, str, str]] = set()
     nonexplicit_members = 0
+    members_without_exportable_roi = 0
+    roi_cache: dict[str, set[str]] = {}
     bird_regimes: dict[str, set[str]] = defaultdict(set)
     bird_splits: dict[str, set[str]] = defaultdict(set)
     for member in _load_jsonl(source_members_path):
@@ -151,9 +182,20 @@ def build_panel(
         if dph is None:
             nonexplicit_members += 1
             continue
+        group_key = (bird, dph, str(regime), split)
+        explicit_groups.add(group_key)
+        if roi_root_path is not None:
+            rel_dir = str(member["audio_dir_rel"])
+            if rel_dir not in roi_cache:
+                roi_cache[rel_dir] = _load_exportable_roi_stems(
+                    roi_root_path / rel_dir / "roi.parquet"
+                )
+            if Path(str(member["filename"])).stem not in roi_cache[rel_dir]:
+                members_without_exportable_roi += 1
+                continue
         bird_regimes[bird].add(str(regime))
         bird_splits[bird].add(split)
-        grouped[(bird, dph, str(regime), split)].append(
+        grouped[group_key].append(
             dict(member, bird_id=bird, dph=dph, regime=str(regime))
         )
 
@@ -239,6 +281,11 @@ def build_panel(
             "max_clips_per_measure": max_clips_per_measure,
             "min_measures_per_bird": min_measures_per_bird,
             "missing_values": "excluded_not_inferred",
+            "roi_availability": (
+                "at_least_one_finite_positive_duration_roi"
+                if roi_root_path is not None
+                else "not_checked"
+            ),
         },
         "summary": {
             "source_birds": len(source_birds),
@@ -248,9 +295,12 @@ def build_panel(
             "included_birds_by_regime": dict(sorted(included_by_regime.items())),
             "included_measures": len(included_measures),
             "selected_members": len(selected),
-            "source_groups_with_explicit_dph": len(grouped),
+            "source_groups_with_explicit_dph": len(explicit_groups),
+            "source_groups_with_exportable_roi": len(grouped),
+            "source_groups_without_exportable_roi": len(explicit_groups - set(grouped)),
             "source_groups_below_clip_minimum": len(grouped) - len(eligible_groups),
             "source_members_without_explicit_dph": nonexplicit_members,
+            "source_members_without_exportable_roi": members_without_exportable_roi,
             "bird_split_overlap": split_overlap,
         },
         "train": panel_entries["train"],
@@ -264,6 +314,12 @@ def main() -> None:
     parser.add_argument("--source-manifest", type=Path, required=True)
     parser.add_argument("--source-members", type=Path, required=True)
     parser.add_argument("--metadata", type=Path, required=True)
+    parser.add_argument(
+        "--roi-root",
+        type=Path,
+        default=None,
+        help="Optional parquet ROI root used to require exportable selected clips.",
+    )
     parser.add_argument("--out-manifest", type=Path, required=True)
     parser.add_argument("--out-members", type=Path, required=True)
     parser.add_argument("--min-clips-per-measure", type=int, default=2)
@@ -275,6 +331,7 @@ def main() -> None:
         source_manifest_path=args.source_manifest,
         source_members_path=args.source_members,
         metadata_path=args.metadata,
+        roi_root_path=args.roi_root,
         min_clips_per_measure=args.min_clips_per_measure,
         max_clips_per_measure=args.max_clips_per_measure,
         min_measures_per_bird=args.min_measures_per_bird,

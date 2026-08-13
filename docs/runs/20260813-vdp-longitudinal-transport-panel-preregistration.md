@@ -37,7 +37,19 @@ train or select a new representation.
 7. Preserve explicit `tutor_start_dph`; isolates remain null. Recording IDs
    remain null where unavailable.
 
-A read-only coverage audit predicts 5,174 clips, 2,587 measures, and 47 birds:
+## Pre-outcome operational clarification
+
+Before any longitudinal latent export or transport result was produced, panel
+construction was made to enforce an exporter prerequisite that had previously
+been implicit: a selected clip must have at least one finite,
+positive-duration ROI before stable hash ranking. The manifest reports the
+excluded member and group counts. Exact stem matching found all selected clips
+exportable; an earlier diagnostic mismatch was caused by treating decimal
+points within extensionless clip stems as filename suffixes. This availability
+criterion is independent of latent values and scientific outcomes; the seed,
+grouping, minimum-measure gate, and all downstream estimators remain unchanged.
+
+A preliminary read-only coverage audit predicted 5,174 clips, 2,587 measures, and 47 birds:
 39 source-train and 8 source-test birds; 19 bells, 14 samba, 9 isolate, and 5
 simple birds. These are selection-integrity expectations, not scientific
 outcomes.
