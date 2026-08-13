@@ -9,8 +9,10 @@ one `.npz` + one `.json` per clip in the canonical schema documented in
 from __future__ import annotations
 
 import argparse
+import collections
 import json
 import os
+import re
 import sys
 import time
 from pathlib import Path
@@ -29,6 +31,55 @@ from ava.data.manifest_paths import resolve_manifest_entry_paths  # noqa: E402
 def _load_manifest(path: Path) -> dict:
 	with open(path, "r", encoding="utf-8") as handle:
 		return json.load(handle)
+
+
+def _load_member_manifest(path: Path) -> dict[tuple[str, str], set[str]]:
+	"""Load an exact clip allowlist keyed by source split and audio directory."""
+	selected: dict[tuple[str, str], set[str]] = collections.defaultdict(set)
+	with path.open("r", encoding="utf-8") as handle:
+		for line_number, line in enumerate(handle, start=1):
+			if not line.strip():
+				continue
+			row = json.loads(line)
+			try:
+				split = str(row["split"])
+				audio_dir_rel = str(row["audio_dir_rel"])
+				filename = str(row["filename"])
+			except KeyError as exc:
+				raise ValueError(
+					f"Member manifest line {line_number} is missing {exc.args[0]!r}."
+				) from exc
+			if split not in {"train", "test"}:
+				raise ValueError(
+					f"Member manifest line {line_number} has invalid split {split!r}."
+				)
+			if Path(filename).name != filename or not filename.lower().endswith(".wav"):
+				raise ValueError(
+					f"Member manifest line {line_number} has invalid WAV filename {filename!r}."
+				)
+			key = (split, audio_dir_rel)
+			if filename in selected[key]:
+				raise ValueError(
+					f"Duplicate member {split}:{audio_dir_rel}/{filename}."
+				)
+			selected[key].add(filename)
+	if not selected:
+		raise ValueError("Member manifest is empty.")
+	return dict(selected)
+
+
+def _validate_sha256(value: Optional[str], name: str) -> Optional[str]:
+	if value is None:
+		return None
+	value = str(value).lower()
+	if re.fullmatch(r"[0-9a-f]{64}", value) is None:
+		raise ValueError(f"{name} must be a full lowercase SHA-256 value.")
+	return value
+
+
+def _portable_roi_identity(audio_dir_rel: str, filename: str) -> str:
+	rel = Path(filename) if audio_dir_rel in ("", ".") else Path(audio_dir_rel) / filename
+	return rel.as_posix()
 
 
 def _select_entries(manifest: dict, split: str) -> list[dict]:
@@ -167,6 +218,12 @@ def main() -> None:
 		description="Export per-clip latent sequences from a birdsong manifest."
 	)
 	parser.add_argument("--manifest", type=Path, required=True)
+	parser.add_argument(
+		"--member-manifest",
+		type=Path,
+		default=None,
+		help="Optional JSONL allowlist selecting exact WAV members by split and directory.",
+	)
 	parser.add_argument("--split", choices=["train", "test", "all"], default="all")
 	parser.add_argument("--config", type=Path, required=True)
 	parser.add_argument("--checkpoint", type=Path, required=True)
@@ -195,6 +252,14 @@ def main() -> None:
 		help="Export per-window RMS energy aligned to latent timestamps.",
 	)
 	parser.add_argument("--audio-sha256", action="store_true")
+	parser.add_argument("--manifest-identity", type=str, default=None)
+	parser.add_argument("--config-identity", type=str, default=None)
+	parser.add_argument("--checkpoint-identity", type=str, default=None)
+	parser.add_argument("--dataset-sha256", type=str, default=None)
+	parser.add_argument("--configuration-sha256", type=str, default=None)
+	parser.add_argument("--checkpoint-sha256", type=str, default=None)
+	parser.add_argument("--code-sha256", type=str, default=None)
+	parser.add_argument("--member-selection-sha256", type=str, default=None)
 
 	parser.add_argument(
 		"--no-skip-existing",
@@ -221,6 +286,29 @@ def main() -> None:
 		raise ValueError("--max-files-per-dir must be positive.")
 	if args.max_clips is not None and args.max_clips <= 0:
 		raise ValueError("--max-clips must be positive.")
+	if args.member_manifest is not None and any(
+		value is not None
+		for value in (args.max_dirs, args.max_files_per_dir, args.max_clips)
+	):
+		raise ValueError(
+			"--member-manifest cannot be combined with max limits because exact "
+			"membership is authoritative."
+		)
+
+	provenance = {
+		"dataset_sha256": _validate_sha256(args.dataset_sha256, "--dataset-sha256"),
+		"configuration_sha256": _validate_sha256(
+			args.configuration_sha256, "--configuration-sha256"
+		),
+		"checkpoint_sha256": _validate_sha256(
+			args.checkpoint_sha256, "--checkpoint-sha256"
+		),
+		"code_sha256": _validate_sha256(args.code_sha256, "--code-sha256"),
+		"member_selection_sha256": _validate_sha256(
+			args.member_selection_sha256, "--member-selection-sha256"
+		),
+	}
+	provenance = {key: value for key, value in provenance.items() if value is not None}
 
 	manifest = _load_manifest(args.manifest)
 	entries = _select_entries(manifest, args.split)
@@ -230,7 +318,20 @@ def main() -> None:
 	if args.max_dirs is not None:
 		entries = entries[: args.max_dirs]
 
+	member_allowlist = None
+	relevant_members: set[tuple[str, str, str]] = set()
+	if args.member_manifest is not None:
+		member_allowlist = _load_member_manifest(args.member_manifest)
+		for (split, audio_dir_rel), filenames in member_allowlist.items():
+			if args.split != "all" and split != args.split:
+				continue
+			for filename in filenames:
+				relevant_members.add((split, audio_dir_rel, filename))
+		if not relevant_members:
+			raise ValueError("Member manifest selects no clips for the requested split.")
+
 	tasks: list[dict] = []
+	found_members: set[tuple[str, str, str]] = set()
 	for entry in entries:
 		audio_dir_rel, audio_dir, roi_dir = _resolve_entry_paths(
 			entry,
@@ -238,6 +339,15 @@ def main() -> None:
 			roi_root=args.roi_root,
 		)
 		wavs = _list_wavs(audio_dir)
+		entry_split = str(entry.get("split") or "")
+		if member_allowlist is not None:
+			allowed = member_allowlist.get((entry_split, audio_dir_rel), set())
+			if not allowed:
+				continue
+			wavs = [wav for wav in wavs if Path(wav).name in allowed]
+			found_members.update(
+				(entry_split, audio_dir_rel, Path(wav).name) for wav in wavs
+			)
 		if args.max_files_per_dir is not None:
 			wavs = wavs[: args.max_files_per_dir]
 		for wav_path in wavs:
@@ -264,6 +374,15 @@ def main() -> None:
 					"roi_parquet_path": roi_parquet_path,
 					"entry": entry,
 				}
+			)
+
+	if member_allowlist is not None:
+		missing_members = sorted(relevant_members - found_members)
+		if missing_members:
+			split, audio_dir_rel, filename = missing_members[0]
+			raise FileNotFoundError(
+				f"{len(missing_members)} selected member WAVs are missing; first is "
+				f"{split}:{audio_dir_rel}/{filename}."
 			)
 
 	tasks = sorted(tasks, key=lambda task: (task["clip_id"], task["audio_path"]))
@@ -355,11 +474,23 @@ def main() -> None:
 				compute_audio_sha256=args.audio_sha256,
 			)
 			seq.metadata["clip_id"] = clip_id
-			seq.metadata["manifest_path"] = args.manifest.as_posix()
+			seq.metadata["manifest_path"] = args.manifest_identity or args.manifest.name
+			seq.metadata["config_path"] = args.config_identity or args.config.name
+			seq.metadata["checkpoint_path"] = (
+				args.checkpoint_identity or args.checkpoint.name
+			)
 			seq.metadata["entry"] = _minimal_entry_metadata(entry)
 			if roi_parquet_path is not None:
-				seq.metadata["roi_path"] = str(roi_parquet_path)
+				seq.metadata["roi_path"] = _portable_roi_identity(
+					str(entry.get("audio_dir_rel") or "."), str(args.roi_parquet_name)
+				)
 				seq.metadata["roi_storage"] = "parquet"
+			elif roi_path is not None:
+				seq.metadata["roi_path"] = _portable_roi_identity(
+					str(entry.get("audio_dir_rel") or "."), Path(str(roi_path)).name
+				)
+			if provenance:
+				seq.metadata["provenance"] = provenance
 
 			arrays = seq.to_npz_arrays()
 			np.savez_compressed(out_npz.as_posix(), **arrays)
@@ -395,6 +526,9 @@ def main() -> None:
 	summary = {
 		"created_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
 		"manifest_path": args.manifest.as_posix(),
+		"member_manifest_path": (
+			None if args.member_manifest is None else args.member_manifest.as_posix()
+		),
 		"config_path": args.config.as_posix(),
 		"checkpoint_path": args.checkpoint.as_posix(),
 		"out_dir": args.out_dir.as_posix(),

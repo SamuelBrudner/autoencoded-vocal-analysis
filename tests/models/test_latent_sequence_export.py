@@ -18,6 +18,7 @@ from ava.models.fixed_window_config import (  # noqa: E402
 )
 from ava.models.latent_sequence import (  # noqa: E402
 	LatentSequenceEncoder,
+	_compute_normalization_stats,
 	_to_float_audio,
 	encode_clip_to_latent_sequence,
 )
@@ -93,6 +94,38 @@ def test_to_float_audio_preserves_integer_pcm_scale():
 
 	assert converted.dtype == np.float64
 	assert np.array_equal(converted, audio.astype(np.float64))
+
+
+def test_frozen_normalization_stats_roundtrip_and_override_sampling(tmp_path):
+	stats = {
+		"mode": "global",
+		"method": "robust",
+		"center": 0.125,
+		"scale": 0.25,
+	}
+	config = FixedWindowExperimentConfig(
+		preprocess=FixedWindowPreprocessConfig(
+			fs=32000,
+			normalization_mode="global",
+			normalization_method="robust",
+			normalization_stats=stats,
+		)
+	)
+	path = tmp_path / "config.yaml"
+	config.to_yaml(path.as_posix())
+	reloaded = FixedWindowExperimentConfig.from_yaml(path.as_posix())
+	assert reloaded.preprocess.normalization_stats == stats
+
+	center, scale = _compute_normalization_stats(
+		interp=None,
+		target_freqs=np.zeros(0),
+		start_times=np.zeros(0),
+		window_length_sec=0.03,
+		num_time_bins=64,
+		params=reloaded.preprocess.to_params(),
+	)
+	assert center == 0.125
+	assert scale == 0.25
 
 
 def test_encode_clip_to_latent_sequence_invariants(tmp_path):
@@ -207,6 +240,7 @@ def test_export_latent_sequences_cli_writes_npz_and_json(tmp_path):
 	audio_dir.mkdir()
 	roi_dir.mkdir()
 	shutil.copy(repo_root / "tests" / "data" / "test.wav", audio_dir / "test.wav")
+	shutil.copy(repo_root / "tests" / "data" / "test.wav", audio_dir / "ignored.wav")
 	(roi_dir / "test.txt").write_text("0.0 0.5\n", encoding="utf-8")
 
 	manifest_path = tmp_path / "manifest.json"
@@ -220,14 +254,29 @@ def test_export_latent_sequences_cli_writes_npz_and_json(tmp_path):
 				"bird_id_raw": "bird1",
 				"regime": "test",
 				"dph": None,
+				"recording_id": None,
+				"tutor_start_dph": 43.0,
 				"session_label": None,
-				"num_files": 1,
+				"num_files": 2,
 				"split": "train",
 			}
 		],
 		"test": [],
 	}
 	manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+	member_manifest_path = tmp_path / "members.jsonl"
+	member_manifest_path.write_text(
+		json.dumps(
+			{
+				"split": "train",
+				"bird_id": "BIRD1",
+				"audio_dir_rel": ".",
+				"filename": "test.wav",
+			}
+		)
+		+ "\n",
+		encoding="utf-8",
+	)
 
 	input_shape = (32, 32)
 	config_path = tmp_path / "config.yaml"
@@ -247,6 +296,8 @@ def test_export_latent_sequences_cli_writes_npz_and_json(tmp_path):
 			str(repo_root / "scripts" / "export_latent_sequences.py"),
 			"--manifest",
 			str(manifest_path),
+			"--member-manifest",
+			str(member_manifest_path),
 			"--split",
 			"train",
 			"--config",
@@ -259,10 +310,24 @@ def test_export_latent_sequences_cli_writes_npz_and_json(tmp_path):
 			"cpu",
 			"--batch-size",
 			"2",
-			"--max-clips",
-			"1",
 			"--report-every",
 			"1",
+			"--manifest-identity",
+			"panel-manifest.json",
+			"--config-identity",
+			"full-config.yaml",
+			"--checkpoint-identity",
+			"checkpoint_100.tar",
+			"--dataset-sha256",
+			"a" * 64,
+			"--configuration-sha256",
+			"b" * 64,
+			"--checkpoint-sha256",
+			"c" * 64,
+			"--code-sha256",
+			"d" * 64,
+			"--member-selection-sha256",
+			"e" * 64,
 		],
 		cwd=repo_root,
 		capture_output=True,
@@ -292,6 +357,19 @@ def test_export_latent_sequences_cli_writes_npz_and_json(tmp_path):
 	meta = json.loads(json_path.read_text(encoding="utf-8"))
 	assert meta["schema_version"] == "ava_latent_sequence_v1"
 	assert meta["clip_id"] == "test"
+	assert meta["tutor_start_dph"] == 43.0
+	assert meta["manifest_path"] == "panel-manifest.json"
+	assert meta["config_path"] == "full-config.yaml"
+	assert meta["checkpoint_path"] == "checkpoint_100.tar"
+	assert meta["roi_path"] == "test.txt"
+	assert meta["provenance"] == {
+		"dataset_sha256": "a" * 64,
+		"configuration_sha256": "b" * 64,
+		"checkpoint_sha256": "c" * 64,
+		"code_sha256": "d" * 64,
+		"member_selection_sha256": "e" * 64,
+	}
+	assert not (out_dir / "ignored.npz").exists()
 
 
 def test_export_latent_sequences_cli_can_export_energy(tmp_path):

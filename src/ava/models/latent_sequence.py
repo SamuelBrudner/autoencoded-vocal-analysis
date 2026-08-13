@@ -199,6 +199,29 @@ def _compute_normalization_stats(
 		return None, None
 
 	method = str(params.get("normalization_method", "mean_std")).strip().lower()
+	frozen_stats = params.get("normalization_stats")
+	if frozen_stats is not None:
+		if not isinstance(frozen_stats, dict):
+			raise ValueError("normalization_stats must be a mapping.")
+		stats_mode = str(frozen_stats.get("mode", mode)).strip().lower()
+		stats_method = str(frozen_stats.get("method", method)).strip().lower()
+		if stats_mode != mode or stats_method != method:
+			raise ValueError(
+				"Frozen normalization stats do not match the configured mode/method."
+			)
+		try:
+			center = float(frozen_stats["center"])
+			scale = float(frozen_stats["scale"])
+		except (KeyError, TypeError, ValueError) as exc:
+			raise ValueError(
+				"Frozen normalization stats require numeric center and scale."
+			) from exc
+		if not np.isfinite(center) or not np.isfinite(scale) or scale <= 0:
+			raise ValueError(
+				"Frozen normalization center must be finite and scale must be positive."
+			)
+		return center, scale
+
 	num_samples = int(params.get("normalization_num_samples", 128))
 	seed = params.get("normalization_seed", 0)
 	try:

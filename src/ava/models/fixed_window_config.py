@@ -73,6 +73,7 @@ class FixedWindowPreprocessConfig:
 	normalization_method: str = "mean_std"
 	normalization_num_samples: int = 128
 	normalization_seed: int = 0
+	normalization_stats: Optional[dict] = None
 	entry_weight_mode: str = "num_files"
 	file_weight_mode: str = "duration"
 	file_weight_cap: Optional[float] = None
@@ -111,6 +112,7 @@ class FixedWindowPreprocessConfig:
 			"normalization_method": self.normalization_method,
 			"normalization_num_samples": self.normalization_num_samples,
 			"normalization_seed": self.normalization_seed,
+			"normalization_stats": self.normalization_stats,
 			"entry_weight_mode": self.entry_weight_mode,
 			"file_weight_mode": self.file_weight_mode,
 			"file_weight_cap": self.file_weight_cap,
@@ -145,6 +147,7 @@ class FixedWindowPreprocessConfig:
 			"normalization_method": self.normalization_method,
 			"normalization_num_samples": self.normalization_num_samples,
 			"normalization_seed": self.normalization_seed,
+			"normalization_stats": self.normalization_stats,
 			"entry_weight_mode": self.entry_weight_mode,
 			"file_weight_mode": self.file_weight_mode,
 			"file_weight_cap": self.file_weight_cap,
