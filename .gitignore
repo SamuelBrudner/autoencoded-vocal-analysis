@@ -6,3 +6,4 @@ data/metadata/
 .beads/
 # Large training checkpoints (use LFS or keep local-only)
 docs/runs/artifacts/**/checkpoint_*.tar
+artifacts/transport_encoder/shared_30ms_adult_path_signature_hops_20260826/
